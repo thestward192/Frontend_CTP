@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaPlus, FaSearch } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 
 const SearchBarComponent: React.FC = () => {
   return (
@@ -13,7 +13,7 @@ const SearchBarComponent: React.FC = () => {
           <input
             className="w-full h-full p-2 text-gray-600 bg-transparent outline-none text-sm"
             type="text"
-            placeholder="Type here..."
+            placeholder="Buscar "
           />
         </div>
 
@@ -21,7 +21,7 @@ const SearchBarComponent: React.FC = () => {
         <div className="flex justify-center space-x-12">
           <div className="relative">
             <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-              <option>Buscar Por Docente</option>
+              <option>Buscar Por Leyes</option>
             </select>
           </div>
           
@@ -29,27 +29,19 @@ const SearchBarComponent: React.FC = () => {
             <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
               <option>Buscar Por Ubicación</option>
             </select>
-            <button className="absolute right-[-40px] top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 text-white rounded-full shadow-md flex items-center justify-center hover:bg-blue-700 transition duration-200 ease-in-out">
-              <FaPlus size={12} />
-            </button>
+            
           </div>
 
           <div className="relative">
             <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
               <option>Buscar Por Proveedor</option>
             </select>
-            <button className="absolute right-[-40px] top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 text-white rounded-full shadow-md flex items-center justify-center hover:bg-blue-700 transition duration-200 ease-in-out">
-              <FaPlus size={12} />
-            </button>
           </div>
 
           <div className="relative">
             <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
               <option>Buscar Por Licitación</option>
             </select>
-            <button className="absolute right-[-40px] top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 text-white rounded-full shadow-md flex items-center justify-center hover:bg-blue-700 transition duration-200 ease-in-out">
-              <FaPlus size={12} />
-            </button>
           </div>
 
           <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">

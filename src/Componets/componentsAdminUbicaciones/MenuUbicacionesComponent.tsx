@@ -1,10 +1,10 @@
 import React from 'react';
-import SearchBarComponent from './SearchBarComponent';
-import TableComponent from './TableComponent';
-import Dashboard from './Dashboard';
-import Arriba from 'C:/Users/Stward/Desktop/Control_de_aactivos/FronControlActivos/FronCTP/src/assets/Arriba.png';
+import Dashboard from '../componentsPages/Dashboard';
+import Arriba from '../../assets/Arriba.png';
+import SearchBarComponent from '../componentsAdminMenu/SearchBarComponent';
+import UbicacionesComponent from './UbicacionesComponent';
 
-const MenuAdminComponent: React.FC = () => {
+const MenuUbicacion: React.FC = () => {
   return (
     <div className="relative w-full h-screen flex">
       {/* Sidebar */}
@@ -30,7 +30,7 @@ const MenuAdminComponent: React.FC = () => {
 
           {/* Tabla con márgenes laterales */}
           <div className="relative z-20 -mt-6 ml-10 mr-10"> {/* Reducimos el margen superior de la tabla */}
-            <TableComponent />
+            <UbicacionesComponent />
           </div>
         </div>
       </div>
@@ -38,4 +38,4 @@ const MenuAdminComponent: React.FC = () => {
   );
 };
 
-export default MenuAdminComponent;
+export default MenuUbicacion;
