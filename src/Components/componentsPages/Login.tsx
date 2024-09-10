@@ -1,24 +1,22 @@
-// src/components/RegisterComponent.tsx
 import React from 'react';
+import logo from '../../assets/images-removebg-preview (1).png';
+import backgroundPattern from '../../assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png'// Aquí está la imagen de fondo
 import { useNavigate } from 'react-router-dom';
-import logo from 'C:/Users/Stward/Desktop/Control_de_aactivos/Frontend_CTP/src/assets/images-removebg-preview (1).png';
-import backgroundPattern from 'C:/Users/Stward/Desktop/Control_de_aactivos/Frontend_CTP/src/assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png'// Aquí está la imagen de fondo
 
-const RegisterComponent: React.FC = () => {
-  const navigate = useNavigate();
 
-  const handleRegister = () => {
-    // Aquí puedes manejar la lógica de registro (validación, etc.)
-    // Después del registro, redirigir al Dashboard o donde prefieras
-    navigate('/MenuAdmin');
-  };
 
-  return (
-    <div className="flex flex-col md:flex-row h-screen w-full">
+
+const Login: React.FC = () => {
+
+  const navigate = useNavigate(); // Inicializa useNavigate
+
+
+    return (
+      <div className="flex flex-col md:flex-row h-screen w-full">
       {/* Panel izquierdo */}
       <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8">
         <div className="max-w-md w-full">
-          <h1 className="text-3xl font-bold text-center mb-4">REGISTRO</h1>
+          <h1 className="text-3xl font-bold text-center mb-4">ACCESO</h1>
           <p className="text-center text-neutral-600 mb-8">
             Control de Activos CTP Hojancha
           </p>
@@ -34,17 +32,17 @@ const RegisterComponent: React.FC = () => {
 
           {/* Inputs */}
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-1" htmlFor="correo">
-              Correo
+            <label className="block text-sm font-bold mb-1" htmlFor="cedula">
+              Cédula
             </label>
             <input
               className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600"
-              type="email"
-              id="correo"
-              placeholder="Ingresa tu correo"
+              type="text"
+              id="cedula"
+              placeholder="Ingresa tu cédula"
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="block text-sm font-bold mb-1" htmlFor="password">
               Contraseña
             </label>
@@ -55,25 +53,24 @@ const RegisterComponent: React.FC = () => {
               placeholder="Ingresa tu contraseña"
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-sm font-bold mb-1" htmlFor="confirmPassword">
-              Confirmar Contraseña
-            </label>
-            <input
-              className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600"
-              type="password"
-              id="confirmPassword"
-              placeholder="Confirma tu contraseña"
-            />
-          </div>
 
           {/* Botón de registro */}
           <button
-            className="w-full bg-gradient-to-r from-blue-700 to-indigo-900 text-white font-bold p-3 rounded-xl shadow-md hover:bg-indigo-700"
-            onClick={handleRegister}
-          >
-            Registrarse
-          </button>
+      className="w-full bg-gradient-to-r from-blue-700 to-indigo-900 text-white font-bold p-3 rounded-xl shadow-md hover:from-blue-600 hover:to-indigo-800"
+      onClick={() => navigate('/MenuAdmin')} // Redirige a /MenuAdmin cuando se haga clic
+    >   Entrar </button>
+
+          {/* Footer con correo */}
+          <div className="text-xs text-center mt-4 text-gray-500">
+            En caso de no tener cuenta Registrarse
+          </div>
+
+          {/* Opción de logeo con MEP */}
+          <div className="mt-6 flex justify-center">
+            <button className="text-blue-700 font-bold text-xs border rounded-xl p-2 w-full md:w-2/3 border-gray-300"onClick={() => navigate('/Register')}>
+              Registarse
+            </button>
+          </div>
         </div>
       </div>
 
@@ -90,7 +87,7 @@ const RegisterComponent: React.FC = () => {
         </h1>
       </div>
     </div>
-  );
+    );
 };
 
-export default RegisterComponent;
+export default Login;
