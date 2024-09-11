@@ -1,5 +1,6 @@
 export interface Ley {
-    numLey : string;
-    nombre : string;
-    detalle : string;
-  }
+  id: number,
+  numLey: string;
+  nombre: string;
+  detalle: string;
+}

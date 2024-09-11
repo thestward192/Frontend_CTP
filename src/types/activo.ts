@@ -1,5 +1,6 @@
 export interface Activo {
-    nombre: string;
+    id?: number;
+    nombre : string;
     descripcion: string;
     marca: string;
     serie: string;
@@ -9,7 +10,6 @@ export interface Activo {
     foto: string;
     precio: number;
     observacion: string;
-
     ubicacionId: number;
     leyId?: number;
     donadorId?: number;

@@ -1,7 +1,10 @@
-import React from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa'; // Iconos para ver y borrar
+import React, { useState } from 'react';
+import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import FormularioLey from './FormularioLey'; // Importamos el componente del formulario
 
 const LeyesComponent: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
+
   // Datos de ejemplo para la tabla de leyes
   const tableData = [
     {
@@ -43,8 +46,12 @@ const LeyesComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Leyes</h2>
 
           {/* Botón para añadir más leyes */}
-          <button className="bg-blue-600 text-white p-3 rounded-full flex items-center hover:bg-blue-700 transition">
-            <FaPlus className="text-white" />
+          <button
+            className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <FaPlus />
+            <span>Agregar Ley</span>
           </button>
         </div>
 
@@ -60,7 +67,7 @@ const LeyesComponent: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {tableData.slice(0, 5).map((row, index) => (
+              {tableData.map((row, index) => (
                 <tr key={index} className="border-b">
                   <td className="px-4 py-2 text-sm">{row.idLey}</td>
                   <td className="px-4 py-2 text-sm">{row.numLey}</td>
@@ -96,6 +103,9 @@ const LeyesComponent: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal para agregar ley */}
+      {isModalOpen && <FormularioLey onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 };

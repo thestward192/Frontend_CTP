@@ -1,7 +1,10 @@
-import React from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa'; // Iconos para ver y borrar
+import React, { useState } from 'react';
+import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import FormularioLicitacion from './FormularioLicitacion'; // Importamos el componente del formulario
 
 const LicitacionesComponent: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
+
   // Datos de ejemplo para la tabla de licitaciones
   const tableData = [
     {
@@ -58,8 +61,12 @@ const LicitacionesComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Licitaciones</h2>
 
           {/* Botón para añadir más licitaciones */}
-          <button className="bg-blue-600 text-white p-3 rounded-full flex items-center hover:bg-blue-700 transition">
-            <FaPlus className="text-white" />
+          <button
+            className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <FaPlus />
+            <span>Agregar Licitación</span>
           </button>
         </div>
 
@@ -113,6 +120,9 @@ const LicitacionesComponent: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal para agregar licitación */}
+      {isModalOpen && <FormularioLicitacion onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 };
