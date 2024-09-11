@@ -1,7 +1,10 @@
-import React from 'react';
-import {  FaTrash, FaPlus, FaEye } from 'react-icons/fa'; // Iconos para editar y borrar
+import React, { useState } from 'react';
+import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import FormularioProveedor from './FormularioProveedor'; // Importamos el componente del formulario
 
 const ProveedoresComponent: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Datos de ejemplo para la tabla
   const tableData = [
     {
@@ -37,8 +40,12 @@ const ProveedoresComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Proveedores</h2>
 
           {/* Botón para añadir más proveedores */}
-          <button className="bg-blue-600 text-white p-3 rounded-full flex items-center hover:bg-blue-700 transition">
-            <FaPlus className="text-white" />
+          <button
+            className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <FaPlus />
+            <span>Agregar Proveedor</span>
           </button>
         </div>
 
@@ -90,6 +97,11 @@ const ProveedoresComponent: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal para agregar proveedor */}
+      {isModalOpen && (
+        <FormularioProveedor onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };
