@@ -3,9 +3,9 @@ import { FaSearch } from 'react-icons/fa';
 
 const SearchBarComponent: React.FC = () => {
   return (
-    <div className="relative w-full h-[80px]"> {/* Ajustamos la altura */}
+    <div className="relative w-full h-[130px]"> {/* Ajustamos la altura del componente */}
       {/* Barra de búsqueda principal */}
-      <div className="absolute top-[5%] w-full flex justify-center items-center"> {/* Centramos la barra */}
+      <div className="absolute top-[5%] w-full flex flex-col items-center justify-center"> {/* Ajustamos para centrar el buscador */}
         {/* Campo de búsqueda */}
         <div className="w-[700px] h-[35px] bg-white rounded-lg shadow-md border border-gray-200 flex items-center px-4">
           {/* Icono de lupa */}
