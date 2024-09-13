@@ -9,6 +9,8 @@ import MenuLicitaciones from './Components/componentsAdminLicitaciones/MenuLicit
 import MenuLeyes from './Components/componentsAdminLeyes/MenuLeyesComponent';
 import MenuUbicacion from './Components/componentsAdminUbicaciones/MenuUbicacionesComponent';
 import MenuDocenteAdmin from './Components/componentsAdminDocentes/MenuDocentesComponent';
+import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
+import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
 
 
 const App: React.FC = () => {
@@ -23,7 +25,12 @@ const App: React.FC = () => {
         <Route path="/Leyes" element={<MenuLeyes />} />
         <Route path="/Ubicacion" element={<MenuUbicacion />} />
         <Route path="/DocentesAdmin" element={<MenuDocenteAdmin />} />
+        <Route path="/Licencias" element={<MenuAdminLicencias />} />
 
+         {/*Paginas Docente*/}
+        <Route path="/MenuDocente" element={<MenuDocente />} />
+
+         
 
       </Routes>
     </Router>

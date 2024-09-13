@@ -1,43 +1,18 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioUbicacion from './FormularioUbicacion'; // Importamos el componente del formulario
+import FormularioUbicacion from './FormularioUbicacion';
+import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook para manejar ubicaciones
 
 const UbicacionesComponent: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null); // Estado para manejar el modal de eliminación
+  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null); // Estado para manejar el modal de detalles
+  const { ubicaciones, loading, error, getUbicacionDetails, removeUbicacion, selectedUbicacion, handleSubmitUbicacion } = useUbicacion();
 
-  // Datos de ejemplo para la tabla de ubicaciones
-  const tableData = [
-    {
-      idUbicacion: 'UBI-001',
-      nombreUbicacion: 'Laboratorio de Informática',
-      pabellon: 'A',
-      descripcion: 'Ubicado en el primer piso del pabellón A.',
-    },
-    {
-      idUbicacion: 'UBI-002',
-      nombreUbicacion: 'Biblioteca Central',
-      pabellon: 'B',
-      descripcion: 'Sala de lectura y préstamos de libros.',
-    },
-    {
-      idUbicacion: 'UBI-003',
-      nombreUbicacion: 'Oficina de Recursos Humanos',
-      pabellon: 'C',
-      descripcion: 'Oficina encargada de la gestión de personal.',
-    },
-    {
-      idUbicacion: 'UBI-004',
-      nombreUbicacion: 'Cafetería',
-      pabellon: 'D',
-      descripcion: 'Cafetería para estudiantes y personal.',
-    },
-    {
-      idUbicacion: 'UBI-005',
-      nombreUbicacion: 'Auditorio Principal',
-      pabellon: 'E',
-      descripcion: 'Sala de eventos y conferencias.',
-    },
-  ];
+  const handleDelete = async (id: number) => {
+    await removeUbicacion(id);
+    setDeleteModalOpen(null); // Cerrar el modal después de eliminar
+  };
 
   return (
     <div className="w-full flex justify-center py-10">
@@ -55,46 +30,64 @@ const UbicacionesComponent: React.FC = () => {
           </button>
         </div>
 
-        <div className="overflow-auto">
-          <table className="min-w-full table-auto border-collapse">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-2 text-gray-600 font-semibold">ID Ubicación</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Nombre Ubicación</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Pabellón</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Descripción</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th> {/* Columna de acciones */}
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row, index) => (
-                <tr key={index} className="border-b">
-                  <td className="px-4 py-2 text-sm">{row.idUbicacion}</td>
-                  <td className="px-4 py-2 text-sm">{row.nombreUbicacion}</td>
-                  <td className="px-4 py-2 text-sm">{row.pabellon}</td>
-                  <td className="px-4 py-2 text-sm truncate max-w-xs">{row.descripcion}</td> {/* Campo descripción más pequeño */}
-                  <td className="px-4 py-2 text-sm">
-                    <div className="flex space-x-2">
-                      {/* Botón de ver */}
-                      <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center">
-                        <FaEye className="mr-1" /> {/* Icono ver */}
-                      </button>
-                      {/* Botón de borrar */}
-                      <button className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center">
-                        <FaTrash className="mr-1" /> {/* Icono borrar */}
-                      </button>
-                    </div>
-                  </td>
+        {/* Mostrar error si existe */}
+        {error && <p className="text-red-500">Error al cargar ubicaciones.</p>}
+
+        {/* Indicador de carga */}
+        {loading ? (
+          <p>Cargando ubicaciones...</p>
+        ) : (
+          <div className="overflow-auto">
+            <table className="min-w-full table-auto border-collapse">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-gray-600 font-semibold">ID Ubicación</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre Ubicación</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Pabellón</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Descripción</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {ubicaciones.map((ubicacion, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="px-4 py-2 text-sm">{ubicacion.id}</td>
+                    <td className="px-4 py-2 text-sm">{ubicacion.nombre}</td>
+                    <td className="px-4 py-2 text-sm">{ubicacion.pabellon}</td>
+                    <td className="px-4 py-2 text-sm truncate max-w-xs">{ubicacion.descripcion}</td>
+                    <td className="px-4 py-2 text-sm">
+                      <div className="flex space-x-2">
+                        {/* Botón de ver detalles */}
+                        <button
+                          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => {
+                            getUbicacionDetails(ubicacion.id); // Obtener los detalles de la ubicación
+                            setDetailModalOpen(ubicacion.id); // Abrir el modal de detalles
+                          }}
+                        >
+                          <FaEye className="mr-1" />
+                        </button>
+
+                        {/* Botón de borrar */}
+                        <button
+                          className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => setDeleteModalOpen(ubicacion.id)} // Abrir el modal de eliminación
+                        >
+                          <FaTrash className="mr-1" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Mostrando 1 a 5 de 5 entradas</p>
+            <p className="text-sm text-gray-600">Mostrando 1 a {ubicaciones.length} de {ubicaciones.length} entradas</p>
           </div>
           <div className="flex space-x-1">
             <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
@@ -105,7 +98,49 @@ const UbicacionesComponent: React.FC = () => {
       </div>
 
       {/* Modal para agregar ubicación */}
-      {isModalOpen && <FormularioUbicacion onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <FormularioUbicacion onClose={() => setIsModalOpen(false)} onSubmit={handleSubmitUbicacion} />}
+
+      {/* Modal para ver detalles de la ubicación */}
+      {detailModalOpen && selectedUbicacion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
+            <h2 className="text-lg font-bold mb-4">Detalles de Ubicación</h2>
+            <p><strong>ID:</strong> {selectedUbicacion.id}</p>
+            <p><strong>Nombre:</strong> {selectedUbicacion.nombre}</p>
+            <p><strong>Pabellón:</strong> {selectedUbicacion.pabellon}</p>
+            <p><strong>Descripción:</strong> {selectedUbicacion.descripcion}</p>
+            <button
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              onClick={() => setDetailModalOpen(null)}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {deleteModalOpen !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">¿Deseas eliminar esta ubicación?</h2>
+            <div className="flex justify-end space-x-2">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={() => setDeleteModalOpen(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleDelete(deleteModalOpen!)}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
