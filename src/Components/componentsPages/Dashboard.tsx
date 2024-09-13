@@ -50,6 +50,9 @@ const Dashboard: React.FC = () => {
             {/* Submenú en estilo acordeón */}
             {isGestionOpen && (
               <ul className="ml-11 mt-2 space-y-3"> {/* Ajustamos ml-8 para mover el submenú más a la derecha */}
+              <li className="flex items-center text-sm font-['DM Sans'] group">
+                  <Link to="/Licencias" className={`${getActiveClass('/Licencias')} group-hover:text-[#2b3674]`}>Licencias</Link>
+                </li>
                 <li className="flex items-center text-sm font-['DM Sans'] group">
                   <Link to="/Proveedores" className={`${getActiveClass('/Proveedores')} group-hover:text-[#2b3674]`}>Proveedores</Link>
                 </li>
