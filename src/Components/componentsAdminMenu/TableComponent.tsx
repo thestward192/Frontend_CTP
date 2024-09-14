@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import FormularioActivo from './FormularioActivo'; // Asegúrate de que la ruta es correcta
 import DetalleComponent from './DetalleActivo'; // Asegúrate de que la ruta es correcta
+import upsImage from '../../assets/Opera Captura de pantalla_2024-09-14_001500_download.schneider-electric.com.png'; 
 
 // Definimos una interfaz para describir la estructura de un activo
 interface Asset {
@@ -18,13 +19,17 @@ interface Asset {
   foto: string;
 }
 
-const TableComponent: React.FC = () => {
-  const [selectedItems, setSelectedItems] = useState<string[]>([]); // Estado para manejar los elementos seleccionados
-  const [isSelectionMode, setIsSelectionMode] = useState(false); // Estado para activar/desactivar el modo de selección
-  const [isSelecting, setIsSelecting] = useState(false); // Estado para manejar si está en modo de selección
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null); // Estado para manejar el activo seleccionado
-  const [currentPage, setCurrentPage] = useState(1); // Estado para la paginación
+interface TableComponentProps {
+  onAssetSelect: (isSelected: boolean) => void; // Prop para notificar la selección
+}
+
+const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const tableData: Asset[] = [
     {
@@ -38,7 +43,7 @@ const TableComponent: React.FC = () => {
       serie: 'ABC123',
       modoAdquisicion: 'Compra',
       observacion: 'Observación 1',
-      foto: '/ruta-imagen1.jpg'
+      foto: upsImage
     },
     {
       id: '4197-3092',
@@ -51,15 +56,13 @@ const TableComponent: React.FC = () => {
       serie: 'DEF456',
       modoAdquisicion: 'Donación',
       observacion: 'Observación 2',
-      foto: '/ruta-imagen2.jpg'
+      foto: upsImage
     },
-    // Más datos...
   ];
 
-  const itemsPerPage = 33; // Cantidad de elementos por página
-  const totalPages = Math.ceil(tableData.length / itemsPerPage); // Calcula el número de páginas totales
+  const itemsPerPage = 33;
+  const totalPages = Math.ceil(tableData.length / itemsPerPage);
 
-  // Maneja el cambio de página
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -67,7 +70,6 @@ const TableComponent: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = tableData.slice(startIndex, startIndex + itemsPerPage);
 
-  // Activa el modo de selección y muestra los checkboxes
   const enableSelectionMode = () => {
     setIsSelectionMode(true);
     setIsSelecting(true);
@@ -79,14 +81,13 @@ const TableComponent: React.FC = () => {
     setSelectedItems([]);
   };
 
-  // Manejar la selección de un activo para mostrar más detalles
   const handleSelectAsset = (asset: Asset) => {
     setSelectedAsset(asset);
+    onAssetSelect(true); // Notificamos que un activo ha sido seleccionado
   };
 
   return (
     <div className="w-full flex justify-center py-10">
-      {/* Mostrar tabla o detalle según el estado */}
       {!selectedAsset ? (
         <div
           className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
@@ -247,7 +248,13 @@ const TableComponent: React.FC = () => {
           {isModalOpen && <FormularioActivo onClose={() => setIsModalOpen(false)} />}
         </div>
       ) : (
-        <DetalleComponent asset={selectedAsset} onBack={() => setSelectedAsset(null)} />
+        <DetalleComponent
+          asset={selectedAsset}
+          onBack={() => {
+            setSelectedAsset(null);
+            onAssetSelect(false); // Notificamos que se ha vuelto a la tabla principal
+          }}
+        />
       )}
     </div>
   );
