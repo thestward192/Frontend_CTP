@@ -1,6 +1,5 @@
-// src/hooks/useLeyes.ts
 import { useState, useEffect } from 'react';
-import { getLeyes, createLey, getLeyById, deleteLey } from '../Services/leyService';
+import { getLeyes, createLey, getLeyById, deleteLey } from '../services/LeyService';
 import { Ley } from '../types/ley';
 
 export const useLeyes = () => {
@@ -12,46 +11,58 @@ export const useLeyes = () => {
   // Función para obtener todas las leyes
   const fetchLeyes = async () => {
     try {
+      setLoading(true); // Activar el estado de carga
       const data = await getLeyes();
       setLeyes(data);
+      setError(null); // Limpiar error si tiene éxito
     } catch (error) {
       setError('Error al obtener las leyes');
-      console.error(error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Desactivar el estado de carga
     }
   };
 
   // Función para crear una nueva ley
   const handleSubmitLey = async (leyData: Omit<Ley, 'id'>): Promise<boolean> => {
     try {
+      setLoading(true); // Activar el estado de carga
       const nuevaLey = await createLey(leyData);
       setLeyes([...leyes, nuevaLey]);
+      setError(null); // Limpiar error si tiene éxito
       return true;
     } catch (error) {
-      console.error('Error al crear la ley:', error);
       setError('Error al crear la ley');
       return false;
+    } finally {
+      setLoading(false); // Desactivar el estado de carga
     }
   };
 
   // Función para obtener detalles de una ley por ID
   const getLeyDetails = async (id: number) => {
     try {
+      setLoading(true); // Activar el estado de carga
       const data = await getLeyById(id);
       setSelectedLey(data); // Almacenar la ley seleccionada
+      setError(null); // Limpiar error si tiene éxito
     } catch (error) {
       setError(`Error al obtener detalles de la ley con ID ${id}`);
+    } finally {
+      setLoading(false); // Desactivar el estado de carga
     }
   };
 
   // Función para eliminar una ley por ID
   const removeLey = async (id: number) => {
     try {
+      setLoading(true); // Activar el estado de carga
       await deleteLey(id);
       setLeyes(leyes.filter((ley) => ley.id !== id)); // Actualizar el estado eliminando la ley
+      setError(null); // Limpiar error si tiene éxito
     } catch (error) {
       setError(`Error al eliminar la ley con ID ${id}`);
+    } finally {
+      setLoading(false); // Desactivar el estado de carga
     }
   };
 

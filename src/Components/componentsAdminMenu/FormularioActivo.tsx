@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { FaArrowLeft } from 'react-icons/fa';
 import { createActivo, getDonadores, getLeyes, getUbicaciones } from '../../Services/activoService';
 import { Activo } from '../../types/activo';
 import { Ley } from '../../types/ley';
-import { Donador } from '../../types/donador';
 import { Ubicacion } from '../../types/ubicacion';
 
-
-const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  // Estado para los datos del formulario
+const FormularioActivo: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [formData, setFormData] = useState<Activo>({
     id: 0,
     nombre: '',
@@ -17,30 +15,22 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     estado: '',
     modelo: '',
     numPlaca: 0,
-    foto: '',  // Este campo será un archivo (File) para la foto
+    foto: '',
     precio: 0,
     observacion: '',
     ubicacionId: 0,
     leyId: undefined,
     donadorId: undefined,
-    });
+  });
 
-  // Estado para listas de leyes, donadores, y ubicaciones
   const [leyes, setLeyes] = useState<Ley[]>([]);
-  const [donadores, setDonadores] = useState<Donador[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
 
-  // Cargar datos de leyes, donadores y ubicaciones al montar el componente
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [leyesData, donadoresData, ubicacionesData] = await Promise.all([
-          getLeyes(),
-          getDonadores(),
-          getUbicaciones(),
-        ]);
+        const [leyesData, , ubicacionesData] = await Promise.all([getLeyes(), getDonadores(), getUbicaciones()]);
         setLeyes(leyesData);
-        setDonadores(donadoresData);
         setUbicaciones(ubicacionesData);
       } catch (error) {
         console.error('Error al cargar datos:', error);
@@ -59,28 +49,30 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const dataToSubmit = { ...formData };
       dataToSubmit.precio = Number(dataToSubmit.precio);
       dataToSubmit.numPlaca = Number(dataToSubmit.numPlaca);
-
       await createActivo(dataToSubmit);
-      onClose();
+      onBack(); // Volver a la tabla
     } catch (error) {
       console.error('Error al crear el activo:', error);
     }
   };
-  
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-10 rounded-lg shadow-lg w-[1000px] max-h-[750px] overflow-auto">
-        <h2 className="text-2xl font-bold mb-8 text-center">Agregar Activo</h2>
-        <form onSubmit={handleSubmit}>
-          
+    <div className="w-full h-auto p-6 mx-auto max-w-7xl" style={{ marginBottom: '100px', paddingBottom: '40px' }}>
+      {/* Título */}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-700">Agregar Activo</h2>
+        <p className="text-sm text-gray-500">Complete la información del nuevo activo.</p>
+      </div>
+
+      {/* Formulario */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-2 gap-6">
           {/* Campo de Nombre */}
-          <div className="mb-6">
+          <div>
             <label className="block mb-2 font-medium">Nombre</label>
             <input
               type="text"
@@ -92,21 +84,8 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             />
           </div>
 
-          {/* Campo de la Foto (URL) */}
-          <div className="mb-6">
-            <label className="block mb-2 font-medium">Foto (URL)</label>
-            <input
-              type="text"
-              name="foto"
-              value={formData.foto}
-              onChange={handleChange}
-              className="w-full border p-3 rounded-md"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-
-          {/* Campo de la Marca */}
-          <div className="mb-6">
+          {/* Campo de Marca */}
+          <div>
             <label className="block mb-2 font-medium">Marca</label>
             <input
               type="text"
@@ -118,91 +97,71 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             />
           </div>
 
-          {/* Otros Campos */}
-          <div className="grid grid-cols-3 gap-8">
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Modelo</label>
-              <input
-                type="text"
-                name="modelo"
-                value={formData.modelo}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-                required
-              />
-            </div>
+          {/* Campo de Modelo */}
+          <div>
+            <label className="block mb-2 font-medium">Modelo</label>
+            <input
+              type="text"
+              name="modelo"
+              value={formData.modelo}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-md"
+              required
+            />
+          </div>
 
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Serie</label>
-              <input
-                type="text"
-                name="serie"
-                value={formData.serie}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-                required
-              />
-            </div>
+          {/* Campo de Serie */}
+          <div>
+            <label className="block mb-2 font-medium">Serie</label>
+            <input
+              type="text"
+              name="serie"
+              value={formData.serie}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-md"
+              required
+            />
+          </div>
 
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Estado</label>
-              <input
-                type="text"
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-              />
-            </div>
+          {/* Estado */}
+          <div>
+            <label className="block mb-2 font-medium">Estado</label>
+            <input
+              type="text"
+              name="estado"
+              value={formData.estado}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-md"
+            />
+          </div>
 
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Número de Placa</label>
-              <input
-                type="number"
-                name="numPlaca"
-                value={formData.numPlaca}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-                required
-              />
-            </div>
+          {/* Precio */}
+          <div>
+            <label className="block mb-2 font-medium">Precio</label>
+            <input
+              type="number"
+              name="precio"
+              value={formData.precio}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-md"
+              required
+            />
+          </div>
 
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Precio</label>
-              <input
-                type="number"
-                name="precio"
-                value={formData.precio}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-                required
-              />
-            </div>
-
-            <div className="mb-6 col-span-3">
-              <label className="block mb-2 font-medium">Descripción</label>
-              <textarea
-                name="descripcion"
-                value={formData.descripcion}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-                required
-              />
-            </div>
-
-            <div className="mb-6 col-span-3">
-              <label className="block mb-2 font-medium">Observación</label>
-              <textarea
-                name="observacion"
-                value={formData.observacion}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-              />
-            </div>
+          {/* Descripción */}
+          <div className="col-span-2">
+            <label className="block mb-2 font-medium">Descripción</label>
+            <textarea
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-md"
+              required
+            />
           </div>
 
           {/* Ubicación */}
-          <div className="mb-6">
+          <div>
             <label className="block mb-2 font-medium">Ubicación</label>
             <select
               name="ubicacionId"
@@ -220,8 +179,8 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </select>
           </div>
 
-          {/* Ley y Donador */}
-          <div className="mb-6">
+          {/* Ley */}
+          <div>
             <label className="block mb-2 font-medium">Ley</label>
             <select
               name="leyId"
@@ -237,42 +196,25 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               ))}
             </select>
           </div>
+        </div>
 
-          <div className="mb-6">
-            <label className="block mb-2 font-medium">Donador</label>
-            <select
-              name="donadorId"
-              value={formData.donadorId}
-              onChange={handleChange}
-              className="w-full border p-3 rounded-md"
-            >
-              <option value="">Seleccione un Donador</option>
-              {donadores.map((donador) => (
-                <option key={donador.id} value={donador.id}>
-                  {donador.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Botones */}
-          <div className="sticky bottom-0 bg-white pt-4 flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-            >
-              Crear
-            </button>
-          </div>
-        </form>
-      </div>
+        {/* Botones de acción */}
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition-all duration-300 flex items-center text-sm"
+          >
+            Crear Activo
+          </button>
+          <button
+            type="button"
+            onClick={onBack}
+            className="bg-blue-500 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-600 transition-all duration-300 flex items-center text-sm"
+          >
+            <FaArrowLeft className="mr-2" /> Volver
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

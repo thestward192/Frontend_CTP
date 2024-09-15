@@ -43,17 +43,23 @@ const DocentesComponent: React.FC = () => {
 
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Docentes</h2>
 
           {/* Botón para añadir más docentes */}
-          <button className="bg-blue-600 text-white p-3 rounded-full flex items-center hover:bg-blue-700 transition">
-            <FaPlus className="text-white" />
+          <button
+            className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
+          >
+            <FaPlus />
+            <span>Agregar Docente</span>
           </button>
         </div>
 
-        <div className="overflow-auto">
+        <div className="flex-grow overflow-y-auto">
           <table className="min-w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-50">
@@ -66,13 +72,13 @@ const DocentesComponent: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {tableData.slice(0, 5).map((row, index) => (
-                <tr key={index} className="border-b">
+              {tableData.map((row, index) => (
+                <tr key={index} className="border-b hover:bg-gray-100">
                   <td className="px-4 py-2 text-sm">
                     <img
                       src={row.imagen}
                       alt={`${row.nombre} ${row.apellido}`}
-                      className="w-10 h-10 rounded-full"
+                      className="w-10 h-10 rounded-full object-cover"
                     />
                   </td>
                   <td className="px-4 py-2 text-sm">{row.nombre}</td>
@@ -100,7 +106,7 @@ const DocentesComponent: React.FC = () => {
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Mostrando 1 a 5 de 5 entradas</p>
+            <p className="text-sm text-gray-600">Mostrando 1 a {tableData.length} de {tableData.length} entradas</p>
           </div>
           <div className="flex space-x-1">
             <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>

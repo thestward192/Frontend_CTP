@@ -23,7 +23,10 @@ const LeyesComponent: React.FC = () => {
 
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Leyes</h2>
 
@@ -44,7 +47,7 @@ const LeyesComponent: React.FC = () => {
         {loading ? (
           <p>Cargando leyes...</p>
         ) : (
-          <div className="overflow-auto">
+          <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -57,7 +60,7 @@ const LeyesComponent: React.FC = () => {
               </thead>
               <tbody>
                 {leyes.map((ley, index) => (
-                  <tr key={index} className="border-b">
+                  <tr key={index} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ley.id}</td>
                     <td className="px-4 py-2 text-sm">{ley.numLey}</td>
                     <td className="px-4 py-2 text-sm">{ley.nombre}</td>
@@ -91,7 +94,9 @@ const LeyesComponent: React.FC = () => {
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Mostrando 1 a {leyes.length} de {leyes.length} entradas</p>
+            <p className="text-sm text-gray-600">
+              Mostrando 1 a {leyes.length} de {leyes.length} entradas
+            </p>
           </div>
           <div className="flex space-x-1">
             <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
