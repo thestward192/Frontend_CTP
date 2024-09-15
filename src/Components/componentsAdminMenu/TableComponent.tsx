@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import FormularioActivo from './FormularioActivo'; // Asegúrate de que la ruta es correcta
+import FormularioDonacion from './FormularioDonacion'; // Asegúrate de que la ruta es correcta
 import DetalleComponent from './DetalleActivo'; // Asegúrate de que la ruta es correcta
-import upsImage from '../../assets/Opera Captura de pantalla_2024-09-14_001500_download.schneider-electric.com.png'; 
+import upsImage from '../../assets/Opera Captura de pantalla_2024-09-14_001500_download.schneider-electric.com.png'; // Asegúrate de que la ruta es correcta
+import Filters from './Filters'; // Importamos el nuevo componente de filtros
+import SelectionModal from './SelectionModal'; // Importamos el nuevo componente modal
 
-// Definimos una interfaz para describir la estructura de un activo
 interface Asset {
   id: string;
   marca: string;
@@ -27,7 +29,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal para seleccionar Ley o Donación
+  const [showLeyForm, setShowLeyForm] = useState(false); // Mostrar formulario de Ley
+  const [showDonacionForm, setShowDonacionForm] = useState(false); // Mostrar formulario de Donación
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -43,7 +47,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
       serie: 'ABC123',
       modoAdquisicion: 'Compra',
       observacion: 'Observación 1',
-      foto: upsImage
+      foto: upsImage,
     },
     {
       id: '4197-3092',
@@ -56,7 +60,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
       serie: 'DEF456',
       modoAdquisicion: 'Donación',
       observacion: 'Observación 2',
-      foto: upsImage
+      foto: upsImage,
     },
   ];
 
@@ -83,12 +87,33 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
 
   const handleSelectAsset = (asset: Asset) => {
     setSelectedAsset(asset);
-    onAssetSelect(true); // Notificamos que un activo ha sido seleccionado
+    onAssetSelect(true);
+  };
+
+  const handleAddActivo = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleSelectLey = () => {
+    setIsModalOpen(false);
+    setShowLeyForm(true);
+    setShowDonacionForm(false);
+  };
+
+  const handleSelectDonacion = () => {
+    setIsModalOpen(false);
+    setShowLeyForm(false);
+    setShowDonacionForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowLeyForm(false);
+    setShowDonacionForm(false);
   };
 
   return (
     <div className="w-full flex justify-center py-10">
-      {!selectedAsset ? (
+      {!showLeyForm && !showDonacionForm && !selectedAsset ? (
         <div
           className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
           style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
@@ -102,7 +127,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             <div className="flex space-x-4">
               <button
                 className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-                onClick={() => setIsModalOpen(true)}
+                onClick={handleAddActivo}
               >
                 <FaPlus />
                 <span>Agregar Activo</span>
@@ -130,49 +155,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
           </div>
 
           {/* Filtros de productos en una línea */}
-          <div className="mb-4 flex justify-between items-center">
-            {/* Filtros desplegables */}
-            <div className="flex space-x-6">
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Leyes</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Ubicación</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Proveedor</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Licitación</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Fecha</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Filtro de estado */}
-            <div className="relative">
-              <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                <option>Mostrar Todos</option>
-                <option>Productos Activos</option>
-                <option>Productos Inactivos</option>
-              </select>
-            </div>
-          </div>
+          <Filters /> {/* Aquí agregamos los filtros extraídos */}
 
           {/* Tabla con scroll */}
           <div className="flex-grow overflow-y-auto">
@@ -180,6 +163,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
               <thead>
                 <tr className="bg-gray-50">
                   {isSelectionMode && <th className="px-2 py-2 text-gray-600 font-semibold">Seleccionar</th>}
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
@@ -196,6 +180,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
                         <input type="checkbox" checked={selectedItems.includes(row.id)} onChange={() => setSelectedItems([...selectedItems, row.id])} />
                       </td>
                     )}
+                    <td className="px-4 py-2 text-sm">
+                      <div className="w-8 h-8 flex items-center justify-center">
+                        <img src={row.foto} alt="Imagen del Activo" className="max-w-full max-h-full object-contain rounded" />
+                      </div>
+                    </td>
                     <td className="px-4 py-2 text-sm">{row.id}</td>
                     <td className="px-4 py-2 text-sm">{row.marca}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
@@ -244,18 +233,34 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </div>
           </div>
 
-          {/* Modal */}
-          {isModalOpen && <FormularioActivo onClose={() => setIsModalOpen(false)} />}
+          {/* Modal para selección de Ley o Donación */}
+          {isModalOpen && (
+            <SelectionModal
+              onSelectLey={handleSelectLey}
+              onSelectDonacion={handleSelectDonacion}
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
         </div>
-      ) : (
+      ) : showLeyForm ? (
+        // Mostrar formulario por ley sin imagen
+        <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+          <FormularioActivo onBack={handleCloseForm} />
+        </div>
+      ) : showDonacionForm ? (
+        // Mostrar formulario por donación
+        <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+          <FormularioDonacion onBack={handleCloseForm} />
+        </div>
+      ) : selectedAsset ? (
         <DetalleComponent
           asset={selectedAsset}
           onBack={() => {
             setSelectedAsset(null);
-            onAssetSelect(false); // Notificamos que se ha vuelto a la tabla principal
+            onAssetSelect(false);
           }}
         />
-      )}
+      ) : null}
     </div>
   );
 };

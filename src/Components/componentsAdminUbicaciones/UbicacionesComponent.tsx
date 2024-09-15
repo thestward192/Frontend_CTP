@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioUbicacion from './FormularioUbicacion';
+import FormularioUbicacion from './FormularioUbicacion'; // Importamos el formulario de Ubicaciones
 import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook para manejar ubicaciones
 
 const UbicacionesComponent: React.FC = () => {
@@ -16,7 +16,10 @@ const UbicacionesComponent: React.FC = () => {
 
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Ubicaciones</h2>
 
@@ -37,7 +40,7 @@ const UbicacionesComponent: React.FC = () => {
         {loading ? (
           <p>Cargando ubicaciones...</p>
         ) : (
-          <div className="overflow-auto">
+          <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -50,7 +53,7 @@ const UbicacionesComponent: React.FC = () => {
               </thead>
               <tbody>
                 {ubicaciones.map((ubicacion, index) => (
-                  <tr key={index} className="border-b">
+                  <tr key={index} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ubicacion.id}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.nombre}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.pabellon}</td>

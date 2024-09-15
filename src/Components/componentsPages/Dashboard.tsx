@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const location = useLocation();
-  const [isGestionOpen, setIsGestionOpen] = useState(false); // Estado para el acordeón de Gestión
+  const [isGestionOpen, setIsGestionOpen] = useState(true); // Inicia abierto si es necesario
 
   // Función para detectar la ruta activa y aplicar el estilo azul
   const getActiveClass = (path: string) => {
@@ -14,6 +14,11 @@ const Dashboard: React.FC = () => {
   // Función para aplicar el color de los íconos cuando están seleccionados
   const getIconClass = (path: string) => {
     return location.pathname === path ? 'text-[#2b3674]' : 'text-[#a3aed0]';
+  };
+
+  // Función para alternar la visibilidad de la sección de "Gestión"
+  const toggleGestion = () => {
+    setIsGestionOpen(!isGestionOpen);
   };
 
   return (
@@ -29,14 +34,20 @@ const Dashboard: React.FC = () => {
         <ul className="space-y-6">
           <li className="flex items-center text-base font-['DM Sans'] group">
             <HomeIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/MenuAdmin')}`} />
-            <Link to="/MenuAdmin" className={`${getActiveClass('/MenuAdmin')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>Inicio</Link>
+            <Link to="/MenuAdmin" className={`${getActiveClass('/MenuAdmin')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>Activos</Link>
+          </li>
+
+          {/* Nueva sección de Licencias */}
+          <li className="flex items-center text-base font-['DM Sans'] group">
+            <FolderIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/Licencias')}`} />
+            <Link to="/Licencias" className={`${getActiveClass('/Licencias')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>Licencias</Link>
           </li>
 
           {/* Gestión con acordeón */}
           <li>
             <div
               className="flex items-center text-base font-['DM Sans'] cursor-pointer group"
-              onClick={() => setIsGestionOpen(!isGestionOpen)} // Toggle acordeón
+              onClick={toggleGestion} // Cambia visibilidad de "Gestión"
             >
               <FolderIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/gestion')}`} />
               <span className={`${getActiveClass('/gestion')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>Gestión</span>
@@ -49,10 +60,7 @@ const Dashboard: React.FC = () => {
 
             {/* Submenú en estilo acordeón */}
             {isGestionOpen && (
-              <ul className="ml-11 mt-2 space-y-3"> {/* Ajustamos ml-8 para mover el submenú más a la derecha */}
-              <li className="flex items-center text-sm font-['DM Sans'] group">
-                  <Link to="/Licencias" className={`${getActiveClass('/Licencias')} group-hover:text-[#2b3674]`}>Licencias</Link>
-                </li>
+              <ul className="ml-11 mt-2 space-y-3">
                 <li className="flex items-center text-sm font-['DM Sans'] group">
                   <Link to="/Proveedores" className={`${getActiveClass('/Proveedores')} group-hover:text-[#2b3674]`}>Proveedores</Link>
                 </li>
