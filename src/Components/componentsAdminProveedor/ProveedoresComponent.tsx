@@ -23,7 +23,10 @@ const ProveedoresComponent: React.FC = () => {
 
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Proveedores</h2>
 
@@ -44,7 +47,7 @@ const ProveedoresComponent: React.FC = () => {
         {loading ? (
           <p>Cargando proveedores...</p>
         ) : (
-          <div className="overflow-auto">
+          <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -57,7 +60,7 @@ const ProveedoresComponent: React.FC = () => {
               </thead>
               <tbody>
                 {proveedores.map((proveedor, index) => (
-                  <tr key={index} className="border-b">
+                  <tr key={index} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{proveedor.nombreProveedor}</td>
                     <td className="px-4 py-2 text-sm">{proveedor.nombreEmpresa}</td>
                     <td className="px-4 py-2 text-sm">{proveedor.telefonoProveedor}</td>

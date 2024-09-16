@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import FormularioLicencia from './FormularioLicencia'; // Importamos el formulario de Licencia
+import DetailLicencia from './DetailLicencia'; // Importamos el nuevo componente de detalles
+
+interface Licencia {
+  nombre: string;
+  descripcion: string;
+  codigoLicencia: string;
+}
 
 const LicenciasComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLicencia, setSelectedLicencia] = useState<Licencia | null>(null);
 
   // Datos de ejemplo para la tabla
-  const tableData = [
+  const tableData: Licencia[] = [
     {
       nombre: 'Microsoft Office',
       descripcion: 'Licencia de Microsoft Office 365 para 5 dispositivos',
@@ -24,9 +32,21 @@ const LicenciasComponent: React.FC = () => {
     },
   ];
 
+  const handleViewDetails = (licencia: Licencia) => {
+    setSelectedLicencia(licencia);
+  };
+
+  const handleEdit = () => {
+    // Lógica para editar la licencia
+    console.log('Editar licencia', selectedLicencia);
+  };
+
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Licencias</h2>
 
@@ -40,31 +60,35 @@ const LicenciasComponent: React.FC = () => {
           </button>
         </div>
 
-        <div className="overflow-auto">
+        {/* Tabla con scroll */}
+        <div className="flex-grow overflow-y-auto">
           <table className="min-w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Descripción</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Código de Licencia</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th> {/* Columna de acciones */}
+                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {tableData.map((row, index) => (
-                <tr key={index} className="border-b">
+                <tr key={index} className="border-b hover:bg-gray-100">
                   <td className="px-4 py-2 text-sm">{row.nombre}</td>
                   <td className="px-4 py-2 text-sm">{row.descripcion}</td>
                   <td className="px-4 py-2 text-sm">{row.codigoLicencia}</td>
                   <td className="px-4 py-2 text-sm">
                     <div className="flex space-x-2">
                       {/* Botón de ver */}
-                      <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center">
-                        <FaEye className="mr-1" /> 
+                      <button
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
+                        onClick={() => handleViewDetails(row)}
+                      >
+                        <FaEye className="mr-1" />
                       </button>
                       {/* Botón de borrar */}
                       <button className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center">
-                        <FaTrash className="mr-1" /> 
+                        <FaTrash className="mr-1" />
                       </button>
                     </div>
                   </td>
@@ -88,8 +112,15 @@ const LicenciasComponent: React.FC = () => {
       </div>
 
       {/* Modal para agregar licencia */}
-      {isModalOpen && (
-        <FormularioLicencia onClose={() => setIsModalOpen(false)} />
+      {isModalOpen && <FormularioLicencia onClose={() => setIsModalOpen(false)} />}
+
+      {/* Modal para ver detalles de la licencia */}
+      {selectedLicencia && (
+        <DetailLicencia
+          licencia={selectedLicencia}
+          onClose={() => setSelectedLicencia(null)}
+          onEdit={handleEdit}
+        />
       )}
     </div>
   );

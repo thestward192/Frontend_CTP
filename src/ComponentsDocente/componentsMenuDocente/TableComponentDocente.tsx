@@ -50,7 +50,10 @@ const TableComponentDocente: React.FC = () => {
 
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-4">
           <div className="relative inline-block text-left">
             <h1 className="text-[22px] font-semibold text-black">Activos Aula #1</h1>
@@ -58,7 +61,7 @@ const TableComponentDocente: React.FC = () => {
         </div>
 
         {/* Tabla */}
-        <div className="overflow-auto">
+        <div className="flex-grow overflow-y-auto">
           <table className="min-w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-50">
@@ -77,7 +80,11 @@ const TableComponentDocente: React.FC = () => {
                   <td className="px-4 py-2 text-sm">{row.modelo}</td>
                   <td className="px-4 py-2 text-sm">{row.serie}</td>
                   <td className="px-4 py-2 text-sm">
-                    <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <span
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}
+                    >
                       {row.estado}
                     </span>
                   </td>
@@ -103,7 +110,9 @@ const TableComponentDocente: React.FC = () => {
             {Array.from({ length: totalPages }, (_, index) => (
               <button
                 key={index}
-                className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                }`}
                 onClick={() => handlePageChange(index + 1)}
               >
                 {index + 1}
