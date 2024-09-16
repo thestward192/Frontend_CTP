@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioLicitacion from './FormularioLicitacion'; // Importamos el componente del formulario
+import FormularioLicitacion from './FormularioLicitacion'; // Componente del formulario
+import DetailLicitacion from './DetailLicitacion'; // Componente para mostrar los detalles
+
+// Definimos la interfaz para una licitación
+interface Licitacion {
+  fecha: string;
+  idLicitacion: string;
+  numActa: string;
+  numLicitacion: string;
+  nombreLicitacion: string;
+  montoAutorizado: string;
+  descripcion: string;
+}
 
 const LicitacionesComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
+  const [selectedLicitacion, setSelectedLicitacion] = useState<Licitacion | null>(null); // Estado para manejar la licitación seleccionada
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false); // Estado para manejar el modal de detalles
 
   // Datos de ejemplo para la tabla de licitaciones
-  const tableData = [
+  const tableData: Licitacion[] = [
     {
       fecha: '10/09/2024',
       idLicitacion: 'LIC-001',
@@ -54,6 +68,17 @@ const LicitacionesComponent: React.FC = () => {
     },
   ];
 
+  // Función para abrir el modal de detalles
+  const handleViewDetails = (licitacion: Licitacion) => {
+    setSelectedLicitacion(licitacion);
+    setIsDetailModalOpen(true);
+  };
+
+  // Función para editar (por ahora solo un placeholder)
+  const handleEditLicitacion = () => {
+    console.log('Editar licitación:', selectedLicitacion);
+  };
+
   return (
     <div className="w-full flex justify-center py-10">
       <div
@@ -82,7 +107,7 @@ const LicitacionesComponent: React.FC = () => {
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nº Acta</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nº Licitación</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Monto Autorizado</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th> {/* Columna de acciones */}
+                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -95,13 +120,17 @@ const LicitacionesComponent: React.FC = () => {
                   <td className="px-4 py-2 text-sm">{row.montoAutorizado}</td>
                   <td className="px-4 py-2 text-sm">
                     <div className="flex space-x-2">
-                      {/* Botón de ver */}
-                      <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center">
-                        <FaEye className="mr-1" /> {/* Icono ver */}
+                      {/* Botón de ver detalles */}
+                      <button
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
+                        onClick={() => handleViewDetails(row)} // Abrir el modal de detalles
+                      >
+                        <FaEye className="mr-1" />
                       </button>
+
                       {/* Botón de borrar */}
                       <button className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center">
-                        <FaTrash className="mr-1" /> {/* Icono borrar */}
+                        <FaTrash className="mr-1" />
                       </button>
                     </div>
                   </td>
@@ -126,6 +155,15 @@ const LicitacionesComponent: React.FC = () => {
 
       {/* Modal para agregar licitación */}
       {isModalOpen && <FormularioLicitacion onClose={() => setIsModalOpen(false)} />}
+
+      {/* Modal para ver detalles */}
+      {isDetailModalOpen && selectedLicitacion && (
+        <DetailLicitacion
+          licitacion={selectedLicitacion}
+          onClose={() => setIsDetailModalOpen(false)}
+          onEdit={handleEditLicitacion}
+        />
+      )}
     </div>
   );
 };

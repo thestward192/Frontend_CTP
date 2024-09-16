@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioUbicacion from './FormularioUbicacion'; // Importamos el formulario de Ubicaciones
+import FormularioUbicacion from './FormularioUbicacion';
+import DetailUbicacion from './DetailUbicacion'; // Importamos el nuevo componente para ver detalles
 import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook para manejar ubicaciones
 
 const UbicacionesComponent: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
-  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null); // Estado para manejar el modal de eliminación
-  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null); // Estado para manejar el modal de detalles
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null);
   const { ubicaciones, loading, error, getUbicacionDetails, removeUbicacion, selectedUbicacion, handleSubmitUbicacion } = useUbicacion();
 
   const handleDelete = async (id: number) => {
     await removeUbicacion(id);
-    setDeleteModalOpen(null); // Cerrar el modal después de eliminar
+    setDeleteModalOpen(null);
+  };
+
+  const handleEdit = () => {
+    // Lógica para editar la ubicación
+    console.log('Editar ubicación', selectedUbicacion);
   };
 
   return (
@@ -33,10 +39,8 @@ const UbicacionesComponent: React.FC = () => {
           </button>
         </div>
 
-        {/* Mostrar error si existe */}
         {error && <p className="text-red-500">Error al cargar ubicaciones.</p>}
 
-        {/* Indicador de carga */}
         {loading ? (
           <p>Cargando ubicaciones...</p>
         ) : (
@@ -64,8 +68,8 @@ const UbicacionesComponent: React.FC = () => {
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => {
-                            getUbicacionDetails(ubicacion.id); // Obtener los detalles de la ubicación
-                            setDetailModalOpen(ubicacion.id); // Abrir el modal de detalles
+                            getUbicacionDetails(ubicacion.id);
+                            setDetailModalOpen(ubicacion.id);
                           }}
                         >
                           <FaEye className="mr-1" />
@@ -74,7 +78,7 @@ const UbicacionesComponent: React.FC = () => {
                         {/* Botón de borrar */}
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => setDeleteModalOpen(ubicacion.id)} // Abrir el modal de eliminación
+                          onClick={() => setDeleteModalOpen(ubicacion.id)}
                         >
                           <FaTrash className="mr-1" />
                         </button>
@@ -105,21 +109,11 @@ const UbicacionesComponent: React.FC = () => {
 
       {/* Modal para ver detalles de la ubicación */}
       {detailModalOpen && selectedUbicacion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-            <h2 className="text-lg font-bold mb-4">Detalles de Ubicación</h2>
-            <p><strong>ID:</strong> {selectedUbicacion.id}</p>
-            <p><strong>Nombre:</strong> {selectedUbicacion.nombre}</p>
-            <p><strong>Pabellón:</strong> {selectedUbicacion.pabellon}</p>
-            <p><strong>Descripción:</strong> {selectedUbicacion.descripcion}</p>
-            <button
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              onClick={() => setDetailModalOpen(null)}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+        <DetailUbicacion
+          ubicacion={selectedUbicacion}
+          onClose={() => setDetailModalOpen(null)}
+          onEdit={handleEdit} // Pasamos la función de editar
+        />
       )}
 
       {/* Modal de confirmación de eliminación */}
