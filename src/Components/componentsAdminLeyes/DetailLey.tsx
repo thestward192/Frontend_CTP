@@ -24,7 +24,7 @@ const DetailLey: React.FC<DetailLeyProps> = ({ ley, onClose, onEdit }) => {
         <div className="flex justify-end space-x-4 mt-6">
           {/* Botón de cerrar */}
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             onClick={onClose}
           >
             Cerrar

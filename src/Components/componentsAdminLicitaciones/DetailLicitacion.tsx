@@ -30,11 +30,11 @@ const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
-            <button onClick={onEdit} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Editar
-            </button>
             <button onClick={onClose} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
               Cerrar
+            </button>
+            <button onClick={onEdit} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+              Editar
             </button>
           </div>
         </div>

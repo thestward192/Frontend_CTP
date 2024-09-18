@@ -161,11 +161,23 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             </select>
           </div>
 
-          <div className="flex justify-end col-span-2 mt-4">
-            <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded-md shadow mr-3" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md shadow">Guardar</button>
+          <div className="flex justify-end col-span-2 mt-4 space-x-4">
+            <button
+              type="button"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              Guardar
+            </button>
           </div>
-              
+
+
         </form>
       </div>
     </div>
