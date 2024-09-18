@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Licitacion } from '../types/licitacion';
-import { getLicitaciones, getLicitacionById, createLicitacion, updateLicitacion, deleteLicitacion, } from '../Services/licitacionService';
+import { getLicitaciones, getLicitacionById, createLicitacion, updateLicitacion, deleteLicitacion } from '../Services/licitacionService';
 
 // Hook personalizado para manejar licitaciones
 export const useLicitaciones = () => {

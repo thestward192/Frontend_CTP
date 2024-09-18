@@ -22,20 +22,20 @@ const DetailLey: React.FC<DetailLeyProps> = ({ ley, onClose, onEdit }) => {
         <p><strong>Detalle:</strong> {ley.detalle}</p>
 
         <div className="flex justify-end space-x-4 mt-6">
-          {/* Botón de editar */}
-          <button
-            className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
-            onClick={onEdit} // Acción de editar
-          >
-            Editar
-          </button>
-          
           {/* Botón de cerrar */}
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             onClick={onClose}
           >
             Cerrar
+          </button>
+
+          {/* Botón de editar */}
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            onClick={onEdit} // Acción de editar
+          >
+            Editar
           </button>
         </div>
       </div>

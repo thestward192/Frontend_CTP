@@ -1,7 +1,6 @@
-// src/hooks/useProveedores.ts
 import { useState, useEffect } from 'react';
-import { getProveedores, getProveedorById, deleteProveedor, createProveedor } from '../Services/proveedorService';
-import { Proveedor, CreateProveedor } from '../types/proveedor';
+import { getProveedores, createProveedor, getProveedorById, deleteProveedor } from '../Services/proveedorService'; // Servicios de proveedor
+import { Proveedor } from '../types/proveedor'; // Tipo Proveedor
 
 export const useProveedores = () => {
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
@@ -22,8 +21,8 @@ export const useProveedores = () => {
     }
   };
 
-  // Función para agregar un nuevo proveedor
-  const handleSubmitProveedor = async (proveedorData: CreateProveedor): Promise<boolean> => {
+  // Función para crear un nuevo proveedor
+  const handleSubmitProveedor = async (proveedorData: Omit<Proveedor, 'id'>): Promise<boolean> => {
     try {
       const nuevoProveedor = await createProveedor(proveedorData);
       setProveedores([...proveedores, nuevoProveedor]);
@@ -45,27 +44,28 @@ export const useProveedores = () => {
     }
   };
 
-  // Función para eliminar un proveedor
+  // Función para eliminar un proveedor por ID
   const removeProveedor = async (id: number) => {
     try {
       await deleteProveedor(id);
-      setProveedores(proveedores.filter(proveedor => proveedor.id !== id)); // Eliminar del estado
+      setProveedores(proveedores.filter((proveedor) => proveedor.id !== id)); // Actualizar el estado eliminando el proveedor
     } catch (error) {
       setError(`Error al eliminar el proveedor con ID ${id}`);
     }
   };
 
   useEffect(() => {
-    fetchProveedores();
+    fetchProveedores(); // Ejecutar al montar el componente
   }, []);
 
   return {
     proveedores,
     loading,
     error,
+    fetchProveedores, // Retorna la función para que esté disponible fuera
     handleSubmitProveedor,
-    getProveedorDetails, // Para obtener detalles de un proveedor
-    removeProveedor,     // Para eliminar un proveedor
-    selectedProveedor,    // Proveedor seleccionado
+    getProveedorDetails,
+    removeProveedor,
+    selectedProveedor,
   };
 };
