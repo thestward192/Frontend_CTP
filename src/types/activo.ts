@@ -1,6 +1,6 @@
 export interface Activo {
-    id?: number;
-    nombre : string;
+    id?: number; // ID opcional
+    nombre: string;
     descripcion: string;
     marca: string;
     serie: string;
@@ -10,7 +10,8 @@ export interface Activo {
     foto: string;
     precio: number;
     observacion: string;
-    ubicacionId: number;
-    leyId?: number;
-    donadorId?: number;
-}
+    modoAdquisicion: string; // Ley o Donación
+    ubicacionId: number; // Relación con la ubicación
+    leyId?: number; // Relación opcional con la ley si es por "Ley"
+  }
+  

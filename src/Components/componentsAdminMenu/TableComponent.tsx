@@ -1,78 +1,37 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
-import FormularioActivo from './FormularioActivo'; // Asegúrate de que la ruta es correcta
-import FormularioDonacion from './FormularioDonacion'; // Asegúrate de que la ruta es correcta
-import DetalleComponent from './DetalleActivo'; // Asegúrate de que la ruta es correcta
-import upsImage from '../../assets/Opera Captura de pantalla_2024-09-14_001500_download.schneider-electric.com.png'; // Asegúrate de que la ruta es correcta
-import Filters from './Filters'; // Importamos el nuevo componente de filtros
-import SelectionModal from './SelectionModal'; // Importamos el nuevo componente modal
-
-interface Asset {
-  id: string;
-  marca: string;
-  modelo: string;
-  ubicacion: string;
-  precio: string;
-  estado: string;
-  descripcion: string;
-  serie: string;
-  modoAdquisicion: string;
-  observacion: string;
-  foto: string;
-}
+import FormularioActivo from './FormularioActivo';
+import DetalleComponent from './DetalleActivo';
+import Filters from './Filters';
+import SelectionModal from './SelectionModal';
+import { useActivos } from '../../hooks/useActivo';
+import { Activo } from '../../types/activo';
 
 interface TableComponentProps {
-  onAssetSelect: (isSelected: boolean) => void; // Prop para notificar la selección
+  onAssetSelect: (isSelected: boolean) => void;
+  onAddAsset: (isAdding: boolean) => void;
 }
 
-const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal para seleccionar Ley o Donación
-  const [showLeyForm, setShowLeyForm] = useState(false); // Mostrar formulario de Ley
-  const [showDonacionForm, setShowDonacionForm] = useState(false); // Mostrar formulario de Donación
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modoAdquisicion, setModoAdquisicion] = useState<string | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const tableData: Asset[] = [
-    {
-      id: '4197-3561',
-      marca: 'CPU',
-      modelo: 'PHD-555-0118',
-      ubicacion: 'LABORATORIO#1',
-      precio: '35.000,00',
-      estado: 'Activo',
-      descripcion: 'Descripción del activo',
-      serie: 'ABC123',
-      modoAdquisicion: 'Compra',
-      observacion: 'Observación 1',
-      foto: upsImage,
-    },
-    {
-      id: '4197-3092',
-      marca: 'CPU',
-      modelo: 'HID-555-0100',
-      ubicacion: 'LABORATORIO#5',
-      precio: '35.000,00',
-      estado: 'Inactivo',
-      descripcion: 'Descripción del activo 2',
-      serie: 'DEF456',
-      modoAdquisicion: 'Donación',
-      observacion: 'Observación 2',
-      foto: upsImage,
-    },
-  ];
+  const { activos, loading, error } = useActivos();
 
   const itemsPerPage = 33;
-  const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  const totalPages = Math.ceil(activos.length / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = tableData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
 
   const enableSelectionMode = () => {
     setIsSelectionMode(true);
@@ -85,9 +44,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
     setSelectedItems([]);
   };
 
-  const handleSelectAsset = (asset: Asset) => {
+  const handleSelectAsset = (asset: Activo) => {
     setSelectedAsset(asset);
-    onAssetSelect(true);
+    onAssetSelect(true); // Notifica que un activo ha sido seleccionado
   };
 
   const handleAddActivo = () => {
@@ -96,26 +55,34 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
 
   const handleSelectLey = () => {
     setIsModalOpen(false);
-    setShowLeyForm(true);
-    setShowDonacionForm(false);
+    setModoAdquisicion('Ley');
+    onAddAsset(true);
   };
 
   const handleSelectDonacion = () => {
     setIsModalOpen(false);
-    setShowLeyForm(false);
-    setShowDonacionForm(true);
+    setModoAdquisicion('Donación');
+    onAddAsset(true);
   };
 
   const handleCloseForm = () => {
-    setShowLeyForm(false);
-    setShowDonacionForm(false);
+    setModoAdquisicion(null);
+    onAddAsset(false);
   };
+
+  if (loading) {
+    return <p>Cargando activos...</p>;
+  }
+
+  if (error) {
+    return <p>Error al cargar los activos: {error}</p>;
+  }
 
   return (
     <div className="w-full flex justify-center py-10">
-      {!showLeyForm && !showDonacionForm && !selectedAsset ? (
+      {!modoAdquisicion && !selectedAsset ? (
         <div
-          className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+          className="w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
           style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
         >
           <div className="flex justify-between items-center mb-4">
@@ -123,7 +90,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
               <h1 className="text-[22px] font-semibold text-black">Activos</h1>
             </div>
 
-            {/* Botones para agregar y seleccionar */}
             <div className="flex space-x-4">
               <button
                 className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
@@ -154,16 +120,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </div>
           </div>
 
-          {/* Filtros de productos en una línea */}
-          <Filters /> {/* Aquí agregamos los filtros extraídos */}
+          <Filters />
 
-          {/* Tabla con scroll */}
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
                   {isSelectionMode && <th className="px-2 py-2 text-gray-600 font-semibold">Seleccionar</th>}
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
@@ -177,18 +140,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
                   <tr key={row.id} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => handleSelectAsset(row)}>
                     {isSelectionMode && (
                       <td className="px-2 py-2 text-sm">
-                        <input type="checkbox" checked={selectedItems.includes(row.id)} onChange={() => setSelectedItems([...selectedItems, row.id])} />
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(row.id?.toString() || '')}
+                          onChange={() => setSelectedItems([...selectedItems, row.id?.toString() || ''])}
+                        />
                       </td>
                     )}
-                    <td className="px-4 py-2 text-sm">
-                      <div className="w-8 h-8 flex items-center justify-center">
-                        <img src={row.foto} alt="Imagen del Activo" className="max-w-full max-h-full object-contain rounded" />
-                      </div>
-                    </td>
                     <td className="px-4 py-2 text-sm">{row.id}</td>
                     <td className="px-4 py-2 text-sm">{row.marca}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
-                    <td className="px-4 py-2 text-sm">{row.ubicacion}</td>
+                    <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
                     <td className="px-4 py-2 text-sm">{row.precio}</td>
                     <td className="px-4 py-2 text-sm">
                       <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -201,10 +163,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </table>
           </div>
 
-          {/* Paginación y total de activos */}
           <div className="flex justify-between items-center mt-4">
             <div>
-              <p className="text-sm text-gray-600">Total de Activos: {tableData.length}</p>
+              <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
             </div>
             <div className="flex space-x-1">
               <button
@@ -233,7 +194,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </div>
           </div>
 
-          {/* Modal para selección de Ley o Donación */}
           {isModalOpen && (
             <SelectionModal
               onSelectLey={handleSelectLey}
@@ -242,15 +202,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             />
           )}
         </div>
-      ) : showLeyForm ? (
-        // Mostrar formulario por ley sin imagen
-        <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
-          <FormularioActivo onBack={handleCloseForm} />
-        </div>
-      ) : showDonacionForm ? (
-        // Mostrar formulario por donación
-        <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
-          <FormularioDonacion onBack={handleCloseForm} />
+      ) : modoAdquisicion ? (
+        <div className="w-full max-w-5xl p-8 relative">
+          <FormularioActivo onBack={handleCloseForm} modoAdquisicion={modoAdquisicion} />
         </div>
       ) : selectedAsset ? (
         <DetalleComponent
