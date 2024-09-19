@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './Components/componentsPages/Login';
@@ -11,28 +10,26 @@ import MenuUbicacion from './Components/componentsAdminUbicaciones/MenuUbicacion
 import MenuDocenteAdmin from './Components/componentsAdminDocentes/MenuDocentesComponent';
 import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
 import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
-
+import ProtectedRoute from './hooks/ProtectedRoute';
+import { AuthProvider } from './hooks/AuthContext';
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/Register" element={<Register/>} />
-        <Route path="/MenuAdmin" element={<MenuAdminComponent />} />
-        <Route path="/Proveedores" element={<MenuAdminProveedores />} />
-        <Route path="/Licitaciones" element={<MenuLicitaciones />} />
-        <Route path="/Leyes" element={<MenuLeyes />} />
-        <Route path="/Ubicacion" element={<MenuUbicacion />} />
-        <Route path="/DocentesAdmin" element={<MenuDocenteAdmin />} />
-        <Route path="/Licencias" element={<MenuAdminLicencias />} />
-
-         {/*Paginas Docente*/}
-        <Route path="/MenuDocente" element={<MenuDocente />} />
-
-         
-
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/Register" element={<Register />} />
+          <Route path="/MenuAdmin" element={<ProtectedRoute><MenuAdminComponent /></ProtectedRoute>} />
+          <Route path="/Proveedores" element={<ProtectedRoute><MenuAdminProveedores /></ProtectedRoute>} />
+          <Route path="/Licitaciones" element={<ProtectedRoute><MenuLicitaciones /></ProtectedRoute>} />
+          <Route path="/Leyes" element={<ProtectedRoute><MenuLeyes /></ProtectedRoute>} />
+          <Route path="/Ubicacion" element={<ProtectedRoute><MenuUbicacion /></ProtectedRoute>} />
+          <Route path="/DocentesAdmin" element={<ProtectedRoute><MenuDocenteAdmin /></ProtectedRoute>} />
+          <Route path="/Licencias" element={<ProtectedRoute><MenuAdminLicencias /></ProtectedRoute>} />
+          <Route path="/MenuDocente" element={<ProtectedRoute><MenuDocente /></ProtectedRoute>} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 };

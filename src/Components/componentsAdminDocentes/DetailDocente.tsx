@@ -1,32 +1,46 @@
-// src/components/DetailDocente.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { User } from '../../types/user';
+import { getUserById } from '../../Services/userService'; // Asegúrate de tener esta función implementada en tu servicio
 
-interface Docente {
-  nombre: string;
-  apellido: string;
-  email: string;
-  ubicacion: string;
-  imagen: string;
-}
-
-interface DetailDocenteProps {
-  docente: Docente | null;
+interface DetailUsuariosProps {
+  userId: number;
   onClose: () => void;
   onEdit: () => void;
 }
 
-const DetailDocente: React.FC<DetailDocenteProps> = ({ docente, onClose, onEdit }) => {
-  if (!docente) return null; // No mostrar nada si no hay docente seleccionado
+const DetailUsuarios: React.FC<DetailUsuariosProps> = ({ userId, onClose, onEdit }) => {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const userData = await getUserById(userId);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error al obtener los detalles del usuario:', error);
+      }
+    };
+
+    fetchUserDetails();
+  }, [userId]);
+
+  if (!user) return null; // No mostrar nada si no se ha cargado el usuario
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-        <h2 className="text-lg font-bold mb-4">Detalles del Docente</h2>
-        <img src={docente.imagen} alt={`${docente.nombre} ${docente.apellido}`} className="w-24 h-24 rounded-full mb-4 object-cover" />
-        <p><strong>Nombre:</strong> {docente.nombre}</p>
-        <p><strong>Apellido:</strong> {docente.apellido}</p>
-        <p><strong>Email:</strong> {docente.email}</p>
-        <p><strong>Ubicación:</strong> {docente.ubicacion}</p>
+        <h2 className="text-lg font-bold mb-4">Detalles del Usuario</h2>
+        <p><strong>Nombre:</strong> {user.nombre}</p>
+        <p><strong>Primer Apellido:</strong> {user.apellido_1}</p>
+        <p><strong>Segundo Apellido:</strong> {user.apellido_2}</p>
+        <p><strong>Email:</strong> {user.email}</p>
+        <p><strong>Rol:</strong> {user.rol.nombre}</p>
+        <p><strong>Ubicaciones:</strong></p>
+        <ul className="list-disc list-inside">
+          {user.ubicaciones.map((ubicacion) => (
+            <li key={ubicacion.id}>{ubicacion.nombre}</li>
+          ))}
+        </ul>
 
         <div className="flex justify-end space-x-2 mt-4">
           <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
@@ -41,4 +55,4 @@ const DetailDocente: React.FC<DetailDocenteProps> = ({ docente, onClose, onEdit 
   );
 };
 
-export default DetailDocente;
+export default DetailUsuarios;

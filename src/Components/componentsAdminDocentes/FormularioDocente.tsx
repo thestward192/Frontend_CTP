@@ -1,23 +1,58 @@
-// src/components/FormularioDocente.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Ubicacion } from '../../types/ubicacion';
+import { getUbicaciones } from '../../Services/ubicacionService';
+import { useUsers } from '../../hooks/useUser';
 
 interface FormularioDocenteProps {
   onClose: () => void;
-  onSubmit: (data: { nombre: string; apellido: string; email: string; ubicacion: string }) => void;
 }
 
-const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({ nombre: '', apellido: '', email: '', ubicacion: '' });
+const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
+  const { addUser } = useUsers();
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellido_1: '',
+    apellido_2: '',
+    email: '',
+    contraseña: '',
+    rolId: 1, // Rol predeterminado, ajusta según lo necesites
+    ubicacionIds: [] as number[],
+  });
+  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+  const [ubicacionFields, setUbicacionFields] = useState([0]); // Manejar múltiples campos de ubicación
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const fetchUbicaciones = async () => {
+      try {
+        const data = await getUbicaciones();
+        setUbicaciones(data);
+      } catch (error) {
+        console.error('Error al obtener las ubicaciones', error);
+      }
+    };
+
+    fetchUbicaciones();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleUbicacionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newUbicacionIds = [...formData.ubicacionIds];
+    newUbicacionIds[index] = Number(e.target.value);
+    setFormData({ ...formData, ubicacionIds: newUbicacionIds });
+  };
+
+  const addUbicacionField = () => {
+    setUbicacionFields([...ubicacionFields, ubicacionFields.length]);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData); // Enviamos los datos al componente padre
-    onClose(); // Cerramos el formulario
+    addUser(formData);
+    onClose();
   };
 
   return (
@@ -37,11 +72,22 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose, onSubmit
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Apellido</label>
+            <label className="block text-gray-700">Primer Apellido</label>
             <input
               type="text"
-              name="apellido"
-              value={formData.apellido}
+              name="apellido_1"
+              value={formData.apellido_1}
+              onChange={handleChange}
+              className="w-full border border-gray-300 p-2 rounded-lg"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">Segundo Apellido</label>
+            <input
+              type="text"
+              name="apellido_2"
+              value={formData.apellido_2}
               onChange={handleChange}
               className="w-full border border-gray-300 p-2 rounded-lg"
               required
@@ -59,15 +105,44 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose, onSubmit
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Ubicación</label>
+            <label className="block text-gray-700">Contraseña</label>
             <input
-              type="text"
-              name="ubicacion"
-              value={formData.ubicacion}
+              type="password"
+              name="contraseña"
+              value={formData.contraseña}
               onChange={handleChange}
               className="w-full border border-gray-300 p-2 rounded-lg"
               required
             />
+          </div>
+          {ubicacionFields.map((_, index) => (
+            <div className="mb-4" key={index}>
+              <label className="block text-gray-700">Ubicación {index + 1}</label>
+              <select
+                name={`ubicacion_${index}`}
+                value={formData.ubicacionIds[index] || ''}
+                onChange={(e) => handleUbicacionChange(index, e)}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              >
+                <option value="" disabled>
+                  Selecciona una ubicación
+                </option>
+                {ubicaciones.map((ubicacion) => (
+                  <option key={ubicacion.id} value={ubicacion.id}>
+                    {ubicacion.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={addUbicacionField}
+              className="bg-green-500 text-white px-4 py-2 rounded-md"
+            >
+              Añadir otra ubicación
+            </button>
           </div>
           <div className="flex justify-end space-x-2">
             <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md" onClick={onClose}>
