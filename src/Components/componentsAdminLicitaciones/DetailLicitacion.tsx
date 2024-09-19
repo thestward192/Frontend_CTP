@@ -1,55 +1,45 @@
 import React from 'react';
+import { Licitacion } from '../../types/licitacion';
 
 interface DetailLicitacionProps {
-  licitacion: {
-    fecha: string;
-    idLicitacion: string;
-    numActa: string;
-    numLicitacion: string;
-    nombreLicitacion: string;
-    montoAutorizado: string;
-    descripcion: string;
-  } | null;
+  licitacion: Licitacion | null;
   onClose: () => void;
-  onEdit: () => void; // Función para manejar la edición
+  onEdit: () => void;
 }
 
 const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose, onEdit }) => {
-  if (!licitacion) {
-    return null;
-  }
+  if (!licitacion) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-        <h2 className="text-lg font-bold mb-4">Detalles de la Licitación</h2>
-        <p><strong>Fecha:</strong> {licitacion.fecha}</p>
-        <p><strong>ID Licitación:</strong> {licitacion.idLicitacion}</p>
-        <p><strong>Nº Acta:</strong> {licitacion.numActa}</p>
-        <p><strong>Nº Licitación:</strong> {licitacion.numLicitacion}</p>
-        <p><strong>Nombre de la Licitación:</strong> {licitacion.nombreLicitacion}</p>
-        <p><strong>Monto Autorizado:</strong> {licitacion.montoAutorizado}</p>
-        <p><strong>Descripción:</strong> {licitacion.descripcion}</p>
+    <>
+      {/* Fondo oscuro detrás del modal */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose}></div>
 
-        <div className="flex justify-end space-x-4 mt-6">
-          {/* Botón de editar */}
-          <button
-            className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
-            onClick={onEdit} // Función de edición
-          >
-            Editar
-          </button>
+      {/* Modal */}
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+          <h2 className="text-2xl font-bold mb-4">Detalles de la Licitación</h2>
+          <p className="mb-2"><strong>Fecha:</strong> {new Date(licitacion.fecha).toLocaleDateString()}</p>
+          <p className="mb-2"><strong>Nº Acta:</strong> {licitacion.numActa}</p>
+          <p className="mb-2"><strong>Nº Licitación:</strong> {licitacion.numLicitacion}</p>
+          <p className="mb-2"><strong>Nombre de la Licitación:</strong> {licitacion.nombre}</p>
+          <p className="mb-2"><strong>Monto:</strong> ${licitacion.monto}</p>
+          <p className="mb-4"><strong>Descripción:</strong> {licitacion.descripcion}</p>
+          <p className="mb-2"><strong>Proveedor:</strong> {licitacion.proveedor?.nombreProveedor}</p>
+          <p className="mb-4"><strong>Ley:</strong> {licitacion.ley?.nombre}</p>
 
-          {/* Botón de cerrar */}
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            onClick={onClose} // Cierra el modal
-          >
-            Cerrar
-          </button>
+          {/* Botones */}
+          <div className="flex justify-end space-x-4">
+            <button onClick={onClose} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+              Cerrar
+            </button>
+            <button onClick={onEdit} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+              Editar
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

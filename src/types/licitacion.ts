@@ -1,9 +1,11 @@
 export interface Licitacion {
+    id?:number
     numActa: number;
     numLicitacion: number;
-    Nombre: string;
-    Monto: number;
+    nombre: string;
+    monto: number;
     descripcion: string;
-    fecha: Date;
+    fecha: string;
     idProveedor: number;
+    idLey: number
 }

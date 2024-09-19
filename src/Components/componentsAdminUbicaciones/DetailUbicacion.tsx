@@ -21,15 +21,16 @@ const DetailUbicacion: React.FC<DetailUbicacionProps> = ({ ubicacion, onClose, o
         <p><strong>Nombre:</strong> {ubicacion.nombre}</p>
         <p><strong>Pabellón:</strong> {ubicacion.pabellon}</p>
         <p><strong>Descripción:</strong> {ubicacion.descripcion}</p>
-        <div className="mt-4 flex space-x-4">
+
+        <div className="flex justify-end space-x-4 mt-6">
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             onClick={onClose}
           >
             Cerrar
           </button>
           <button
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             onClick={onEdit} // Botón para editar la ubicación
           >
             Editar
