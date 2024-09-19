@@ -37,8 +37,8 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose }) => {
             />
           </div>
 
-          {/* Botones de Crear y Cancelar */}
-          <div className="flex justify-end space-x-2">
+          {/* Botones de Guardar y Cancelar */}
+          <div className="flex justify-end space-x-4 mt-6">
             <button
               type="button"
               onClick={onClose}
@@ -48,9 +48,9 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose }) => {
             </button>
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             >
-              Crear
+              Guardar
             </button>
           </div>
         </form>

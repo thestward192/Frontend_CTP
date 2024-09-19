@@ -1,11 +1,5 @@
-// src/components/DetailLicencia.tsx
 import React from 'react';
-
-interface Licencia {
-  nombre: string;
-  descripcion: string;
-  codigoLicencia: string;
-}
+import { Licencia } from '../../types/licencia';
 
 interface DetailLicenciaProps {
   licencia: Licencia | null;
@@ -23,15 +17,17 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose, onEd
         <p><strong>Nombre:</strong> {licencia.nombre}</p>
         <p><strong>Descripción:</strong> {licencia.descripcion}</p>
         <p><strong>Código de Licencia:</strong> {licencia.codigoLicencia}</p>
-        <div className="mt-4 flex space-x-4">
+        <p><strong>Modo Adquisición:</strong> {licencia.modoAdquisicion}</p>
+        <p><strong>Nombre de la Ley:</strong> {licencia.ley?.nombre || 'No aplica'}</p>
+        <div className="flex justify-end space-x-4 mt-6">
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             onClick={onClose}
           >
             Cerrar
           </button>
           <button
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             onClick={onEdit}
           >
             Editar
