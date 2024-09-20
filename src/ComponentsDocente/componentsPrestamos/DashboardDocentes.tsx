@@ -28,7 +28,7 @@ const DashboardDocente: React.FC = () => {
         <ul className="space-y-6">
           <li className="flex items-center text-base font-['DM Sans'] group">
             <HomeIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/docente/inicio')}`} />
-            <Link to="/docente/inicio" className={`${getActiveClass('/docente/inicio')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
+            <Link to="/docente/inicio" className={`${getActiveClass('/MenuDocente')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
               Inicio
             </Link>
           </li>

@@ -1,4 +1,3 @@
-// src/services/activoService.ts
 import axios from 'axios';
 import { Activo } from '../types/activo';
 
@@ -11,6 +10,17 @@ export const getActivos = async (): Promise<Activo[]> => {
     return response.data;
   } catch (error) {
     console.error('Error al obtener los activos:', error);
+    throw error;
+  }
+};
+
+// Obtener activos por ubicación
+export const getActivosByUbicacion = async (ubicacionId: number): Promise<Activo[]> => {
+  try {
+    const response = await axios.get(`${API_URL}/activo/ubicacion/${ubicacionId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener los activos por ubicación:', error);
     throw error;
   }
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Ubicacion } from '../../types/ubicacion';
 import { getUbicaciones } from '../../Services/ubicacionService';
 import { useUsers } from '../../hooks/useUser';
+import { useRoles } from '../../hooks/useRoles';
 
 interface FormularioDocenteProps {
   onClose: () => void;
@@ -9,17 +10,18 @@ interface FormularioDocenteProps {
 
 const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUser } = useUsers();
+  const { roles, loading: rolesLoading } = useRoles();
   const [formData, setFormData] = useState({
     nombre: '',
     apellido_1: '',
     apellido_2: '',
     email: '',
     contraseña: '',
-    rolId: 1, // Rol predeterminado, ajusta según lo necesites
+    rolId: 0, // Ahora es un campo vacío para ser seleccionado
     ubicacionIds: [] as number[],
   });
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
-  const [ubicacionFields, setUbicacionFields] = useState([0]); // Manejar múltiples campos de ubicación
+  const [ubicacionFields, setUbicacionFields] = useState([0]);
 
   useEffect(() => {
     const fetchUbicaciones = async () => {
@@ -58,7 +60,7 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-        <h2 className="text-lg font-bold mb-4">Agregar Docente</h2>
+        <h2 className="text-lg font-bold mb-4">Agregar Usuario</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700">Nombre</label>
@@ -114,6 +116,24 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               className="w-full border border-gray-300 p-2 rounded-lg"
               required
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">Rol</label>
+            <select
+              name="rolId"
+              value={formData.rolId}
+              onChange={handleChange}
+              className="w-full border border-gray-300 p-2 rounded-lg"
+              required
+              disabled={rolesLoading}
+            >
+              <option value="">Selecciona un rol</option>
+              {roles.map((rol) => (
+                <option key={rol.id} value={rol.id}>
+                  {rol.nombre}
+                </option>
+              ))}
+            </select>
           </div>
           {ubicacionFields.map((_, index) => (
             <div className="mb-4" key={index}>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activo } from '../types/activo';
-import { createActivo, deleteActivo, getActivoById, getActivos, updateActivo } from '../Services/activoService';
+import { createActivo, deleteActivo, getActivoById, getActivos, getActivosByUbicacion, updateActivo } from '../Services/activoService';
 
 export const useActivos = () => {
   const [activos, setActivos] = useState<Activo[]>([]);
@@ -17,6 +17,20 @@ export const useActivos = () => {
     } catch (error) {
       console.error('Error al obtener los activos:', error);  // Mostramos el error en consola
       setError('Error al obtener los activos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Obtener activos por ubicación
+  const fetchActivosByUbicacion = async (ubicacionId: number) => {
+    try {
+      setLoading(true);
+      const data = await getActivosByUbicacion(ubicacionId);
+      setActivos(data);
+    } catch (error) {
+      console.error('Error al obtener los activos por ubicación:', error);  // Mostramos el error en consola
+      setError('Error al obtener los activos por ubicación');
     } finally {
       setLoading(false);
     }
@@ -77,6 +91,7 @@ export const useActivos = () => {
     selectedActivo,
     loading,
     error,
+    fetchActivosByUbicacion, // Nuevo método para filtrar por ubicación
     handleCreateActivo,
     handleUpdateActivo,
     getActivoDetails,

@@ -6,6 +6,7 @@ const ProfileComponent: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [userType, setUserType] = useState<string>('');
+  const [ubicaciones, setUbicaciones] = useState<{ id: number; nombre: string }[]>([]);
 
   useEffect(() => {
     // Obtener el token JWT del localStorage
@@ -13,9 +14,10 @@ const ProfileComponent: React.FC = () => {
     if (token) {
       // Decodificar el token para obtener los datos del usuario
       const payload = JSON.parse(atob(token.split('.')[1]));
-      setUsername(payload.email.split('@')[0]);  // Suponemos que el username es la parte del correo antes del @
+      setUsername(payload.email.split('@')[0]); // Suponemos que el username es la parte del correo antes del @
       setEmail(payload.email);
       setUserType(payload.role);
+      setUbicaciones(payload.ubicaciones || []); // Obtener las ubicaciones
 
       // Obtener la inicial del nombre
       setInitial(payload.email.charAt(0).toUpperCase());
@@ -67,6 +69,14 @@ const ProfileComponent: React.FC = () => {
           </div>
           <div className="px-4 py-2 text-sm text-gray-700">
             <span>Rol: {userType}</span>
+          </div>
+          <div className="px-4 py-2 text-sm text-gray-700">
+            <span>Ubicaciones:</span>
+            <ul>
+              {ubicaciones.map((ubicacion) => (
+                <li key={ubicacion.id}>{ubicacion.nombre}</li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
