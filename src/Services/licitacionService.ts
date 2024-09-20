@@ -24,7 +24,7 @@ export const createLicitacion = async (licitacion: Licitacion): Promise<Licitaci
 
 // Servicio para actualizar una licitación
 export const updateLicitacion = async (id: number, licitacion: Licitacion): Promise<Licitacion> => {
-    const response = await axios.put(`${API_URL}/${id}`, licitacion);
+    const response = await axios.patch(`${API_URL}/${id}`, licitacion);
     return response.data;
 };
 

@@ -4,7 +4,7 @@ import { Proveedor } from '../../types/proveedor';
 interface DetailProveedorProps {
   proveedor: Proveedor | null;
   onClose: () => void;
-  onEdit: () => void; // Añadimos una función para manejar la acción de editar
+  onEdit: () => void;
 }
 
 const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, onEdit }) => {
@@ -26,13 +26,15 @@ const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, o
         <div className="flex justify-end space-x-4 mt-6">
           <button
             className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+            }}
           >
             Cerrar
           </button>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            onClick={onEdit} // Botón de editar
+            onClick={onEdit}
           >
             Editar
           </button>

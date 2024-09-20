@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getProveedores, createProveedor, getProveedorById, deleteProveedor } from '../Services/proveedorService'; // Servicios de proveedor
+import { updateProveedor as updateProveedorService } from '../Services/proveedorService';
 import { Proveedor } from '../types/proveedor'; // Tipo Proveedor
 
 export const useProveedores = () => {
@@ -18,6 +19,20 @@ export const useProveedores = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para actualizar un proveedor
+  const updateProveedor = async (id: number, proveedorData: Partial<Proveedor>): Promise<boolean> => {
+    try {
+      const updatedProveedor = await updateProveedorService(id, proveedorData);
+      setProveedores(proveedores.map(prov => prov.id === id ? updatedProveedor : prov));
+      setSelectedProveedor(updatedProveedor); // Actualizamos el proveedor seleccionado si es el que se actualizó
+      return true;
+    } catch (error) {
+      console.error(`Error al actualizar el proveedor con ID ${id}:`, error);
+      setError('Error al actualizar el proveedor');
+      return false;
     }
   };
 
@@ -67,5 +82,6 @@ export const useProveedores = () => {
     getProveedorDetails,
     removeProveedor,
     selectedProveedor,
+    updateProveedor
   };
 };

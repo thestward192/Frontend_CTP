@@ -24,6 +24,17 @@ export const createProveedor = async (proveedorData: CreateProveedor): Promise<P
   }
 };
 
+export const updateProveedor = async (id: number, proveedorData: Partial<Proveedor>): Promise<Proveedor> => {
+  try {
+    const response = await axios.patch(`${API_URL}/proveedor/${id}`, proveedorData);
+    return response.data;
+  } catch (error) {
+    console.error(`Error al actualizar el proveedor con ID ${id}:`, error);
+    throw error;
+  }
+};
+
+
 export const getProveedorById = async (id: number): Promise<Proveedor> => {
   try {
     const response = await axios.get(`${API_URL}/proveedor/${id}`);
