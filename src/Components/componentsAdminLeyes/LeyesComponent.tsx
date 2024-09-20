@@ -1,24 +1,47 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioLey from './FormularioLey'; // Importamos el componente del formulario
-import { useLeyes } from '../../hooks/useLey'; // Importamos el hook para manejar leyes
-import DetailLey from './DetailLey'; // Importamos el componente de detalles
+import FormularioLey from './FormularioLey';
+import { useLeyes } from '../../hooks/useLey';
+import DetailLey from './DetailLey';
+import EditLeyForm from './EditLey'; // Importa el nuevo componente de edición
+import { Ley } from '../../types/ley';
 
 const LeyesComponent: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
-  const [detailModalOpen, setDetailModalOpen] = useState(false); // Estado para manejar la apertura del modal de detalles
-  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null); // Estado para manejar la eliminación
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
 
-  const { leyes, loading, error, getLeyDetails, selectedLey, removeLey } = useLeyes();
+  const { leyes, loading, error, getLeyDetails, selectedLey, removeLey, editLey } = useLeyes();
 
   const handleDelete = async (id: number) => {
     await removeLey(id);
-    setDeleteModalOpen(null); // Cerrar el modal después de eliminar
+    setDeleteModalOpen(null);
   };
 
   const handleViewDetails = async (id: number) => {
-    await getLeyDetails(id); // Obtener detalles de la ley
-    setDetailModalOpen(true); // Mostrar el modal de detalles
+    await getLeyDetails(id);
+    setIsEditing(false);
+    setDetailModalOpen(true);
+  };
+
+  const startEdit = () => {
+    setIsEditing(true);
+  };
+
+  const closeDetails = () => {
+    setIsEditing(false);
+    setDetailModalOpen(false);
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<Ley>) => {
+    await editLey(id, updatedData);
+    setIsEditing(false);
+    setDetailModalOpen(false);
   };
 
   return (
@@ -70,7 +93,7 @@ const LeyesComponent: React.FC = () => {
                         {/* Botón de ver detalles */}
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => handleViewDetails(ley.id)} // Mostrar detalles
+                          onClick={() => handleViewDetails(ley.id)}
                         >
                           <FaEye className="mr-1" />
                         </button>
@@ -78,7 +101,7 @@ const LeyesComponent: React.FC = () => {
                         {/* Botón de eliminar */}
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => setDeleteModalOpen(ley.id)} // Mostrar modal de confirmación
+                          onClick={() => setDeleteModalOpen(ley.id)}
                         >
                           <FaTrash className="mr-1" />
                         </button>
@@ -109,9 +132,21 @@ const LeyesComponent: React.FC = () => {
       {/* Modal para agregar ley */}
       {isModalOpen && <FormularioLey onClose={() => setIsModalOpen(false)} />}
 
-      {/* Modal para ver detalles de una ley */}
+      {/* Modal para ver detalles de una ley o para editar */}
       {detailModalOpen && selectedLey && (
-        <DetailLey ley={selectedLey} onClose={() => setDetailModalOpen(false)} />
+        isEditing ? (
+          <EditLeyForm
+            ley={selectedLey}
+            onSave={handleEditSave}
+            onCancel={cancelEdit}
+          />
+        ) : (
+          <DetailLey
+            ley={selectedLey}
+            onClose={closeDetails}
+            onEdit={startEdit}
+          />
+        )
       )}
 
       {/* Modal de confirmación de eliminación */}
@@ -122,13 +157,13 @@ const LeyesComponent: React.FC = () => {
             <div className="flex justify-end space-x-2">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                onClick={() => setDeleteModalOpen(null)} // Cerrar sin eliminar
+                onClick={() => setDeleteModalOpen(null)}
               >
                 Cancelar
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleDelete(deleteModalOpen!)} // Confirmar eliminación
+                onClick={() => handleDelete(deleteModalOpen!)}
               >
                 Eliminar
               </button>
