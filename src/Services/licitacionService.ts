@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Licitacion } from '../types/licitacion';
+import { Licitacion, UpdateLicitacionDTO } from '../types/licitacion';
 
 // URL base para las peticiones
 const API_URL = 'http://localhost:3000/licitacion'; // Cambia la URL según tu backend
@@ -23,10 +23,15 @@ export const createLicitacion = async (licitacion: Licitacion): Promise<Licitaci
 };
 
 // Servicio para actualizar una licitación
-export const updateLicitacion = async (id: number, licitacion: Licitacion): Promise<Licitacion> => {
-    const response = await axios.patch(`${API_URL}/${id}`, licitacion);
-    return response.data;
-};
+export const updateLicitacion = async (id: number, licitacionData: UpdateLicitacionDTO): Promise<Licitacion> => {
+    try {
+      const response = await axios.patch(`${API_URL}/licitacion/${id}`, licitacionData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al actualizar la licitación con ID ${id}:`, error);
+      throw error;
+    }
+  };
 
 // Servicio para eliminar una licitación
 export const deleteLicitacion = async (id: number): Promise<void> => {
