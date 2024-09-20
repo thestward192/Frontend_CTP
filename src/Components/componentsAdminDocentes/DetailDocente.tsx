@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { User } from '../../types/user';
-import { getUserById } from '../../Services/userService'; // Asegúrate de tener esta función implementada en tu servicio
+import { getUserById } from '../../Services/userService';
 
 interface DetailUsuariosProps {
   userId: number;
   onClose: () => void;
-  onEdit: () => void;
+  onEdit: (userId: number) => void; // Agregamos el ID del usuario para la edición
 }
 
 const DetailUsuarios: React.FC<DetailUsuariosProps> = ({ userId, onClose, onEdit }) => {
@@ -46,7 +46,10 @@ const DetailUsuarios: React.FC<DetailUsuariosProps> = ({ userId, onClose, onEdit
           <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
             Cerrar
           </button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" onClick={onEdit}>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            onClick={() => onEdit(userId)} // Llamar la función onEdit con el ID del usuario
+          >
             Editar
           </button>
         </div>

@@ -37,6 +37,17 @@ export const getActivoById = async (id: number): Promise<Activo> => {
   }
 };
 
+// Actualizar un activo
+export const updateActivo = async (id: number, activoData: Partial<Activo>): Promise<Activo> => {
+  try {
+    const response = await axios.patch(`${API_URL}/activo/${id}`, activoData);
+    return response.data;
+  } catch (error) {
+    console.error(`Error al actualizar el activo con ID ${id}:`, error);
+    throw error;
+  }
+};
+
 // Eliminar un activo
 export const deleteActivo = async (id: number): Promise<void> => {
   try {

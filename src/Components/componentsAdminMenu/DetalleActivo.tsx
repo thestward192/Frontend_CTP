@@ -3,6 +3,7 @@ import { FaArrowLeft, FaTrash, FaEdit, FaFileExport, FaTags } from 'react-icons/
 import HistorialPrestamos from './HistorialPrestamos';
 import { Activo } from '../../types/activo';
 import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación de activos
+import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
 
 interface DetalleComponentProps {
   asset: Activo;
@@ -12,7 +13,8 @@ interface DetalleComponentProps {
 const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) => {
   const [activeTab, setActiveTab] = useState('detalle');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const { handleDeleteActivo } = useActivos(); // Usamos el hook para eliminar activos
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
+  const { handleDeleteActivo, handleUpdateActivo } = useActivos(); // Usamos el hook para eliminar y editar activos
 
   const handleEliminar = async (id: number) => {
     try {
@@ -24,7 +26,16 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   };
 
   const handleEditar = () => {
-    console.log('Editar activo', asset.id);
+    setIsEditModalOpen(true); // Abrir el modal de edición
+  };
+
+  const handleSaveEdit = async (updatedData: Partial<Activo>) => {
+    try {
+      await handleUpdateActivo(asset.id!, updatedData);
+      setIsEditModalOpen(false); // Cerrar el modal de edición
+    } catch (error) {
+      console.error('Error al guardar los cambios del activo:', error);
+    }
   };
 
   const handleExportar = () => {
@@ -39,17 +50,13 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     <div className="w-full h-full bg-white shadow-lg rounded-lg p-6 overflow-hidden relative" style={{ height: 'calc(100vh - 180px)' }}>
       <div className="flex justify-center mb-6">
         <button
-          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${
-            activeTab === 'detalle' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'
-          }`}
+          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${activeTab === 'detalle' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
           onClick={() => setActiveTab('detalle')}
         >
           Detalle de Activo
         </button>
         <button
-          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${
-            activeTab === 'historial' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'
-          }`}
+          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${activeTab === 'historial' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
           onClick={() => setActiveTab('historial')}
         >
           Historial de Préstamos
@@ -150,7 +157,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                     Cancelar
                   </button>
                   <button
-                    onClick={() => handleEliminar(asset.id)}
+                    onClick={() => handleEliminar(asset.id!)}
                     className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300"
                   >
                     Eliminar
@@ -195,6 +202,15 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
         </>
       ) : (
         <HistorialPrestamos />
+      )}
+
+      {/* Modal para editar el activo */}
+      {isEditModalOpen && (
+        <FormularioEditarActivo
+          asset={asset}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleSaveEdit}
+        />
       )}
     </div>
   );

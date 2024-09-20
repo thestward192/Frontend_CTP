@@ -27,7 +27,7 @@ const App: React.FC = () => {
           <Route path="/Ubicacion" element={<ProtectedRoute><MenuUbicacion /></ProtectedRoute>} />
           <Route path="/DocentesAdmin" element={<ProtectedRoute><MenuDocenteAdmin /></ProtectedRoute>} />
           <Route path="/Licencias" element={<ProtectedRoute><MenuAdminLicencias /></ProtectedRoute>} />
-          <Route path="/MenuDocente" element={<ProtectedRoute><MenuDocente /></ProtectedRoute>} />
+          <Route path="/MenuDocente" element={<MenuDocente />} />
         </Routes>
       </AuthProvider>
     </Router>

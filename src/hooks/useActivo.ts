@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activo } from '../types/activo';
-import { createActivo, deleteActivo, getActivoById, getActivos } from '../Services/activoService';
+import { createActivo, deleteActivo, getActivoById, getActivos, updateActivo } from '../Services/activoService';
 
 export const useActivos = () => {
   const [activos, setActivos] = useState<Activo[]>([]);
@@ -34,6 +34,18 @@ export const useActivos = () => {
     }
   };
 
+  // Actualizar un activo existente
+  const handleUpdateActivo = async (id: number, updatedData: Partial<Activo>) => {
+    try {
+      setError(null);
+      const updatedActivo = await updateActivo(id, updatedData);
+      setActivos(activos.map(activo => (activo.id === id ? updatedActivo : activo)));
+    } catch (error) {
+      console.error('Error al actualizar el activo:', error);  // Mostramos el error en consola
+      setError('Error al actualizar el activo');
+    }
+  };
+
   // Obtener detalles de un activo por ID
   const getActivoDetails = async (id: number) => {
     try {
@@ -64,8 +76,9 @@ export const useActivos = () => {
     activos,
     selectedActivo,
     loading,
-    error,  // Ahora devolvemos el error en el retorno del hook
+    error,
     handleCreateActivo,
+    handleUpdateActivo,
     getActivoDetails,
     handleDeleteActivo,
   };
