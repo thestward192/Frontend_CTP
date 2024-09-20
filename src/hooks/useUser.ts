@@ -1,6 +1,7 @@
+// src/hooks/useUsers.ts
 import { useState, useEffect } from 'react';
 import { User, CreateUserDTO } from '../types/user';
-import { createUser, getAllUsers, deleteUser } from '../Services/userService';
+import { createUser, getAllUsers, deleteUser, updateUser } from '../Services/userService';
 
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -31,6 +32,15 @@ export const useUsers = () => {
     }
   };
 
+  const editUser = async (userId: number, updatedData: Partial<User>) => {
+    try {
+      const updatedUser = await updateUser(userId, updatedData);
+      setUsers(users.map(user => (user.id === userId ? updatedUser : user)));
+    } catch {
+      setError('Error al actualizar el usuario');
+    }
+  };
+
   const removeUser = async (userId: number) => {
     try {
       await deleteUser(userId);
@@ -40,5 +50,5 @@ export const useUsers = () => {
     }
   };
 
-  return { users, loading, error, addUser, removeUser };
+  return { users, loading, error, addUser, editUser, removeUser };
 };

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioDocente from './FormularioDocente';
+import FormularioDocente from './FormularioDocente'; // Formulario para agregar usuarios
+import FormularioEditarUsuario from './FormularioEditarUsuario'; // Formulario para editar usuarios
+import { User } from '../../types/user';
 import { useUsers } from '../../hooks/useUser';
 import DetailUsuarios from './DetailDocente';
 
 const UsuariosComponent: React.FC = () => {
-  const { users, loading, error, removeUser } = useUsers(); // Añadimos removeUser para eliminar usuarios
+  const { users, loading, error, removeUser, editUser } = useUsers(); // Incluimos editUser para editar usuarios
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
   const [selectedUser, setSelectedUser] = useState<number | null>(null); // Estado para manejar el usuario seleccionado
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<number | null>(null); // Estado para manejar la apertura del modal de eliminación
+  const [isEditModalOpen, setIsEditModalOpen] = useState<number | null>(null); // Estado para manejar la apertura del modal de edición
 
   const handleViewDetails = (userId: number) => {
     setSelectedUser(userId); // Mostrar detalles del usuario seleccionado
@@ -25,8 +28,9 @@ const UsuariosComponent: React.FC = () => {
     }
   };
 
-  const handleEdit = () => {
-    console.log('Editar usuario', selectedUser);
+  const handleSaveEdit = (userId: number, updatedData: Partial<User>) => {
+    editUser(userId, updatedData);
+    setIsEditModalOpen(null); // Cerrar el modal de edición
   };
 
   if (loading) {
@@ -117,7 +121,16 @@ const UsuariosComponent: React.FC = () => {
         <DetailUsuarios
           userId={selectedUser}
           onClose={() => setSelectedUser(null)}
-          onEdit={handleEdit}
+          onEdit={(userId) => setIsEditModalOpen(userId)} // Abrir el modal de edición desde el detalle
+        />
+      )}
+
+      {/* Modal para editar usuario */}
+      {isEditModalOpen !== null && (
+        <FormularioEditarUsuario
+          userId={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(null)}
+          onSave={handleSaveEdit}
         />
       )}
 

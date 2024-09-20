@@ -1,3 +1,4 @@
+// src/Services/userService.ts
 import axios from 'axios';
 import { User, CreateUserDTO } from '../types/user';
 
@@ -62,5 +63,20 @@ export const deleteUser = async (id: number): Promise<void> => {
   } catch (error) {
     console.error(`Error al eliminar el usuario con ID ${id}:`, error);
     throw new Error(`Error al eliminar el usuario con ID ${id}`);
+  }
+};
+
+export const updateUser = async (id: number, updatedData: Partial<User>): Promise<User> => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.patch(`${API_URL}/user/${id}`, updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error al actualizar el usuario con ID ${id}:`, error);
+    throw new Error(`Error al actualizar el usuario con ID ${id}`);
   }
 };
