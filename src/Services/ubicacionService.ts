@@ -4,7 +4,7 @@ import { CreateUbicacion, Ubicacion } from '../types/ubicacion';
 
 const API_URL = 'http://localhost:3000';
 
-// Crear una nueva ubicación (POST)
+
 export const createUbicacion = async (ubicacionData: CreateUbicacion): Promise<Ubicacion> => {
   try {
     const response = await axios.post(`${API_URL}/ubicacion`, ubicacionData);
@@ -15,10 +15,9 @@ export const createUbicacion = async (ubicacionData: CreateUbicacion): Promise<U
   }
 };
 
-// Obtener todas las ubicaciones (GET)
 export const getUbicaciones = async (): Promise<Ubicacion[]> => {
   try {
-    const response = await axios.get(`${API_URL}/ubicacion`); // Asegúrate de que la ruta es correcta
+    const response = await axios.get(`${API_URL}/ubicacion`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener las ubicaciones:', error);
@@ -26,10 +25,19 @@ export const getUbicaciones = async (): Promise<Ubicacion[]> => {
   }
 };
 
-// Obtener una ubicación por ID (GET by ID)
+export const updateUbicacion = async (id: number, ubicacionData: Partial<Ubicacion>): Promise<Ubicacion> => {
+  try {
+    const response = await axios.patch(`${API_URL}/ubicacion/${id}`, ubicacionData);
+    return response.data;
+  } catch (error) {
+    console.error(`Error al actualizar la ubicación con ID ${id}:`, error);
+    throw new Error(`Error al actualizar la ubicación con ID ${id}`);
+  }
+};
+
 export const getUbicacionById = async (id: number): Promise<Ubicacion> => {
   try {
-    const response = await axios.get(`${API_URL}/ubicacion/${id}`); // Asegúrate de que la ruta es correcta
+    const response = await axios.get(`${API_URL}/ubicacion/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error al obtener la ubicación con ID ${id}:`, error);
@@ -37,8 +45,6 @@ export const getUbicacionById = async (id: number): Promise<Ubicacion> => {
   }
 };
 
-// Eliminar una ubicación (DELETE)
-// src/services/UbicacionService.ts
 export const deleteUbicacion = async (id: number): Promise<void> => {
   try {
     await axios.delete(`${API_URL}/ubicacion/${id}`); // Asegúrate de que la ruta es correcta

@@ -1,6 +1,6 @@
 // src/hooks/useUbicacion.ts
 import { useState, useEffect } from 'react';
-import { createUbicacion, deleteUbicacion, getUbicacionById, getUbicaciones } from '../Services/ubicacionService';
+import { createUbicacion, deleteUbicacion, getUbicacionById, getUbicaciones, updateUbicacion } from '../Services/ubicacionService';
 import { Ubicacion } from '../types/ubicacion';
 
 export const useUbicacion = () => {
@@ -40,7 +40,16 @@ export const useUbicacion = () => {
     }
   };
   
-  
+  const editUbicacion = async (id: number, ubicacionData: Partial<Ubicacion>) => {
+    try {
+      const updatedUbicacion = await updateUbicacion(id, ubicacionData);
+      setUbicaciones(ubicaciones.map((ubicacion) => (ubicacion.id === id ? updatedUbicacion : ubicacion)));
+      setSelectedUbicacion(updatedUbicacion); // Actualizar la ubicación seleccionada
+    } catch (error) {
+      console.error(`Error al actualizar la ubicación con ID ${id}:`, error);
+      setError(`Error al actualizar la ubicación con ID ${id}`);
+    }
+  };
 
   // Función para obtener todas las ubicaciones (GET)
   const fetchUbicaciones = async () => {
@@ -90,6 +99,7 @@ export const useUbicacion = () => {
     selectedUbicacion,
     getUbicacionDetails,
     removeUbicacion,
+    editUbicacion,
     loading,
     error,
   };
