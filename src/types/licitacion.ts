@@ -7,5 +7,5 @@ export interface Licitacion {
     descripcion: string;
     fecha: string;
     idProveedor: number;
-    idLey: number
+    idLey: number;
 }
