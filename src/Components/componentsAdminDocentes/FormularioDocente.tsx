@@ -17,11 +17,10 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
     apellido_2: '',
     email: '',
     contraseña: '',
-    rolId: 0, // Ahora es un campo vacío para ser seleccionado
+    rolId: 0,
     ubicacionIds: [] as number[],
   });
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
-  const [ubicacionFields, setUbicacionFields] = useState([0]);
 
   useEffect(() => {
     const fetchUbicaciones = async () => {
@@ -48,7 +47,15 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   };
 
   const addUbicacionField = () => {
-    setUbicacionFields([...ubicacionFields, ubicacionFields.length]);
+    setFormData({
+      ...formData,
+      ubicacionIds: [...formData.ubicacionIds, 0],
+    });
+  };
+
+  const removeUbicacionField = (index: number) => {
+    const newUbicacionIds = formData.ubicacionIds.filter((_, i) => i !== index);
+    setFormData({ ...formData, ubicacionIds: newUbicacionIds });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -135,24 +142,33 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               ))}
             </select>
           </div>
-          {ubicacionFields.map((_, index) => (
+          {formData.ubicacionIds.map((_, index) => (
             <div className="mb-4" key={index}>
               <label className="block text-gray-700">Ubicación {index + 1}</label>
-              <select
-                name={`ubicacion_${index}`}
-                value={formData.ubicacionIds[index] || ''}
-                onChange={(e) => handleUbicacionChange(index, e)}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              >
-                <option value="" disabled>
-                  Selecciona una ubicación
-                </option>
-                {ubicaciones.map((ubicacion) => (
-                  <option key={ubicacion.id} value={ubicacion.id}>
-                    {ubicacion.nombre}
+              <div className="flex">
+                <select
+                  name={`ubicacion_${index}`}
+                  value={formData.ubicacionIds[index] || ''}
+                  onChange={(e) => handleUbicacionChange(index, e)}
+                  className="w-full border border-gray-300 p-2 rounded-lg"
+                >
+                  <option value="" disabled>
+                    Selecciona una ubicación
                   </option>
-                ))}
-              </select>
+                  {ubicaciones.map((ubicacion) => (
+                    <option key={ubicacion.id} value={ubicacion.id}>
+                      {ubicacion.nombre}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => removeUbicacionField(index)}
+                  className="ml-2 bg-red-500 text-white px-4 py-2 rounded-md"
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
           ))}
           <div className="mb-4">

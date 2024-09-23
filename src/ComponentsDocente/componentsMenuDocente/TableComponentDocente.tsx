@@ -36,10 +36,10 @@ const TableComponentDocente: React.FC = () => {
   const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="w-full flex justify-center pt-4 pb-10"> {/* Ajustamos el padding superior */}
+    <div className="w-full flex justify-center py-6"> {/* Ajustamos el padding superior */}
       <div
         className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
-        style={{ height: 'calc(100vh - 180px)', display: 'flex', flexDirection: 'column' }} 
+        style={{ height: 'calc(100vh - 220px)', display: 'flex', flexDirection: 'column' }}  
       >
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center"> {/* Alineamos el texto y el desplegable en la misma línea */}
@@ -67,8 +67,8 @@ const TableComponentDocente: React.FC = () => {
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Serie</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
                 </tr>
@@ -77,8 +77,8 @@ const TableComponentDocente: React.FC = () => {
                 {paginatedData.map((row) => (
                   <tr key={row.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{row.id}</td>
+                    <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.marca}</td>
-                    <td className="px-4 py-2 text-sm">{row.modelo}</td>
                     <td className="px-4 py-2 text-sm">{row.serie}</td>
                     <td className="px-4 py-2 text-sm">
                       <span

@@ -1,4 +1,4 @@
-import React, {  } from 'react';
+import React from 'react';
 import Arriba from '../../assets/Arriba.png';
 import DashboardDocente from '../componentsPrestamos/DashboardDocentes';
 import SearchBarDocente from '../componentsPrestamos/SearchBarDocente';
@@ -29,7 +29,7 @@ const MenuDocente: React.FC = () => {
           </div>
 
           {/* Espaciado superior para buscadores */}
-          <div className="pt-[40px] px-10">
+          <div className="pt-[20px] px-10"> {/* Reducimos el padding-top */}
             <SearchBarDocente />
           </div>
 

@@ -26,7 +26,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
           apellido_2: userData.apellido_2,
           email: userData.email,
           rol: userData.rol,
-          ubicaciones: userData.ubicaciones,
+          ubicaciones: userData.ubicaciones || [],
         });
       } catch (error) {
         console.error('Error al obtener los detalles del usuario:', error);
@@ -54,6 +54,18 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   const handleUbicacionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
     const newUbicacionIds = [...(formData.ubicaciones || [])];
     newUbicacionIds[index] = { ...newUbicacionIds[index], id: Number(e.target.value) };
+    setFormData({ ...formData, ubicaciones: newUbicacionIds });
+  };
+
+  const addUbicacionField = () => {
+    setFormData({
+      ...formData,
+      ubicaciones: [...(formData.ubicaciones || []), { id: 0, nombre: '' }],
+    });
+  };
+
+  const removeUbicacionField = (index: number) => {
+    const newUbicacionIds = formData.ubicaciones?.filter((_, i) => i !== index) || [];
     setFormData({ ...formData, ubicaciones: newUbicacionIds });
   };
 
@@ -117,23 +129,41 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
           {formData.ubicaciones && formData.ubicaciones.map((ubicacion, index) => (
             <div className="mb-4" key={index}>
               <label className="block text-gray-700">Ubicación {index + 1}</label>
-              <select
-                name={`ubicacion_${index}`}
-                value={ubicacion.id || ''}
-                onChange={(e) => handleUbicacionChange(index, e)}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              >
-                <option value="" disabled>
-                  Selecciona una ubicación
-                </option>
-                {ubicaciones.map((ub) => (
-                  <option key={ub.id} value={ub.id}>
-                    {ub.nombre}
+              <div className="flex">
+                <select
+                  name={`ubicacion_${index}`}
+                  value={ubicacion.id || ''}
+                  onChange={(e) => handleUbicacionChange(index, e)}
+                  className="w-full border border-gray-300 p-2 rounded-lg"
+                >
+                  <option value="" disabled>
+                    Selecciona una ubicación
                   </option>
-                ))}
-              </select>
+                  {ubicaciones.map((ub) => (
+                    <option key={ub.id} value={ub.id}>
+                      {ub.nombre}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => removeUbicacionField(index)}
+                  className="ml-2 bg-red-500 text-white px-4 py-2 rounded-md"
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
           ))}
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={addUbicacionField}
+              className="bg-green-500 text-white px-4 py-2 rounded-md"
+            >
+              Añadir otra ubicación
+            </button>
+          </div>
           <div className="flex justify-end space-x-2">
             <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md" onClick={onClose}>
               Cancelar
