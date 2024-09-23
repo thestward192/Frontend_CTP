@@ -6,6 +6,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   role: string | null;
   ubicaciones: { id: number; nombre: string }[];
+  nombre: string | null;  // Incluir el nombre en el contexto
+  email: string | null;
   login: (token: string) => void;
   logout: () => void;
 }
@@ -16,6 +18,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [ubicaciones, setUbicaciones] = useState<{ id: number; nombre: string }[]>([]);
+  const [nombre, setNombre] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const payload = JSON.parse(atob(token.split('.')[1]));
       setRole(payload.role);
       setUbicaciones(payload.ubicaciones || []);
+      setNombre(payload.nombre || null);  // Asignar el nombre desde el token
+      setEmail(payload.email || null);
       setIsAuthenticated(true);
     }
   }, []);
@@ -33,9 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const payload = JSON.parse(atob(token.split('.')[1]));
     setRole(payload.role);
     setUbicaciones(payload.ubicaciones || []);
+    setNombre(payload.nombre || null);
+    setEmail(payload.email || null);
     setIsAuthenticated(true);
 
-    // Redireccionar basado en el rol
     if (payload.role === 'Administrador') {
       navigate('/MenuAdmin');
     } else if (payload.role === 'Docente') {
@@ -49,12 +56,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
     setRole(null);
     setUbicaciones([]);
+    setNombre(null);
+    setEmail(null);
     setIsAuthenticated(false);
     navigate('/');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, role, ubicaciones, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, role, ubicaciones, nombre, email, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

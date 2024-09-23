@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useActivos } from '../../hooks/useActivo';
-
-interface Ubicacion {
-  id: number;
-  nombre: string;
-}
+import { useAuth } from '../../hooks/AuthContext';
 
 const TableComponentDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { activos, loading, fetchActivosByUbicacion } = useActivos();
+  const { ubicaciones } = useAuth(); // Usamos el contexto de autenticación para obtener las ubicaciones
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
-  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
 
+  // Selecciona la primera ubicación al cargar el componente si no hay una seleccionada
   useEffect(() => {
-    // Obtener el token JWT del localStorage
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Decodificar el token para obtener los datos del usuario
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUbicaciones(payload.ubicaciones || []); // Obtener las ubicaciones directamente del token
+    if (ubicaciones.length > 0 && selectedUbicacion === null) {
+      const defaultUbicacionId = ubicaciones[0].id;
+      setSelectedUbicacion(defaultUbicacionId);
+      fetchActivosByUbicacion(defaultUbicacionId);
     }
-  }, []);
+  }, [ubicaciones]);
 
   useEffect(() => {
     if (selectedUbicacion !== null) {
@@ -32,8 +27,8 @@ const TableComponentDocente: React.FC = () => {
     setCurrentPage(page);
   };
 
-  const handleUbicacionSelect = (ubicacionId: number) => {
-    setSelectedUbicacion(ubicacionId);
+  const handleUbicacionSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedUbicacion(parseInt(event.target.value, 10));
   };
 
   const itemsPerPage = 5;
@@ -41,25 +36,26 @@ const TableComponentDocente: React.FC = () => {
   const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="w-full flex justify-center py-10">
+    <div className="w-full flex justify-center pt-4 pb-10"> {/* Ajustamos el padding superior */}
       <div
         className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
-        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+        style={{ height: 'calc(100vh - 180px)', display: 'flex', flexDirection: 'column' }} 
       >
         <div className="flex justify-between items-center mb-4">
-          <div className="relative inline-block text-left">
-            <div className="text-[22px] font-semibold text-black">Seleccione una ubicación:</div>
-            <div className="flex space-x-2 mt-2">
+          <div className="flex items-center"> {/* Alineamos el texto y el desplegable en la misma línea */}
+            <div className="text-[22px] font-semibold text-black mr-4">Seleccione una ubicación:</div> {/* Añadimos margen a la derecha */}
+            <select
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              value={selectedUbicacion || ''}
+              onChange={handleUbicacionSelect}
+            >
+              <option value="" disabled>-- Seleccione --</option>
               {ubicaciones.map((ubicacion) => (
-                <button
-                  key={ubicacion.id}
-                  onClick={() => handleUbicacionSelect(ubicacion.id)}
-                  className={`py-2 px-4 rounded-lg shadow ${selectedUbicacion === ubicacion.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
-                >
+                <option key={ubicacion.id} value={ubicacion.id}>
                   {ubicacion.nombre}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           </div>
         </div>
 

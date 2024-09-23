@@ -9,10 +9,7 @@ const MenuAdminComponent: React.FC = () => {
   const [isAssetSelected, setIsAssetSelected] = useState(false); // Controla si se ha seleccionado un activo
   const [isAddingAsset, setIsAddingAsset] = useState(false); // Controla si estamos agregando un activo
 
-  // Nombre, correo y tipo de usuario (puedes ajustarlo según tu lógica de usuario actual)
-  const username = 'Hezron'; // Nombre del usuario
-  const email = 'hezron@example.com'; // Correo del usuario
-  const userType = 'Administrador'; // Tipo de usuario
+ 
 
   return (
     <div className="relative w-full h-screen flex">
@@ -35,7 +32,7 @@ const MenuAdminComponent: React.FC = () => {
           {!isAddingAsset && !isAssetSelected && (
             <>
               <div className="absolute top-4 right-6">
-                <ProfileComponent username={username} email={email} userType={userType} />
+                <ProfileComponent />
               </div>
 
               <div className="pt-[40px] px-10">
