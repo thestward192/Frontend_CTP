@@ -1,40 +1,45 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import { useLicitaciones } from '../../hooks/useLicitacion'; // Importa el hook personalizado
-import DetailLicitacion from './DetailLicitacion'; // Componente para mostrar los detalles
-import { Licitacion } from '../../types/licitacion';
+import { useLicitaciones } from '../../hooks/useLicitacion';
+import DetailLicitacion from './DetailLicitacion';
+import EditLicitacion from './EditLicitacion';
 import FormularioLicitacion from './FormularioLicitacion';
+import { Licitacion, UpdateLicitacionDTO } from '../../types/licitacion';
 
 const LicitacionesComponent: React.FC = () => {
-  const { licitaciones, loading, error, addLicitacion, removeLicitacion } = useLicitaciones(); // Usa el hook para obtener las licitaciones, agregar y eliminar
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
+  const { licitaciones, loading, error, addLicitacion, removeLicitacion, editLicitacion } = useLicitaciones(); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedLicitacion, setSelectedLicitacion] = useState<Licitacion | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false); // Estado para manejar el modal de detalles
 
-  // Función para abrir el modal de detalles
   const handleViewDetails = (licitacion: Licitacion) => {
     setSelectedLicitacion(licitacion);
     setIsDetailModalOpen(true);
   };
 
-  // Función para manejar el cierre del formulario de agregar licitación
-  const handleAddLicitacion = async (nuevaLicitacion: Licitacion) => {
-    try {
-      console.log('Nueva Licitación:', nuevaLicitacion); // Verificar los datos de la licitación antes de añadirla
-      await addLicitacion(nuevaLicitacion); // Llama a la función desde el hook
-      setIsModalOpen(false); // Cierra el modal después de agregar la licitación
-    } catch (error) {
-      console.error('Error al agregar la licitación:', error);
-    }
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
-  // Función para eliminar licitaciones
+  const handleEditSave = async (id: number, updatedData: UpdateLicitacionDTO) => {
+    await editLicitacion(id, updatedData);
+    setIsEditing(false);
+    setIsDetailModalOpen(false);
+  };
+
+  const closeDetails = () => {
+    setIsDetailModalOpen(false);
+    setIsEditing(false);
+  };
+
+  const handleAddLicitacion = async (nuevaLicitacion: Licitacion) => {
+    await addLicitacion(nuevaLicitacion);
+    setIsModalOpen(false);
+  };
+
   const handleDeleteLicitacion = async (id: number) => {
-    try {
-      await removeLicitacion(id); // Llama a la función desde el hook para eliminar la licitación
-    } catch (error) {
-      console.error('Error al eliminar la licitación:', error);
-    }
+    await removeLicitacion(id);
   };
 
   if (loading) return <p>Cargando licitaciones...</p>;
@@ -48,19 +53,13 @@ const LicitacionesComponent: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Licitaciones</h2>
-
-          {/* Botón para añadir más licitaciones */}
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-            onClick={() => {
-              console.log('Abrir modal de Agregar Licitación');
-              setIsModalOpen(true);
-            }}
+            onClick={() => setIsModalOpen(true)}
           >
             <FaPlus />
             <span>Agregar Licitación</span>
           </button>
-
         </div>
 
         <div className="flex-grow overflow-y-auto">
@@ -76,27 +75,24 @@ const LicitacionesComponent: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {licitaciones.map((row) => (
-                <tr key={row.id} className="border-b hover:bg-gray-100">
-                  <td className="px-4 py-2 text-sm">{new Date(row.fecha).toLocaleDateString()}</td>
-                  <td className="px-4 py-2 text-sm">{row.id}</td>
-                  <td className="px-4 py-2 text-sm">{row.numActa}</td>
-                  <td className="px-4 py-2 text-sm">{row.numLicitacion}</td>
-                  <td className="px-4 py-2 text-sm">${row.monto}</td>
+              {licitaciones.map((licitacion) => (
+                <tr key={licitacion.id} className="border-b hover:bg-gray-100">
+                  <td className="px-4 py-2 text-sm">{new Date(licitacion.fecha).toLocaleDateString()}</td>
+                  <td className="px-4 py-2 text-sm">{licitacion.id}</td>
+                  <td className="px-4 py-2 text-sm">{licitacion.numActa}</td>
+                  <td className="px-4 py-2 text-sm">{licitacion.numLicitacion}</td>
+                  <td className="px-4 py-2 text-sm">${licitacion.monto}</td>
                   <td className="px-4 py-2 text-sm">
                     <div className="flex space-x-2">
-                      {/* Botón de ver detalles */}
                       <button
                         className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
-                        onClick={() => handleViewDetails(row)} // Abrir el modal de detalles
+                        onClick={() => handleViewDetails(licitacion)}
                       >
                         <FaEye className="mr-1" />
                       </button>
-
-                      {/* Botón de borrar */}
                       <button
                         className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                        onClick={() => handleDeleteLicitacion(row.id)} // Eliminar la licitación
+                        onClick={() => handleDeleteLicitacion(licitacion.id)}
                       >
                         <FaTrash className="mr-1" />
                       </button>
@@ -108,7 +104,6 @@ const LicitacionesComponent: React.FC = () => {
           </table>
         </div>
 
-        {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
             <p className="text-sm text-gray-600">Mostrando 1 a {licitaciones.length} de {licitaciones.length} entradas</p>
@@ -121,24 +116,27 @@ const LicitacionesComponent: React.FC = () => {
         </div>
       </div>
 
-      {/* Mostrar el modal solo si está abierto */}
       {isModalOpen && (
         <FormularioLicitacion
-          onClose={() => {
-            console.log('Cerrando el modal de Agregar Licitación');
-            setIsModalOpen(false);
-          }} // Cerrar modal
-          onSubmit={handleAddLicitacion} // Manejar el submit
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleAddLicitacion}
         />
       )}
 
-      {/* Modal para ver detalles */}
       {isDetailModalOpen && selectedLicitacion && (
-        <DetailLicitacion
-          licitacion={selectedLicitacion}
-          onClose={() => setIsDetailModalOpen(false)}
-          onEdit={() => console.log('Editar licitación:', selectedLicitacion)}
-        />
+        isEditing ? (
+          <EditLicitacion
+            licitacion={selectedLicitacion}
+            onSave={handleEditSave}
+            onCancel={closeDetails}
+          />
+        ) : (
+          <DetailLicitacion
+            licitacion={selectedLicitacion}
+            onClose={closeDetails}
+            onEdit={handleEdit}
+          />
+        )
       )}
     </div>
   );

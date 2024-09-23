@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getLeyes, createLey, getLeyById, deleteLey } from '../Services/leyService';
+import { getLeyes, createLey, getLeyById, deleteLey, updateLey } from '../Services/leyService';
 import { Ley } from '../types/ley';
 
 export const useLeyes = () => {
@@ -48,6 +48,17 @@ export const useLeyes = () => {
     }
   };
 
+  const editLey = async (id: number, leyData: Partial<Ley>) => {
+    try {
+      setError(null);
+      const updatedLey = await updateLey(id, leyData);
+      setLeyes(leyes.map((ley) => (ley.id === id ? updatedLey : ley)));
+      setSelectedLey(updatedLey); // Actualiza la ley seleccionada
+    } catch (error) {
+      setError(`Error al actualizar la ley con ID ${id}`);
+    }
+  };
+
   // Función para eliminar una ley por ID
   const removeLey = async (id: number) => {
     try {
@@ -72,6 +83,7 @@ export const useLeyes = () => {
     getLeyDetails,   // Función para obtener los detalles de una ley
     removeLey,       // Función para eliminar una ley
     selectedLey,     // Ley seleccionada
-    fetchLeyes       // Añadimos fetchLeyes aquí
+    fetchLeyes,
+    editLey       // Añadimos fetchLeyes aquí
   };
 };
