@@ -128,10 +128,10 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                 <tr className="bg-gray-50">
                   {isSelectionMode && <th className="px-2 py-2 text-gray-600 font-semibold">Seleccionar</th>}
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Precio</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Adquisicion</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
                 </tr>
               </thead>
@@ -148,10 +148,10 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                       </td>
                     )}
                     <td className="px-4 py-2 text-sm">{row.id}</td>
-                    <td className="px-4 py-2 text-sm">{row.marca}</td>
+                    <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
-                    <td className="px-4 py-2 text-sm">{row.precio}</td>
+                    <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
                       <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {row.estado}
