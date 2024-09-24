@@ -1,80 +1,78 @@
 import React, { useState } from 'react';
 import { FaArrowLeft, FaTrash, FaEdit, FaFileExport, FaTags } from 'react-icons/fa';
 import HistorialPrestamos from './HistorialPrestamos';
+import { Activo } from '../../types/activo';
+import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación de activos
+import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
 
-// Definimos la interfaz para el activo
-interface Asset {
-  id: string;
-  descripcion: string;
-  marca: string;
-  modelo: string;
-  serie: string;
-  estado: string;
-  ubicacion: string;
-  modoAdquisicion: string;
-  precio: string;
-  observacion: string;
-  foto: string;
+interface DetalleComponentProps {
+  asset: Activo;
+  onBack: () => void;
 }
 
-const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asset, onBack }) => {
-  const [activeTab, setActiveTab] = useState('detalle'); // Controla la pestaña activa
+const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) => {
+  const [activeTab, setActiveTab] = useState('detalle');
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
+  const { handleDeleteActivo, handleUpdateActivo } = useActivos(); // Usamos el hook para eliminar y editar activos
 
-  const handleEliminar = (id: string) => {
-    console.log('Eliminar activo', id);
-    // Lógica para eliminar el activo
+  const handleEliminar = async (id: number) => {
+    try {
+      await handleDeleteActivo(id); // Llamada para eliminar el activo
+      onBack(); // Volvemos después de la eliminación
+    } catch (error) {
+      console.error('Error al eliminar el activo:', error);
+    }
   };
 
   const handleEditar = () => {
-    console.log('Editar activo', asset.id);
-    // Lógica para editar el activo
+    setIsEditModalOpen(true); // Abrir el modal de edición
+  };
+
+  const handleSaveEdit = async (updatedData: Partial<Activo>) => {
+    try {
+      await handleUpdateActivo(asset.id!, updatedData);
+      setIsEditModalOpen(false); // Cerrar el modal de edición
+    } catch (error) {
+      console.error('Error al guardar los cambios del activo:', error);
+    }
   };
 
   const handleExportar = () => {
     console.log('Exportar activo', asset.id);
-    // Lógica para exportar los datos del activo
   };
 
   const handleGenerarSticker = () => {
     console.log('Generar sticker para activo', asset.id);
-    // Lógica para generar el sticker del activo
   };
 
   return (
-    <div className="w-full h-full bg-white shadow-lg rounded-lg p-6 overflow-hidden relative" style={{ height: 'calc(100vh - 180px)' }}> {/* Ajuste del tamaño y espacio adicional */}
-      {/* Pestañas en la parte superior */}
+    <div className="w-full h-full bg-white shadow-lg rounded-lg p-6 overflow-hidden relative" style={{ height: 'calc(100vh - 180px)' }}>
       <div className="flex justify-center mb-6">
         <button
-          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${
-            activeTab === 'detalle' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'
-          }`}
+          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${activeTab === 'detalle' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
           onClick={() => setActiveTab('detalle')}
         >
           Detalle de Activo
         </button>
         <button
-          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${
-            activeTab === 'historial' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'
-          }`}
+          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${activeTab === 'historial' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
           onClick={() => setActiveTab('historial')}
         >
           Historial de Préstamos
         </button>
       </div>
 
-      {/* Contenido basado en la pestaña seleccionada */}
       {activeTab === 'detalle' ? (
         <>
-          {/* Título */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-700">Información del Activo</h2>
             <p className="text-sm text-gray-500">Detalles generales y estado del activo.</p>
           </div>
 
-          {/* Datos del Activo y la Imagen */}
           <div className="flex justify-between">
             <div className="flex-grow">
-              <div className="border-t border-gray-200 py-2 w-3/4"> {/* Ajusta el ancho de las líneas divisorias */}
+              <div className="border-t border-gray-200 py-2 w-3/4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">No. Identificador</p>
@@ -87,7 +85,7 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4"> {/* Ajusta el ancho de las líneas divisorias */}
+              <div className="border-t border-gray-200 py-2 w-3/4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Modelo</p>
@@ -100,7 +98,7 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4"> {/* Ajusta el ancho de las líneas divisorias */}
+              <div className="border-t border-gray-200 py-2 w-3/4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Estado</p>
@@ -108,12 +106,12 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Ubicación</p>
-                    <p className="text-gray-800">{asset.ubicacion}</p>
+                    <p className="text-gray-800">{asset.ubicacion?.nombre || 'Desconocida'}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4"> {/* Ajusta el ancho de las líneas divisorias */}
+              <div className="border-t border-gray-200 py-2 w-3/4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Modo de Adquisición</p>
@@ -126,19 +124,18 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4"> {/* Ajusta el ancho de las líneas divisorias */}
+              <div className="border-t border-gray-200 py-2 w-3/4">
                 <p className="text-sm font-semibold text-gray-600">Descripción</p>
                 <p className="text-gray-800">{asset.descripcion}</p>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4"> {/* Ajusta el ancho de las líneas divisorias */}
+              <div className="border-t border-gray-200 py-2 w-3/4">
                 <p className="text-sm font-semibold text-gray-600">Observación</p>
                 <p className="text-gray-800">{asset.observacion}</p>
               </div>
             </div>
 
-            {/* Imagen del Activo */}
-            <div className="flex-shrink-0 ml-4" style={{ marginLeft: '-100px' }}> {/* Movemos la imagen más hacia la izquierda */}
+            <div className="flex-shrink-0 ml-4" style={{ marginLeft: '-100px' }}>
               <img
                 src={asset.foto}
                 alt="Foto del Activo"
@@ -147,7 +144,29 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
             </div>
           </div>
 
-          {/* Botones de acción */}
+          {/* Confirmación de eliminación */}
+          {showDeleteConfirmation && (
+            <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
+              <div className="bg-white p-6 rounded-lg shadow-lg z-20">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">¿Deseas eliminar este activo?</h2>
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => setShowDeleteConfirmation(false)}
+                    className="bg-gray-500 text-white py-1 px-3 rounded-lg shadow hover:bg-gray-600 transition-all duration-300"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => handleEliminar(asset.id!)}
+                    className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="absolute bottom-4 right-4 flex justify-end space-x-4">
             <button
               onClick={handleEditar}
@@ -168,7 +187,7 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
               <FaTags className="mr-2" /> Generar Sticker
             </button>
             <button
-              onClick={() => handleEliminar(asset.id)}
+              onClick={() => setShowDeleteConfirmation(true)}
               className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300 flex items-center text-sm"
             >
               <FaTrash className="mr-2" /> Eliminar
@@ -182,8 +201,16 @@ const DetalleComponent: React.FC<{ asset: Asset; onBack: () => void }> = ({ asse
           </div>
         </>
       ) : (
-        /* Historial de Préstamos */
         <HistorialPrestamos />
+      )}
+
+      {/* Modal para editar el activo */}
+      {isEditModalOpen && (
+        <FormularioEditarActivo
+          asset={asset}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleSaveEdit}
+        />
       )}
     </div>
   );

@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import { useProveedores } from '../../hooks/useProveedor'; // Importamos el hook
+import { useProveedores } from '../../hooks/useProveedor';
 import FormularioProveedor from './FormularioProveedor';
-import DetailProveedor from './DetailProveedor'; // Importamos el nuevo componente
+import DetailProveedor from './DetailProveedor';
+import EditProveedorForm from './EditProveedorForm';
+import { Proveedor } from '../../types/proveedor';
 
 const ProveedoresComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  const { proveedores, loading, error, getProveedorDetails, selectedProveedor, removeProveedor } = useProveedores();
+  const { proveedores, loading, error, getProveedorDetails, selectedProveedor, removeProveedor, updateProveedor } = useProveedores();
 
   const handleDelete = async (id: number) => {
     await removeProveedor(id);
@@ -18,7 +21,27 @@ const ProveedoresComponent: React.FC = () => {
 
   const handleViewDetails = async (id: number) => {
     await getProveedorDetails(id); // Obtener detalles del proveedor
-    setDetailModalOpen(true); // Mostrar el modal de detalles
+    setIsEditing(false); // Asegurarnos de no estar en modo edición
+    setIsDetailOpen(true); // Abrir el modal de detalles
+  };
+
+  const startEdit = () => {
+    setIsEditing(true); // Iniciar la edición cuando se presiona el botón de editar
+  };
+
+  const closeDetails = () => {
+    setIsEditing(false);
+    setIsDetailOpen(false); // Cerrar el modal de detalles
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false); // Cancela la edición y cierra el formulario
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<Proveedor>) => {
+    await updateProveedor(id, updatedData);
+    setIsEditing(false);
+    setIsDetailOpen(false);
   };
 
   return (
@@ -107,9 +130,21 @@ const ProveedoresComponent: React.FC = () => {
       {/* Modal para agregar proveedor */}
       {isModalOpen && <FormularioProveedor onClose={() => setIsModalOpen(false)} />}
 
-      {/* Modal para ver detalles de un proveedor */}
-      {detailModalOpen && selectedProveedor && (
-        <DetailProveedor proveedor={selectedProveedor} onClose={() => setDetailModalOpen(false)} />
+      {/* Modal para ver detalles de un proveedor o para editar */}
+      {isDetailOpen && selectedProveedor && (
+        isEditing ? (
+          <EditProveedorForm
+            proveedor={selectedProveedor}
+            onSave={handleEditSave} // Guarda los cambios y cierra el modal
+            onCancel={cancelEdit} // Maneja el cierre del formulario de edición
+          />
+        ) : (
+          <DetailProveedor
+            proveedor={selectedProveedor}
+            onClose={closeDetails} // Cerrar modal de detalles
+            onEdit={startEdit}
+          />
+        )
       )}
 
       {/* Modal de confirmación de eliminación */}

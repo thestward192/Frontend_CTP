@@ -1,13 +1,13 @@
-// src/components/DetailProveedor.tsx
 import React from 'react';
 import { Proveedor } from '../../types/proveedor';
 
 interface DetailProveedorProps {
   proveedor: Proveedor | null;
   onClose: () => void;
+  onEdit: () => void;
 }
 
-const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose }) => {
+const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, onEdit }) => {
   if (!proveedor) {
     return null; // No mostrar nada si no hay proveedor seleccionado
   }
@@ -23,12 +23,22 @@ const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose })
         <p><strong>Teléfono de la Empresa:</strong> {proveedor.telefonoEmpresa}</p>
         <p><strong>Email:</strong> {proveedor.email}</p>
 
-        <button
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          onClick={onClose}
-        >
-          Cerrar
-        </button>
+        <div className="flex justify-end space-x-4 mt-6">
+          <button
+            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            onClick={() => {
+              onClose();
+            }}
+          >
+            Cerrar
+          </button>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            onClick={onEdit}
+          >
+            Editar
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,17 +1,37 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioUbicacion from './FormularioUbicacion'; // Importamos el formulario de Ubicaciones
-import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook para manejar ubicaciones
+import FormularioUbicacion from './FormularioUbicacion';
+import DetailUbicacion from './DetailUbicacion';
+import EditUbicacionForm from './EditUbicacion'; // Importa el nuevo componente de edición
+import { useUbicacion } from '../../hooks/useUbicacion';
+import { Ubicacion } from '../../types/ubicacion';
 
 const UbicacionesComponent: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
-  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null); // Estado para manejar el modal de eliminación
-  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null); // Estado para manejar el modal de detalles
-  const { ubicaciones, loading, error, getUbicacionDetails, removeUbicacion, selectedUbicacion, handleSubmitUbicacion } = useUbicacion();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false); // Estado para manejar la edición
+
+  const { ubicaciones, loading, error, getUbicacionDetails, removeUbicacion, selectedUbicacion, handleSubmitUbicacion, editUbicacion } = useUbicacion();
 
   const handleDelete = async (id: number) => {
     await removeUbicacion(id);
-    setDeleteModalOpen(null); // Cerrar el modal después de eliminar
+    setDeleteModalOpen(null);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true); // Activar el modo edición
+  };
+
+  const closeDetails = () => {
+    setIsEditing(false);
+    setDetailModalOpen(null);
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<Ubicacion>) => {
+    await editUbicacion(id, updatedData);
+    setIsEditing(false);
+    setDetailModalOpen(null);
   };
 
   return (
@@ -33,10 +53,8 @@ const UbicacionesComponent: React.FC = () => {
           </button>
         </div>
 
-        {/* Mostrar error si existe */}
         {error && <p className="text-red-500">Error al cargar ubicaciones.</p>}
 
-        {/* Indicador de carga */}
         {loading ? (
           <p>Cargando ubicaciones...</p>
         ) : (
@@ -64,8 +82,8 @@ const UbicacionesComponent: React.FC = () => {
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => {
-                            getUbicacionDetails(ubicacion.id); // Obtener los detalles de la ubicación
-                            setDetailModalOpen(ubicacion.id); // Abrir el modal de detalles
+                            getUbicacionDetails(ubicacion.id);
+                            setDetailModalOpen(ubicacion.id);
                           }}
                         >
                           <FaEye className="mr-1" />
@@ -74,7 +92,7 @@ const UbicacionesComponent: React.FC = () => {
                         {/* Botón de borrar */}
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => setDeleteModalOpen(ubicacion.id)} // Abrir el modal de eliminación
+                          onClick={() => setDeleteModalOpen(ubicacion.id)}
                         >
                           <FaTrash className="mr-1" />
                         </button>
@@ -103,23 +121,21 @@ const UbicacionesComponent: React.FC = () => {
       {/* Modal para agregar ubicación */}
       {isModalOpen && <FormularioUbicacion onClose={() => setIsModalOpen(false)} onSubmit={handleSubmitUbicacion} />}
 
-      {/* Modal para ver detalles de la ubicación */}
+      {/* Modal para ver detalles de la ubicación o para editar */}
       {detailModalOpen && selectedUbicacion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-            <h2 className="text-lg font-bold mb-4">Detalles de Ubicación</h2>
-            <p><strong>ID:</strong> {selectedUbicacion.id}</p>
-            <p><strong>Nombre:</strong> {selectedUbicacion.nombre}</p>
-            <p><strong>Pabellón:</strong> {selectedUbicacion.pabellon}</p>
-            <p><strong>Descripción:</strong> {selectedUbicacion.descripcion}</p>
-            <button
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              onClick={() => setDetailModalOpen(null)}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+        isEditing ? (
+          <EditUbicacionForm
+            ubicacion={selectedUbicacion}
+            onSave={handleEditSave}
+            onCancel={closeDetails}
+          />
+        ) : (
+          <DetailUbicacion
+            ubicacion={selectedUbicacion}
+            onClose={closeDetails}
+            onEdit={handleEdit}
+          />
+        )
       )}
 
       {/* Modal de confirmación de eliminación */}
@@ -136,7 +152,7 @@ const UbicacionesComponent: React.FC = () => {
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleDelete(deleteModalOpen!)}
+                onClick={() => handleDelete(deleteModalOpen)}
               >
                 Eliminar
               </button>

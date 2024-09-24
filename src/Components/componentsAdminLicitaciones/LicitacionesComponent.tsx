@@ -1,58 +1,49 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioLicitacion from './FormularioLicitacion'; // Importamos el componente del formulario
+import { useLicitaciones } from '../../hooks/useLicitacion';
+import DetailLicitacion from './DetailLicitacion';
+import EditLicitacion from './EditLicitacion';
+import FormularioLicitacion from './FormularioLicitacion';
+import { Licitacion, UpdateLicitacionDTO } from '../../types/licitacion';
 
 const LicitacionesComponent: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal
+  const { licitaciones, loading, error, addLicitacion, removeLicitacion, editLicitacion } = useLicitaciones(); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedLicitacion, setSelectedLicitacion] = useState<Licitacion | null>(null);
 
-  // Datos de ejemplo para la tabla de licitaciones
-  const tableData = [
-    {
-      fecha: '10/09/2024',
-      idLicitacion: 'LIC-001',
-      numActa: 'ACT-5678',
-      numLicitacion: 'L-2024-009',
-      nombreLicitacion: 'Construcción de Puente',
-      montoAutorizado: '$500,000',
-      descripcion: 'Construcción de puente vehicular en zona rural.',
-    },
-    {
-      fecha: '11/09/2024',
-      idLicitacion: 'LIC-002',
-      numActa: 'ACT-5679',
-      numLicitacion: 'L-2024-010',
-      nombreLicitacion: 'Compra de Equipos Médicos',
-      montoAutorizado: '$300,000',
-      descripcion: 'Adquisición de equipos médicos para hospital.',
-    },
-    {
-      fecha: '12/09/2024',
-      idLicitacion: 'LIC-003',
-      numActa: 'ACT-5680',
-      numLicitacion: 'L-2024-011',
-      nombreLicitacion: 'Reparación de Carreteras',
-      montoAutorizado: '$1,200,000',
-      descripcion: 'Reparación y mantenimiento de carreteras en la región sur.',
-    },
-    {
-      fecha: '13/09/2024',
-      idLicitacion: 'LIC-004',
-      numActa: 'ACT-5681',
-      numLicitacion: 'L-2024-012',
-      nombreLicitacion: 'Suministro de Alimentos',
-      montoAutorizado: '$200,000',
-      descripcion: 'Suministro de alimentos para instituciones públicas.',
-    },
-    {
-      fecha: '14/09/2024',
-      idLicitacion: 'LIC-005',
-      numActa: 'ACT-5682',
-      numLicitacion: 'L-2024-013',
-      nombreLicitacion: 'Construcción de Hospital',
-      montoAutorizado: '$2,500,000',
-      descripcion: 'Construcción de hospital en la ciudad capital.',
-    },
-  ];
+  const handleViewDetails = (licitacion: Licitacion) => {
+    setSelectedLicitacion(licitacion);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleEditSave = async (id: number, updatedData: UpdateLicitacionDTO) => {
+    await editLicitacion(id, updatedData);
+    setIsEditing(false);
+    setIsDetailModalOpen(false);
+  };
+
+  const closeDetails = () => {
+    setIsDetailModalOpen(false);
+    setIsEditing(false);
+  };
+
+  const handleAddLicitacion = async (nuevaLicitacion: Licitacion) => {
+    await addLicitacion(nuevaLicitacion);
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteLicitacion = async (id: number) => {
+    await removeLicitacion(id);
+  };
+
+  if (loading) return <p>Cargando licitaciones...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="w-full flex justify-center py-10">
@@ -62,8 +53,6 @@ const LicitacionesComponent: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Licitaciones</h2>
-
-          {/* Botón para añadir más licitaciones */}
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
@@ -78,30 +67,34 @@ const LicitacionesComponent: React.FC = () => {
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-4 py-2 text-gray-600 font-semibold">Fecha</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">ID Licitación</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Licitación</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nº Acta</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nº Licitación</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Monto Autorizado</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th> {/* Columna de acciones */}
+                <th className="px-4 py-2 text-gray-600 font-semibold">Monto</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {tableData.map((row, index) => (
-                <tr key={index} className="border-b hover:bg-gray-100">
-                  <td className="px-4 py-2 text-sm">{row.fecha}</td>
-                  <td className="px-4 py-2 text-sm">{row.idLicitacion}</td>
-                  <td className="px-4 py-2 text-sm">{row.numActa}</td>
-                  <td className="px-4 py-2 text-sm">{row.numLicitacion}</td>
-                  <td className="px-4 py-2 text-sm">{row.montoAutorizado}</td>
+              {licitaciones.map((licitacion) => (
+                <tr key={licitacion.id} className="border-b hover:bg-gray-100">
+                  <td className="px-4 py-2 text-sm">{new Date(licitacion.fecha).toLocaleDateString()}</td>
+                  <td className="px-4 py-2 text-sm">{licitacion.id}</td>
+                  <td className="px-4 py-2 text-sm">{licitacion.numActa}</td>
+                  <td className="px-4 py-2 text-sm">{licitacion.numLicitacion}</td>
+                  <td className="px-4 py-2 text-sm">${licitacion.monto}</td>
                   <td className="px-4 py-2 text-sm">
                     <div className="flex space-x-2">
-                      {/* Botón de ver */}
-                      <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center">
-                        <FaEye className="mr-1" /> {/* Icono ver */}
+                      <button
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
+                        onClick={() => handleViewDetails(licitacion)}
+                      >
+                        <FaEye className="mr-1" />
                       </button>
-                      {/* Botón de borrar */}
-                      <button className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center">
-                        <FaTrash className="mr-1" /> {/* Icono borrar */}
+                      <button
+                        className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
+                        onClick={() => handleDeleteLicitacion(licitacion.id)}
+                      >
+                        <FaTrash className="mr-1" />
                       </button>
                     </div>
                   </td>
@@ -111,10 +104,9 @@ const LicitacionesComponent: React.FC = () => {
           </table>
         </div>
 
-        {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Mostrando 1 a 5 de 5 entradas</p>
+            <p className="text-sm text-gray-600">Mostrando 1 a {licitaciones.length} de {licitaciones.length} entradas</p>
           </div>
           <div className="flex space-x-1">
             <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
@@ -124,8 +116,28 @@ const LicitacionesComponent: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal para agregar licitación */}
-      {isModalOpen && <FormularioLicitacion onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <FormularioLicitacion
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleAddLicitacion}
+        />
+      )}
+
+      {isDetailModalOpen && selectedLicitacion && (
+        isEditing ? (
+          <EditLicitacion
+            licitacion={selectedLicitacion}
+            onSave={handleEditSave}
+            onCancel={closeDetails}
+          />
+        ) : (
+          <DetailLicitacion
+            licitacion={selectedLicitacion}
+            onClose={closeDetails}
+            onEdit={handleEdit}
+          />
+        )
+      )}
     </div>
   );
 };

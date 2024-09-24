@@ -1,82 +1,89 @@
 import { useState, useEffect } from 'react';
-import { getLeyes, createLey, getLeyById, deleteLey } from '../services/LeyService';
+import { getLeyes, createLey, getLeyById, deleteLey, updateLey } from '../Services/leyService';
 import { Ley } from '../types/ley';
 
 export const useLeyes = () => {
   const [leyes, setLeyes] = useState<Ley[]>([]);
-  const [selectedLey, setSelectedLey] = useState<Ley | null>(null); // Estado para la ley seleccionada por ID
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedLey, setSelectedLey] = useState<Ley | null>(null); // Ley seleccionada
+  const [loading, setLoading] = useState<boolean>(true); // Estado de carga
+  const [error, setError] = useState<string | null>(null); // Estado de error
 
   // Función para obtener todas las leyes
   const fetchLeyes = async () => {
     try {
-      setLoading(true); // Activar el estado de carga
+      setError(null); // Limpiar cualquier error anterior
+      setLoading(true); // Activar estado de carga
       const data = await getLeyes();
-      setLeyes(data);
-      setError(null); // Limpiar error si tiene éxito
+      setLeyes(data); // Almacenar las leyes obtenidas
     } catch (error) {
       setError('Error al obtener las leyes');
+      console.error(error);
     } finally {
-      setLoading(false); // Desactivar el estado de carga
+      setLoading(false); // Desactivar estado de carga
     }
   };
 
   // Función para crear una nueva ley
   const handleSubmitLey = async (leyData: Omit<Ley, 'id'>): Promise<boolean> => {
     try {
-      setLoading(true); // Activar el estado de carga
-      const nuevaLey = await createLey(leyData);
-      setLeyes([...leyes, nuevaLey]);
-      setError(null); // Limpiar error si tiene éxito
+      setError(null); // Limpiar cualquier error anterior
+      const nuevaLey = await createLey(leyData); // Crear nueva ley
+      setLeyes([...leyes, nuevaLey]); // Agregar la nueva ley al estado
       return true;
     } catch (error) {
+      console.error('Error al crear la ley:', error);
       setError('Error al crear la ley');
       return false;
-    } finally {
-      setLoading(false); // Desactivar el estado de carga
     }
   };
 
   // Función para obtener detalles de una ley por ID
   const getLeyDetails = async (id: number) => {
     try {
-      setLoading(true); // Activar el estado de carga
+      setError(null); // Limpiar cualquier error anterior
       const data = await getLeyById(id);
       setSelectedLey(data); // Almacenar la ley seleccionada
-      setError(null); // Limpiar error si tiene éxito
     } catch (error) {
       setError(`Error al obtener detalles de la ley con ID ${id}`);
-    } finally {
-      setLoading(false); // Desactivar el estado de carga
+    }
+  };
+
+  const editLey = async (id: number, leyData: Partial<Ley>) => {
+    try {
+      setError(null);
+      const updatedLey = await updateLey(id, leyData);
+      setLeyes(leyes.map((ley) => (ley.id === id ? updatedLey : ley)));
+      setSelectedLey(updatedLey); // Actualiza la ley seleccionada
+    } catch (error) {
+      setError(`Error al actualizar la ley con ID ${id}`);
     }
   };
 
   // Función para eliminar una ley por ID
   const removeLey = async (id: number) => {
     try {
-      setLoading(true); // Activar el estado de carga
-      await deleteLey(id);
-      setLeyes(leyes.filter((ley) => ley.id !== id)); // Actualizar el estado eliminando la ley
-      setError(null); // Limpiar error si tiene éxito
+      setError(null); // Limpiar cualquier error anterior
+      await deleteLey(id); // Eliminar ley del backend
+      setLeyes(leyes.filter((ley) => ley.id !== id)); // Eliminar la ley del estado
     } catch (error) {
       setError(`Error al eliminar la ley con ID ${id}`);
-    } finally {
-      setLoading(false); // Desactivar el estado de carga
     }
   };
 
+  // useEffect para ejecutar al montar el componente
   useEffect(() => {
-    fetchLeyes(); // Ejecutar al montar el componente
+    fetchLeyes(); // Ejecutar la carga inicial de leyes
   }, []);
 
   return {
-    leyes,
-    loading,
-    error,
-    handleSubmitLey,
-    getLeyDetails,   // Para obtener los detalles de una ley
-    removeLey,       // Para eliminar una ley
+    leyes,           // Lista de todas las leyes
+    loading,         // Estado de carga
+    error,           // Estado de error
+    handleSubmitLey, // Función para crear una nueva ley
+    getLeyDetails,   // Función para obtener los detalles de una ley
+    removeLey,       // Función para eliminar una ley
     selectedLey,     // Ley seleccionada
+    fetchLeyes,
+    editLey       // Añadimos fetchLeyes aquí
   };
 };
