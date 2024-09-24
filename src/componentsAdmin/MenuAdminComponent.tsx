@@ -2,7 +2,7 @@ import React from 'react';
 import SearchBarComponent from './SearchBarComponent';
 import TableComponent from './TableComponent';
 import Dashboard from './Dashboard';
-import Arriba from 'C:/Users/Stward/Desktop/Control_de_aactivos/FronControlActivos/FronCTP/src/assets/Arriba.png';
+import Arriba from 'C:/Users/nayel/OneDrive/Imágenes/Escritorio/ProyectoInge/Frontend_CTP/src/assets/Arriba.png';
 
 const MenuAdminComponent: React.FC = () => {
   return (

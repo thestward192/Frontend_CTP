@@ -1,6 +1,6 @@
 import React from 'react';
-import logo from 'C:/Users/Stward/Desktop/Control_de_aactivos/FronControlActivos/FronCTP/src/assets/images-removebg-preview (1).png';
-import backgroundPattern from 'C:/Users/Stward/Desktop/Control_de_aactivos/FronControlActivos/FronCTP/src/assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png'; // Aquí está la imagen de fondo
+import logo from 'C:/Users/nayel/OneDrive/Imágenes/Escritorio/ProyectoInge/Frontend_CTP/src/assets/images-removebg-preview (1).png';
+import backgroundPattern from 'C:/Users/nayel/OneDrive/Imágenes/Escritorio/ProyectoInge/Frontend_CTP/src/assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png'; // Aquí está la imagen de fondo
 import { useNavigate } from 'react-router-dom';
 
 
