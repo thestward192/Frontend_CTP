@@ -1,19 +1,93 @@
 // src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './componentsPages/Login';
-import Register from './componentsPages/Register';
-import MenuAdminComponent from './componentsAdmin/MenuAdminComponent';
-
+import Login from './Components/componentsPages/Login';
+import Register from './Components/componentsPages/Register';
+import MenuAdminComponent from './Components/componentsAdminMenu/MenuAdminComponent';
+import MenuAdminProveedores from './Components/componentsAdminProveedor/MenuProveedoresComponent';
+import MenuLicitaciones from './Components/componentsAdminLicitaciones/MenuLicitaciones';
+import MenuLeyes from './Components/componentsAdminLeyes/MenuLeyesComponent';
+import MenuUbicacion from './Components/componentsAdminUbicaciones/MenuUbicacionesComponent';
+import MenuDocenteAdmin from './Components/componentsAdminDocentes/MenuDocentesComponent';
+import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
+import ProtectedRoute from './hooks/ProtectedRoute';
+import { AuthProvider } from './hooks/AuthContext';
+import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/Register" element={<Register/>} />
-        <Route path="/MenuAdmin" element={<MenuAdminComponent />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/Register" element={<Register />} />
+
+          <Route
+            path="/MenuAdmin"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminComponent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Proveedores"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminProveedores />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Licitaciones"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuLicitaciones />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Leyes"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuLeyes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Ubicacion"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuUbicacion />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/DocentesAdmin"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuDocenteAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Licencias"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminLicencias />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/MenuDocente"
+            element={
+              <ProtectedRoute roles={['Docente']}>
+                <MenuDocente />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 };

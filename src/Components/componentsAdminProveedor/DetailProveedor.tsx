@@ -1,0 +1,47 @@
+import React from 'react';
+import { Proveedor } from '../../types/proveedor';
+
+interface DetailProveedorProps {
+  proveedor: Proveedor | null;
+  onClose: () => void;
+  onEdit: () => void;
+}
+
+const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, onEdit }) => {
+  if (!proveedor) {
+    return null; // No mostrar nada si no hay proveedor seleccionado
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
+        <h2 className="text-lg font-bold mb-4">Detalles del Proveedor</h2>
+        <p><strong>ID:</strong> {proveedor.id}</p>
+        <p><strong>Nombre del Proveedor:</strong> {proveedor.nombreProveedor}</p>
+        <p><strong>Nombre de la Empresa:</strong> {proveedor.nombreEmpresa}</p>
+        <p><strong>Teléfono del Proveedor:</strong> {proveedor.telefonoProveedor}</p>
+        <p><strong>Teléfono de la Empresa:</strong> {proveedor.telefonoEmpresa}</p>
+        <p><strong>Email:</strong> {proveedor.email}</p>
+
+        <div className="flex justify-end space-x-4 mt-6">
+          <button
+            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            onClick={() => {
+              onClose();
+            }}
+          >
+            Cerrar
+          </button>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            onClick={onEdit}
+          >
+            Editar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DetailProveedor;
