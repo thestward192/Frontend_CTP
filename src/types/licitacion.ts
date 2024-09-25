@@ -5,7 +5,7 @@ export interface Licitacion {
     nombre: string;
     monto: number;
     descripcion: string;
-    fecha: string;
+    fecha: Date;
     idProveedor: number;
     idLey: number;
 }

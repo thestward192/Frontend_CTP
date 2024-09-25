@@ -8,11 +8,9 @@ export const useLeyes = () => {
   const [loading, setLoading] = useState<boolean>(true); // Estado de carga
   const [error, setError] = useState<string | null>(null); // Estado de error
 
-  // Función para obtener todas las leyes
+  // Define la función fetchLeyes fuera del useEffect para que sea accesible
   const fetchLeyes = async () => {
     try {
-      setError(null); // Limpiar cualquier error anterior
-      setLoading(true); // Activar estado de carga
       const data = await getLeyes();
       setLeyes(data); // Almacenar las leyes obtenidas
     } catch (error) {
@@ -22,6 +20,11 @@ export const useLeyes = () => {
       setLoading(false); // Desactivar estado de carga
     }
   };
+
+  // useEffect para ejecutar al montar el componente
+  useEffect(() => {
+    fetchLeyes();
+  }, []);  // Este `useEffect` se ejecuta una vez al montar el componente
 
   // Función para crear una nueva ley
   const handleSubmitLey = async (leyData: Omit<Ley, 'id'>): Promise<boolean> => {
@@ -70,11 +73,6 @@ export const useLeyes = () => {
     }
   };
 
-  // useEffect para ejecutar al montar el componente
-  useEffect(() => {
-    fetchLeyes(); // Ejecutar la carga inicial de leyes
-  }, []);
-
   return {
     leyes,           // Lista de todas las leyes
     loading,         // Estado de carga
@@ -83,7 +81,7 @@ export const useLeyes = () => {
     getLeyDetails,   // Función para obtener los detalles de una ley
     removeLey,       // Función para eliminar una ley
     selectedLey,     // Ley seleccionada
-    fetchLeyes,
-    editLey       // Añadimos fetchLeyes aquí
+    fetchLeyes,      // Mantiene el nombre fetchLeyes para acceder desde fuera
+    editLey          // Función para editar una ley
   };
 };

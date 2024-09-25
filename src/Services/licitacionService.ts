@@ -25,7 +25,7 @@ export const createLicitacion = async (licitacion: Licitacion): Promise<Licitaci
 // Servicio para actualizar una licitación
 export const updateLicitacion = async (id: number, licitacionData: UpdateLicitacionDTO): Promise<Licitacion> => {
     try {
-      const response = await axios.patch(`${API_URL}/licitacion/${id}`, licitacionData);
+      const response = await axios.patch(`${API_URL}/${id}`, licitacionData);
       return response.data;
     } catch (error) {
       console.error(`Error al actualizar la licitación con ID ${id}:`, error);

@@ -6,7 +6,7 @@ interface FormularioProveedorProps {
 }
 
 const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) => {
-  const { handleSubmitProveedor } = useProveedores(); // Usamos la función para agregar proveedor
+  const { handleSubmitProveedor } = useProveedores();
   const [formData, setFormData] = useState({
     nombreProveedor: '',
     nombreEmpresa: '',

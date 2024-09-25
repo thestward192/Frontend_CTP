@@ -9,8 +9,8 @@ interface FormularioLicitacionProps {
 }
 
 const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, onSubmit }) => {
-  const { leyes, loading: loadingLeyes, error: errorLeyes } = useLeyes();
-  const { proveedores, loading: loadingProveedores, error: errorProveedores } = useProveedores();
+  const { leyes} = useLeyes();
+  const { proveedores} = useProveedores();
 
   const [licitacion, setLicitacion] = useState<Omit<Licitacion, 'id'>>({
     numActa: undefined,
@@ -18,16 +18,28 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
     nombre: '',
     monto: undefined,
     descripcion: '',
-    fecha: '',
+    fecha: new Date,
     idProveedor: 0,
     idLey: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setLicitacion((prev) => ({ ...prev, [name]: value }));
+    if (name === 'fecha') {
+      const [year, month, day] = value.split('-').map(Number);
+      const utcDate = new Date(Date.UTC(year, month - 1, day)); // Crear la fecha en UTC
+      setLicitacion({
+        ...licitacion,
+        [name]: utcDate,
+      });
+    } else {
+      setLicitacion({
+        ...licitacion,
+        [name]: value,
+      });
+    }
   };
-
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(licitacion);
@@ -109,57 +121,49 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
               type="date"
               id="fecha"
               name="fecha"
-              value={licitacion.fecha}
-              onChange={handleChange}
+              value={licitacion.fecha ? licitacion.fecha.toISOString().split('T')[0] : ''}
+              onChange={(e) => setLicitacion({ ...licitacion, fecha: new Date(e.target.value) })}
               className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
             />
           </div>
 
+
           <div className="form-group">
-            <label htmlFor="idProveedor" className="block text-sm font-medium text-gray-700">Proveedor</label>
+            <label htmlFor="ley" className="block text-sm font-medium text-gray-700">Ley</label>
             <select
-              id="idProveedor"
-              name="idProveedor"
-              value={licitacion.idProveedor}
-              onChange={handleChange}
+              id="ley"
+              name="ley"
+              value={licitacion.idLey || ''}
+              onChange={(e) => setLicitacion({ ...licitacion, idLey: parseInt(e.target.value) })}
               className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
-              required
             >
-              <option value="" disabled>Seleccione Proveedor</option>
-              {loadingProveedores ? (
-                <option>Cargando proveedores...</option>
-              ) : errorProveedores ? (
-                <option>Error al cargar proveedores</option>
-              ) : (
-                proveedores.map((proveedor) => (
-                  <option key={proveedor.id} value={proveedor.id}>{proveedor.nombreProveedor}</option>
-                ))
-              )}
+              <option value="" disabled>Seleccione una Ley</option>
+              {leyes.map((ley) => (
+                <option key={ley.id} value={ley.id}>
+                  {ley.nombre}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="idLey" className="block text-sm font-medium text-gray-700">Ley</label>
+            <label htmlFor="proveedor" className="block text-sm font-medium text-gray-700">Proveedor</label>
             <select
-              id="idLey"
-              name="idLey"
-              value={licitacion.idLey}
-              onChange={handleChange}
+              id="proveedor"
+              name="proveedor"
+              value={licitacion.idProveedor || ''}
+              onChange={(e) => setLicitacion({ ...licitacion, idProveedor: parseInt(e.target.value) })}
               className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
-              required
             >
-              <option value="" disabled>Seleccione Ley</option>
-              {loadingLeyes ? (
-                <option>Cargando leyes...</option>
-              ) : errorLeyes ? (
-                <option>Error al cargar leyes</option>
-              ) : (
-                leyes.map((ley) => (
-                  <option key={ley.id} value={ley.id}>{ley.nombre}</option>
-                ))
-              )}
+              <option value="" disabled>Seleccione un Proveedor</option>
+              {proveedores.map((proveedor) => (
+                <option key={proveedor.id} value={proveedor.id}>
+                  {proveedor.nombreProveedor}
+                </option>
+              ))}
             </select>
           </div>
+
 
           <div className="flex justify-end col-span-2 mt-4 space-x-4">
             <button
