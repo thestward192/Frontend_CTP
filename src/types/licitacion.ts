@@ -1,5 +1,5 @@
 export interface Licitacion {
-    id?:number
+    id:number
     numActa: number;
     numLicitacion: number;
     nombre: string;
@@ -20,3 +20,5 @@ export interface UpdateLicitacionDTO {
     idProveedor?: number;
     idLey?: number;
   }
+
+  

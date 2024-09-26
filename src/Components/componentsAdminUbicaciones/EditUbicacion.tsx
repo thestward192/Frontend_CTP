@@ -1,5 +1,5 @@
-// src/components/EditUbicacionForm.tsx
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { Ubicacion } from '../../types/ubicacion';
 
 interface EditUbicacionFormProps {
@@ -8,59 +8,67 @@ interface EditUbicacionFormProps {
   onCancel: () => void;
 }
 
+interface FormData {
+  nombre: string;
+  descripcion: string;
+  pabellon: string;
+}
+
 const EditUbicacion: React.FC<EditUbicacionFormProps> = ({ ubicacion, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<Partial<Ubicacion>>({
-    nombre: ubicacion.nombre,
-    descripcion: ubicacion.descripcion,
-    pabellon: ubicacion.pabellon,
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    defaultValues: {
+      nombre: ubicacion.nombre,
+      descripcion: ubicacion.descripcion,
+      pabellon: ubicacion.pabellon,
+    }
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSave(ubicacion.id, formData);
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    onSave(ubicacion.id, data);
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Editar Ubicación</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Nombre</label>
             <input
               type="text"
-              name="nombre"
-              value={formData.nombre || ''}
-              onChange={handleInputChange}
+              {...register('nombre', { required: 'El nombre es obligatorio' })}
               className="w-full border p-2 rounded-md"
             />
+            {errors.nombre && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.nombre.message}
+              </p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Pabellón</label>
             <input
               type="text"
-              name="pabellon"
-              value={formData.pabellon || ''}
-              onChange={handleInputChange}
+              {...register('pabellon', { required: 'El pabellón es obligatorio' })}
               className="w-full border p-2 rounded-md"
             />
+            {errors.pabellon && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.pabellon.message}
+              </p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Descripción</label>
             <textarea
-              name="descripcion"
-              value={formData.descripcion || ''}
-              onChange={handleInputChange}
+              {...register('descripcion', { required: 'La descripción es obligatoria' })}
               className="w-full border p-2 rounded-md"
             />
+            {errors.descripcion && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.descripcion.message}
+              </p>
+            )}
           </div>
           <div className="flex justify-end space-x-2">
             <button
