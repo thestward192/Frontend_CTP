@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useLeyes } from '../../hooks/useLey'; // Importamos el hook
+import { useLeyes } from '../../hooks/useLey';
 
 interface FormularioLeyProps {
   onClose: () => void;
 }
 
 const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose }) => {
-  const { handleSubmitLey } = useLeyes(); // Usamos la función para crear ley
+  const { createLey } = useLeyes(); // Usamos la función para crear ley
   const [formData, setFormData] = useState({
     numLey: '',
     nombre: '',
@@ -24,13 +24,15 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const success = await handleSubmitLey(formData); // Enviar la nueva ley
-    if (success) {
+    try {
+      await createLey(formData); // Enviar la nueva ley
       setAlertaVisible(true); // Mostrar alerta de éxito
       setTimeout(() => {
         setAlertaVisible(false);
         onClose(); // Cerrar el modal al crear la ley
-      }, 1000); // Cerrar después de 1.5 segundos
+      }, 1000); // Cerrar después de 1 segundo
+    } catch (error) {
+      console.error('Error al crear la ley:', error);
     }
   };
 
