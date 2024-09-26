@@ -1,36 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { useLeyes } from '../../hooks/useLey';
 
 interface FormularioLeyProps {
   onClose: () => void;
 }
 
+interface FormData {
+  numLey: string;
+  nombre: string;
+  detalle: string;
+}
+
 const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose }) => {
-  const { createLey } = useLeyes(); // Usamos la función para crear ley
-  const [formData, setFormData] = useState({
-    numLey: '',
-    nombre: '',
-    detalle: '',
-  });
-  const [alertaVisible, setAlertaVisible] = useState(false);
+  const { createLey } = useLeyes();
+  const { handleSubmit, control, reset, formState: { errors } } = useForm<FormData>();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (data: FormData) => {
     try {
-      await createLey(formData); // Enviar la nueva ley
-      setAlertaVisible(true); // Mostrar alerta de éxito
-      setTimeout(() => {
-        setAlertaVisible(false);
-        onClose(); // Cerrar el modal al crear la ley
-      }, 1000); // Cerrar después de 1 segundo
+      await createLey(data); // Enviar la nueva ley
+      reset(); // Resetear el formulario
+      onClose(); // Cerrar el modal al crear la ley
     } catch (error) {
       console.error('Error al crear la ley:', error);
     }
@@ -39,46 +29,55 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] relative">
-        {alertaVisible && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-md">
-            <p>Ley creada exitosamente</p>
-          </div>
-        )}
         <h2 className="text-lg font-bold mb-4">Agregar Ley</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Número de Ley</label>
-            <input
-              type="text"
+            <Controller
               name="numLey"
-              value={formData.numLey}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
-              placeholder="Número de la Ley"
+              control={control}
+              rules={{ required: 'El número de ley es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  className={`w-full border p-2 rounded-md ${errors.numLey ? 'border-red-500' : ''}`}
+                  placeholder="Número de la Ley"
+                />
+              )}
             />
+            {errors.numLey && <p className="text-red-500 text-sm">{errors.numLey.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Nombre</label>
-            <input
-              type="text"
+            <Controller
               name="nombre"
-              value={formData.nombre}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
-              placeholder="Nombre de la Ley"
+              control={control}
+              rules={{ required: 'El nombre es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
+                  placeholder="Nombre de la Ley"
+                />
+              )}
             />
+            {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Detalle</label>
-            <textarea
+            <Controller
               name="detalle"
-              value={formData.detalle}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
-              placeholder="Detalle"
-              rows={4}
+              control={control}
+              render={({ field }) => (
+                <textarea
+                  {...field}
+                  className="w-full border p-2 rounded-md"
+                  placeholder="Detalle"
+                  rows={4}
+                />
+              )}
             />
           </div>
 

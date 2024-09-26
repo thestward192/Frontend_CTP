@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { Licencia } from '../../types/licencia';
 import { useLeyes } from '../../hooks/useLey';
 import { useLicencias } from '../../hooks/useLicencia';
@@ -9,44 +10,29 @@ interface EditLicenciaProps {
 }
 
 const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
-  const [formData, setFormData] = useState<Licencia>({
-    id: licencia.id,
-    nombre: licencia.nombre,
-    descripcion: licencia.descripcion,
-    codigoLicencia: licencia.codigoLicencia,
-    modoAdquisicion: licencia.modoAdquisicion,
-    leyId: licencia.leyId || undefined,
-  });
-
   const { updateLicencia } = useLicencias();
   const { leyes, loading: leyesLoading, error: leyesError } = useLeyes();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'leyId' ? Number(value) : value, // Asegúrate de que leyId sea un número
-    }));
+  const { handleSubmit, control, formState: { errors } } = useForm<Licencia>({
+    defaultValues: {
+      id: licencia.id,
+      nombre: licencia.nombre,
+      descripcion: licencia.descripcion,
+      codigoLicencia: licencia.codigoLicencia,
+      modoAdquisicion: licencia.modoAdquisicion,
+      leyId: licencia.leyId || undefined,
+    },
+  });
 
-    // Si el modo de adquisición cambia a "Ley", asegúrate de que leyId esté capturado como número
-    if (name === 'modoAdquisicion' && value === 'Ley') {
-      setFormData((prev) => ({
-        ...prev,
-        leyId: prev.leyId || undefined, // Captura o asegura que leyId esté definido como number | undefined
-      }));
-    }
-    // Si el modo de adquisición cambia a algo distinto de "Ley", limpiar leyId
-    if (name === 'modoAdquisicion' && value !== 'Ley') {
-      setFormData((prev) => ({
-        ...prev,
-        leyId: undefined,
-      }));
-    }
-  };
+  const modoAdquisicion = useWatch({
+    control,
+    name: 'modoAdquisicion',
+    defaultValue: licencia.modoAdquisicion,
+  });
 
-  const handleSave = async () => {
+  const onSubmit = async (data: Licencia) => {
     try {
-      await updateLicencia({ id: formData.id, licencia: formData });
+      await updateLicencia({ id: data.id, licencia: data });
       onClose();
     } catch (error) {
       console.error('Error al actualizar la licencia:', error);
@@ -57,80 +43,101 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Editar Licencia</h2>
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Licencia</label>
-            <input
-              type="text"
+            <Controller
               name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-md"
-              placeholder="Nombre de la Licencia"
-              required
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
+                  placeholder="Nombre de la Licencia"
+                />
+              )}
             />
+            {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Descripción</label>
-            <input
-              type="text"
+            <Controller
               name="descripcion"
-              value={formData.descripcion}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-md"
-              placeholder="Descripción"
-              required
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
+                  placeholder="Descripción"
+                />
+              )}
             />
+            {errors.descripcion && <p className="text-red-500 text-sm">{errors.descripcion.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Código de la Licencia</label>
-            <input
-              type="text"
+            <Controller
               name="codigoLicencia"
-              value={formData.codigoLicencia}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-md"
-              placeholder="Código de la Licencia"
-              required
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
+                  placeholder="Código de la Licencia"
+                />
+              )}
             />
+            {errors.codigoLicencia && <p className="text-red-500 text-sm">{errors.codigoLicencia.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Modo de Adquisición</label>
-            <select
+            <Controller
               name="modoAdquisicion"
-              value={formData.modoAdquisicion}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-md"
-              required
-            >
-              <option value="Ley">Ley</option>
-              <option value="Donación">Donación</option>
-            </select>
+              control={control}
+              render={({ field }) => (
+                <select
+                  {...field}
+                  className={`w-full border p-2 rounded-md ${errors.modoAdquisicion ? 'border-red-500' : ''}`}
+                >
+                  <option value="Ley">Ley</option>
+                  <option value="Donación">Donación</option>
+                </select>
+              )}
+            />
+            {errors.modoAdquisicion && <p className="text-red-500 text-sm">{errors.modoAdquisicion.message}</p>}
           </div>
 
-          {formData.modoAdquisicion === 'Ley' && (
+          {modoAdquisicion === 'Ley' && (
             <div className="mb-4">
               <label className="block mb-1">Ley</label>
-              <select
+              <Controller
                 name="leyId"
-                value={formData.leyId?.toString() || ''}
-                onChange={handleChange}
-                className="w-full border p-2 rounded-md"
-                disabled={leyesLoading || leyesError !== null}
-                required
-              >
-                <option value="" disabled>
-                  {leyesLoading ? 'Cargando leyes...' : 'Seleccione una ley'}
-                </option>
-                {leyes?.map((ley) => (
-                  <option key={ley.id} value={ley.id.toString()}>
-                    {ley.nombre}
-                  </option>
-                ))}
-              </select>
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    className="w-full border p-2 rounded-md"
+                    disabled={leyesLoading || leyesError !== null}
+                    defaultValue="" // Esto asegura que "Seleccione una ley" sea el valor por defecto
+                  >
+                    <option value="" disabled hidden>
+                      Seleccione una ley
+                    </option>
+                    {leyes?.map((ley) => (
+                      <option key={ley.id} value={ley.id.toString()}>
+                        {ley.nombre}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {errors.leyId && <p className="text-red-500 text-sm">{errors.leyId.message}</p>}
               {leyesError && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
             </div>
           )}
@@ -144,8 +151,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
               Cancelar
             </button>
             <button
-              type="button"
-              onClick={handleSave}
+              type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             >
               Guardar
