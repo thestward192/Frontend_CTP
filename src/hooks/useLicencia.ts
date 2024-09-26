@@ -1,53 +1,46 @@
-import { useState, useEffect } from 'react';
-import { Licencia } from '../types/licencia';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { getLicencias, createLicencia, deleteLicencia } from '../Services/licenciaService';
+import { Licencia } from '../types/licencia';
 
 export const useLicencias = () => {
-  const [licencias, setLicencias] = useState<Licencia[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Obtener todas las licencias al montar el componente
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getLicencias();
-        setLicencias(data);
-      } catch (error) {
-        setError('Error al cargar las licencias.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // Obtener todas las licencias
+  const { data: licencias, isLoading: loading, error } = useQuery<Licencia[], Error>(
+    'licencias',
+    getLicencias
+  );
 
   // Crear una nueva licencia
-  const addLicencia = async (licencia: Licencia) => {
-    try {
-      const newLicencia = await createLicencia(licencia);
-      setLicencias([...licencias, newLicencia]);
-    } catch (error) {
-      setError('Error al crear la licencia.');
-    }
-  };
+  const mutation = useMutation(createLicencia, {
+    onSuccess: () => {
+      // Invalida y refetch los datos después de una mutación exitosa
+      queryClient.invalidateQueries('licencias');
+    },
+  });
+
+  // const updateLicenciaMutation = useMutation(
+  //   ({ id, licencia }: { id: number; licencia: UpdateLicenciaDTO }) => updateLicencia(id, licencia),
+  //   {
+  //     onSuccess: () => {
+  //       queryClient.invalidateQueries('licencias');
+  //     },
+  //   }
+  // );
 
   // Eliminar una licencia
-  const removeLicencia = async (codigoLicencia: string) => {
-    try {
-      await deleteLicencia(codigoLicencia);
-      setLicencias(licencias.filter(l => l.codigoLicencia !== codigoLicencia));
-    } catch (error) {
-      setError('Error al eliminar la licencia.');
-    }
-  };
+  const deleteMutation = useMutation(deleteLicencia, {
+    onSuccess: () => {
+      // Invalida y refetch los datos después de una eliminación exitosa
+      queryClient.invalidateQueries('licencias');
+    },
+  });
 
   return {
     licencias,
     loading,
     error,
-    addLicencia,
-    removeLicencia,
+    addLicencia: mutation.mutateAsync,
+    removeLicencia: deleteMutation.mutateAsync
   };
 };

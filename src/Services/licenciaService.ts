@@ -15,6 +15,12 @@ export const createLicencia = async (licencia: Licencia): Promise<Licencia> => {
   return response.data;
 };
 
+// export const updateLicencia = async (id: number, licencia: UpdateLicenciaDTO): Promise<Licencia> => {
+//   const response = await axios.put(`${API_URL}/${id}`, licencia);
+//   return response.data;
+// };
+
+
 // Eliminar una licencia por su código
 export const deleteLicencia = async (codigoLicencia: string): Promise<void> => {
   await axios.delete(`${API_URL}/${codigoLicencia}`);
