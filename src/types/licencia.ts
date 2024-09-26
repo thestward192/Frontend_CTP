@@ -10,3 +10,12 @@ export interface Licencia {
     ley?: Ley;
 }
 
+// types/dtos.ts
+export interface CreateLicenciaDTO {
+    nombre: string;
+    descripcion: string;
+    codigoLicencia: string;
+    modoAdquisicion: string;
+    leyId?: number;
+  }
+  

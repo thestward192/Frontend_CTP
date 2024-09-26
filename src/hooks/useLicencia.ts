@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { getLicencias, createLicencia, deleteLicencia, updateLicencia } from '../Services/licenciaService';
-import { Licencia } from '../types/licencia';
+import { CreateLicenciaDTO, Licencia } from '../types/licencia';
 
 export const useLicencias = () => {
   const queryClient = useQueryClient();
@@ -12,9 +12,8 @@ export const useLicencias = () => {
   );
 
   // Crear una nueva licencia
-  const mutation = useMutation(createLicencia, {
+  const createMutation = useMutation((licencia: CreateLicenciaDTO) => createLicencia(licencia), {
     onSuccess: () => {
-      // Invalida y refetch los datos después de una mutación exitosa
       queryClient.invalidateQueries('licencias');
     },
   });
@@ -40,7 +39,7 @@ export const useLicencias = () => {
     loading,
     error,
     updateLicencia: updateMutation.mutateAsync,
-    addLicencia: mutation.mutateAsync,
+    addLicencia: createMutation.mutateAsync, 
     removeLicencia: deleteMutation.mutateAsync
   };
 };

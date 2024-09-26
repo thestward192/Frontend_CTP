@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Licencia } from '../../types/licencia';
+
 import { useLeyes } from '../../hooks/useLey';
+import { CreateLicenciaDTO } from '../../types/licencia';
 
 interface FormularioLicenciaProps {
   onClose: () => void;
-  onSave: (licencia: Omit<Licencia, 'id'>) => Promise<void>;
+  onSave: (licencia: CreateLicenciaDTO) => Promise<void>;
 }
 
 const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
   const { leyes, loading: loadingLeyes, error: errorLeyes } = useLeyes();
-  const [formData, setFormData] = useState<Omit<Licencia, 'id'>>({
+  const [formData, setFormData] = useState<CreateLicenciaDTO>({
     nombre: '',
     descripcion: '',
     codigoLicencia: '',
@@ -21,7 +22,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === 'leyId' ? Number(value) : value, // Asegúrate de que leyId sea un número
     }));
   };
 
@@ -104,7 +105,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                   {loadingLeyes ? 'Cargando leyes...' : 'Seleccione una ley'}
                 </option>
                 {leyes?.map((ley) => (
-                  <option key={ley.id} value={ley.id}>
+                  <option key={ley.id} value={ley.id.toString()}>
                     {ley.nombre}
                   </option>
                 ))}
