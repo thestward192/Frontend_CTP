@@ -13,6 +13,8 @@ import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
 import ProtectedRoute from './hooks/ProtectedRoute';
 import { AuthProvider } from './hooks/AuthContext';
 import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
+import MenuPrestamosDocente from './ComponentsDocente/componentsPrestamoDocente/MenuPrestamosDocente';
+import MenuInventarioDocente from './ComponentsDocente/componentsInventarioDocente/MenuInventarioDocente';
 
 const App: React.FC = () => {
   return (
@@ -83,6 +85,22 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute roles={['Docente']}>
                 <MenuDocente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/PrestamosDocente"
+            element={
+              <ProtectedRoute roles={['Docente']}>
+                <MenuPrestamosDocente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/InventarioDocente"
+            element={
+              <ProtectedRoute roles={['Docente']}>
+                <MenuInventarioDocente />
               </ProtectedRoute>
             }
           />

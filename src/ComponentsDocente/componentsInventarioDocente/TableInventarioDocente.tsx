@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useActivos } from '../../hooks/useActivo';
 import { useAuth } from '../../hooks/AuthContext';
-import DetalleActivoDocente from './DetalleActivoDocente';
-import { Activo } from '../../types/activo'; // Asegúrate de tener un tipo definido para Activo
+import DetalleActivoInventario from './DetalleActivoInventario';
 
-const TableComponentDocente: React.FC = () => {
+const TableInventarioDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { activos, loading, fetchActivosByUbicacion } = useActivos();
   const { ubicaciones } = useAuth();
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
-  const [selectedActivo, setSelectedActivo] = useState<Activo | null>(null);
+  const [selectedActivo, setSelectedActivo] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -34,13 +33,14 @@ const TableComponentDocente: React.FC = () => {
     setSelectedUbicacion(parseInt(event.target.value, 10));
   };
 
-  const handleRowClick = (activo: Activo) => {
+  const handleRowClick = (activo: any) => {
     setSelectedActivo(activo);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setSelectedActivo(null);
   };
 
   const itemsPerPage = 5;
@@ -55,7 +55,7 @@ const TableComponentDocente: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</div>
+            <div className="text-[22px] font-semibold text-black mr-4">Seleccione una ubicación:</div>
             <select
               className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
               value={selectedUbicacion || ''}
@@ -87,11 +87,7 @@ const TableComponentDocente: React.FC = () => {
               </thead>
               <tbody>
                 {paginatedData.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleRowClick(row)}
-                  >
+                  <tr key={row.id} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => handleRowClick(row)}>
                     <td className="px-4 py-2 text-sm">{row.id}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.marca}</td>
@@ -140,16 +136,17 @@ const TableComponentDocente: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {isModalOpen && selectedActivo && (
-          <DetalleActivoDocente
-            activo={selectedActivo}
-            onClose={closeModal}
-          />
-        )}
       </div>
+
+      {/* Modal */}
+      {isModalOpen && selectedActivo && (
+        <DetalleActivoInventario
+          activo={selectedActivo}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 };
 
-export default TableComponentDocente;
+export default TableInventarioDocente;
