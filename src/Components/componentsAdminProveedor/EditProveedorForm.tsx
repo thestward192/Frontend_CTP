@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Proveedor } from '../../types/proveedor';
+import { useForm } from 'react-hook-form';
 
 interface EditProveedorFormProps {
   proveedor: Proveedor;
@@ -8,81 +9,92 @@ interface EditProveedorFormProps {
 }
 
 const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<Partial<Proveedor>>({
-    nombreProveedor: proveedor.nombreProveedor,
-    nombreEmpresa: proveedor.nombreEmpresa,
-    telefonoProveedor: proveedor.telefonoProveedor,
-    telefonoEmpresa: proveedor.telefonoEmpresa,
-    email: proveedor.email,
+  const { register, handleSubmit, formState: { errors } } = useForm<Proveedor>({
+    defaultValues: {
+      nombreProveedor: proveedor.nombreProveedor,
+      nombreEmpresa: proveedor.nombreEmpresa,
+      telefonoProveedor: proveedor.telefonoProveedor,
+      telefonoEmpresa: proveedor.telefonoEmpresa,
+      email: proveedor.email,
+    },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSave(proveedor.id, formData);
+  const onSubmit = (data: Proveedor) => {
+    // No es necesario formatear los números de teléfono, simplemente pasa los datos tal cual
+    onSave(proveedor.id, data);
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Editar Proveedor</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Nombre del Proveedor</label>
             <input
               type="text"
-              name="nombreProveedor"
-              value={formData.nombreProveedor}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
+              {...register('nombreProveedor', { required: 'Este campo es obligatorio' })}
+              className={`w-full border p-2 rounded-md ${errors.nombreProveedor ? 'border-red-500' : ''}`}
             />
+            {errors.nombreProveedor && (
+              <p className="text-red-500 text-sm">{errors.nombreProveedor.message}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Empresa</label>
             <input
               type="text"
-              name="nombreEmpresa"
-              value={formData.nombreEmpresa}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
+              {...register('nombreEmpresa', { required: 'Este campo es obligatorio' })}
+              className={`w-full border p-2 rounded-md ${errors.nombreEmpresa ? 'border-red-500' : ''}`}
             />
+            {errors.nombreEmpresa && (
+              <p className="text-red-500 text-sm">{errors.nombreEmpresa.message}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Teléfono del Proveedor</label>
             <input
               type="text"
-              name="telefonoProveedor"
-              value={formData.telefonoProveedor}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
+              {...register('telefonoProveedor', {
+                required: 'Este campo es obligatorio',
+                pattern: {
+                  value: /^\d{4}-\d{4}$/,
+                  message: 'El formato debe ser ####-####',
+                },
+              })}
+              className={`w-full border p-2 rounded-md ${errors.telefonoProveedor ? 'border-red-500' : ''}`}
             />
+            {errors.telefonoProveedor && (
+              <p className="text-red-500 text-sm">{errors.telefonoProveedor.message}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Teléfono de la Empresa</label>
             <input
               type="text"
-              name="telefonoEmpresa"
-              value={formData.telefonoEmpresa}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
+              {...register('telefonoEmpresa', {
+                required: 'Este campo es obligatorio',
+                pattern: {
+                  value: /^\d{4}-\d{4}$/,
+                  message: 'El formato debe ser ####-####',
+                },
+              })}
+              className={`w-full border p-2 rounded-md ${errors.telefonoEmpresa ? 'border-red-500' : ''}`}
             />
+            {errors.telefonoEmpresa && (
+              <p className="text-red-500 text-sm">{errors.telefonoEmpresa.message}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Email</label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded-md"
+              {...register('email', { required: 'Este campo es obligatorio' })}
+              className={`w-full border p-2 rounded-md ${errors.email ? 'border-red-500' : ''}`}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
           </div>
           <div className="flex justify-end space-x-2">
             <button

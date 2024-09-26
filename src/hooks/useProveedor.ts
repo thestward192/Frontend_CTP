@@ -1,87 +1,60 @@
-import { useState, useEffect } from 'react';
-import { getProveedores, createProveedor, getProveedorById, deleteProveedor } from '../Services/proveedorService'; // Servicios de proveedor
-import { updateProveedor as updateProveedorService } from '../Services/proveedorService';
-import { Proveedor } from '../types/proveedor'; // Tipo Proveedor
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { getProveedores, createProveedor, getProveedorById, deleteProveedor, updateProveedor } from '../Services/proveedorService';
+import { Proveedor } from '../types/proveedor';
+import { useState } from 'react';
 
 export const useProveedores = () => {
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
-  const [selectedProveedor, setSelectedProveedor] = useState<Proveedor | null>(null); // Proveedor seleccionado
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const [selectedProveedor, setSelectedProveedor] = useState<Proveedor | null>(null);
 
-  // Función para obtener todos los proveedores
-  const fetchProveedores = async () => {
-    try {
-      const data = await getProveedores();
-      setProveedores(data);
-    } catch (error) {
-      setError('Error al obtener los proveedores');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Obtener todos los proveedores usando useQuery
+  const { data: proveedores, isLoading: loading, error } = useQuery<Proveedor[], Error>(
+    'proveedores',
+    getProveedores
+  );
 
-  // Función para actualizar un proveedor
-  const updateProveedor = async (id: number, proveedorData: Partial<Proveedor>): Promise<boolean> => {
-    try {
-      const updatedProveedor = await updateProveedorService(id, proveedorData);
-      setProveedores(proveedores.map(prov => prov.id === id ? updatedProveedor : prov));
-      setSelectedProveedor(updatedProveedor); // Actualizamos el proveedor seleccionado si es el que se actualizó
-      return true;
-    } catch (error) {
-      console.error(`Error al actualizar el proveedor con ID ${id}:`, error);
-      setError('Error al actualizar el proveedor');
-      return false;
-    }
-  };
+  // Crear un nuevo proveedor
+  const mutation = useMutation(createProveedor, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('proveedores');
+    },
+  });
 
-  // Función para crear un nuevo proveedor
-  const handleSubmitProveedor = async (proveedorData: Omit<Proveedor, 'id'>): Promise<boolean> => {
-    try {
-      const nuevoProveedor = await createProveedor(proveedorData);
-      setProveedores([...proveedores, nuevoProveedor]);
-      return true;
-    } catch (error) {
-      console.error('Error al crear el proveedor:', error);
-      setError('Error al crear el proveedor');
-      return false;
-    }
-  };
-
-  // Función para obtener detalles de un proveedor por ID
+  // Obtener detalles de un proveedor específico y seleccionarlo
   const getProveedorDetails = async (id: number) => {
     try {
       const data = await getProveedorById(id);
-      setSelectedProveedor(data); // Almacenar el proveedor seleccionado
+      setSelectedProveedor(data); // Establecer proveedor seleccionado
     } catch (error) {
-      setError(`Error al obtener detalles del proveedor con ID ${id}`);
+      console.error(`Error al obtener detalles del proveedor con ID ${id}:`, error);
     }
   };
 
-  // Función para eliminar un proveedor por ID
-  const removeProveedor = async (id: number) => {
-    try {
-      await deleteProveedor(id);
-      setProveedores(proveedores.filter((proveedor) => proveedor.id !== id)); // Actualizar el estado eliminando el proveedor
-    } catch (error) {
-      setError(`Error al eliminar el proveedor con ID ${id}`);
+  // Editar un proveedor existente
+  const editProveedorMutation = useMutation(
+    ({ id, proveedorData }: { id: number; proveedorData: Partial<Proveedor> }) => updateProveedor(id, proveedorData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('proveedores');
+      },
     }
-  };
+  );
 
-  useEffect(() => {
-    fetchProveedores(); // Ejecutar al montar el componente
-  }, []);
+  // Eliminar un proveedor
+  const deleteProveedorMutation = useMutation((id: number) => deleteProveedor(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('proveedores');
+    },
+  });
 
   return {
     proveedores,
     loading,
     error,
-    fetchProveedores, // Retorna la función para que esté disponible fuera
-    handleSubmitProveedor,
-    getProveedorDetails,
-    removeProveedor,
     selectedProveedor,
-    updateProveedor
+    getProveedorDetails,
+    handleSubmitProveedor: mutation.mutateAsync,
+    editProveedor: editProveedorMutation.mutateAsync,
+    removeProveedor: deleteProveedorMutation.mutateAsync,
   };
 };
