@@ -1,8 +1,12 @@
+import { Ley } from "./ley";
+
 export interface Licencia {
+    id:number;
     nombre: string;
     descripcion: string;
     codigoLicencia: string;
     modoAdquisicion: string;
     leyId?: number;
+    ley?: Ley;
 }
 

@@ -23,8 +23,13 @@ const LicenciasComponent: React.FC = () => {
     setIsModalOpen(false); // Cierra el modal después de agregar la licencia
   };
 
+  // Cierra tanto DetailLicencia como EditLicencia
+  const handleCloseDetail = () => {
+    setSelectedLicencia(null);
+  };
+
   if (loading) return <p>Cargando licencias...</p>;
-  if (error) return <p>{error}</p>;
+  if (error) return <p>{error.message}</p>;
 
   return (
     <div className="w-full flex justify-center py-10">
@@ -103,8 +108,7 @@ const LicenciasComponent: React.FC = () => {
       {selectedLicencia && (
         <DetailLicencia
           licencia={selectedLicencia}
-          onClose={() => setSelectedLicencia(null)}
-          onEdit={() => console.log('Editar licencia', selectedLicencia)}
+          onClose={handleCloseDetail} // Cierra el detalle
         />
       )}
     </div>

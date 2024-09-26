@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { getLicencias, createLicencia, deleteLicencia } from '../Services/licenciaService';
+import { getLicencias, createLicencia, deleteLicencia, updateLicencia } from '../Services/licenciaService';
 import { Licencia } from '../types/licencia';
 
 export const useLicencias = () => {
@@ -19,16 +19,15 @@ export const useLicencias = () => {
     },
   });
 
-  // const updateLicenciaMutation = useMutation(
-  //   ({ id, licencia }: { id: number; licencia: UpdateLicenciaDTO }) => updateLicencia(id, licencia),
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries('licencias');
-  //     },
-  //   }
-  // );
-
-  // Eliminar una licencia
+  const updateMutation = useMutation(
+    ({ id, licencia }: { id: number; licencia: Partial<Licencia> }) => updateLicencia(id, licencia),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('licencias');
+      },
+    }
+  );
+  
   const deleteMutation = useMutation(deleteLicencia, {
     onSuccess: () => {
       // Invalida y refetch los datos después de una eliminación exitosa
@@ -40,6 +39,7 @@ export const useLicencias = () => {
     licencias,
     loading,
     error,
+    updateLicencia: updateMutation.mutateAsync,
     addLicencia: mutation.mutateAsync,
     removeLicencia: deleteMutation.mutateAsync
   };
