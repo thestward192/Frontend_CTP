@@ -3,7 +3,7 @@ import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import FormularioLey from './FormularioLey';
 import { useLeyes } from '../../hooks/useLey';
 import DetailLey from './DetailLey';
-import EditLeyForm from './EditLey'; // Importa el nuevo componente de edición
+import EditLeyForm from './EditLey'; 
 import { Ley } from '../../types/ley';
 
 const LeyesComponent: React.FC = () => {
@@ -14,13 +14,15 @@ const LeyesComponent: React.FC = () => {
 
   const { leyes, loading, error, getLeyDetails, selectedLey, removeLey, editLey } = useLeyes();
 
+  // Maneja la eliminación de una ley
   const handleDelete = async (id: number) => {
     await removeLey(id);
     setDeleteModalOpen(null);
   };
 
+  // Maneja la visualización de detalles de una ley
   const handleViewDetails = async (id: number) => {
-    await getLeyDetails(id);
+    await getLeyDetails(id); // Selecciona la ley y abre el modal de detalles
     setIsEditing(false);
     setDetailModalOpen(true);
   };
@@ -39,7 +41,7 @@ const LeyesComponent: React.FC = () => {
   };
 
   const handleEditSave = async (id: number, updatedData: Partial<Ley>) => {
-    await editLey(id, updatedData);
+    await editLey({ id, leyData: updatedData });
     setIsEditing(false);
     setDetailModalOpen(false);
   };
@@ -53,7 +55,6 @@ const LeyesComponent: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Leyes</h2>
 
-          {/* Botón para añadir más leyes */}
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
@@ -63,10 +64,7 @@ const LeyesComponent: React.FC = () => {
           </button>
         </div>
 
-        {/* Mostrar error si existe */}
         {error && <p className="text-red-500">Error al cargar leyes.</p>}
-
-        {/* Indicador de carga */}
         {loading ? (
           <p>Cargando leyes...</p>
         ) : (
@@ -82,23 +80,20 @@ const LeyesComponent: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {leyes.map((ley, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-100">
+                {leyes?.map((ley) => (
+                  <tr key={ley.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ley.id}</td>
                     <td className="px-4 py-2 text-sm">{ley.numLey}</td>
                     <td className="px-4 py-2 text-sm">{ley.nombre}</td>
                     <td className="px-4 py-2 text-sm truncate max-w-xs">{ley.detalle}</td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex space-x-2">
-                        {/* Botón de ver detalles */}
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => handleViewDetails(ley.id)}
                         >
                           <FaEye className="mr-1" />
                         </button>
-
-                        {/* Botón de eliminar */}
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setDeleteModalOpen(ley.id)}
@@ -114,11 +109,10 @@ const LeyesComponent: React.FC = () => {
           </div>
         )}
 
-        {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
             <p className="text-sm text-gray-600">
-              Mostrando 1 a {leyes.length} de {leyes.length} entradas
+              Mostrando 1 a {leyes?.length || 0} de {leyes?.length || 0} entradas
             </p>
           </div>
           <div className="flex space-x-1">
@@ -129,10 +123,8 @@ const LeyesComponent: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal para agregar ley */}
       {isModalOpen && <FormularioLey onClose={() => setIsModalOpen(false)} />}
 
-      {/* Modal para ver detalles de una ley o para editar */}
       {detailModalOpen && selectedLey && (
         isEditing ? (
           <EditLeyForm
@@ -149,7 +141,6 @@ const LeyesComponent: React.FC = () => {
         )
       )}
 
-      {/* Modal de confirmación de eliminación */}
       {deleteModalOpen !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">

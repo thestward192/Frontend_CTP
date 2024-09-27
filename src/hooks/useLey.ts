@@ -1,89 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { getLeyes, createLey, getLeyById, deleteLey, updateLey } from '../Services/leyService';
 import { Ley } from '../types/ley';
+import { useState } from 'react';
 
 export const useLeyes = () => {
-  const [leyes, setLeyes] = useState<Ley[]>([]);
-  const [selectedLey, setSelectedLey] = useState<Ley | null>(null); // Ley seleccionada
-  const [loading, setLoading] = useState<boolean>(true); // Estado de carga
-  const [error, setError] = useState<string | null>(null); // Estado de error
+  const queryClient = useQueryClient();
+  const [selectedLey, setSelectedLey] = useState<Ley | null>(null);
+  
+  // Obtener todas las leyes usando useQuery
+  const { data: leyes, isLoading: loading, error } = useQuery<Ley[], Error>(
+    'leyes',
+    getLeyes
+  );
 
-  // Función para obtener todas las leyes
-  const fetchLeyes = async () => {
-    try {
-      setError(null); // Limpiar cualquier error anterior
-      setLoading(true); // Activar estado de carga
-      const data = await getLeyes();
-      setLeyes(data); // Almacenar las leyes obtenidas
-    } catch (error) {
-      setError('Error al obtener las leyes');
-      console.error(error);
-    } finally {
-      setLoading(false); // Desactivar estado de carga
-    }
-  };
+  // Crear una nueva ley
+  const createLeyMutation = useMutation(createLey, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('leyes');
+    },
+  });
 
-  // Función para crear una nueva ley
-  const handleSubmitLey = async (leyData: Omit<Ley, 'id'>): Promise<boolean> => {
-    try {
-      setError(null); // Limpiar cualquier error anterior
-      const nuevaLey = await createLey(leyData); // Crear nueva ley
-      setLeyes([...leyes, nuevaLey]); // Agregar la nueva ley al estado
-      return true;
-    } catch (error) {
-      console.error('Error al crear la ley:', error);
-      setError('Error al crear la ley');
-      return false;
-    }
-  };
-
-  // Función para obtener detalles de una ley por ID
+  // Obtener detalles de una ley específica y establecerla como seleccionada
   const getLeyDetails = async (id: number) => {
     try {
-      setError(null); // Limpiar cualquier error anterior
       const data = await getLeyById(id);
-      setSelectedLey(data); // Almacenar la ley seleccionada
+      setSelectedLey(data); // Establecer ley seleccionada
     } catch (error) {
-      setError(`Error al obtener detalles de la ley con ID ${id}`);
+      console.error(`Error al obtener detalles de la ley con ID ${id}:`, error);
     }
   };
 
-  const editLey = async (id: number, leyData: Partial<Ley>) => {
-    try {
-      setError(null);
-      const updatedLey = await updateLey(id, leyData);
-      setLeyes(leyes.map((ley) => (ley.id === id ? updatedLey : ley)));
-      setSelectedLey(updatedLey); // Actualiza la ley seleccionada
-    } catch (error) {
-      setError(`Error al actualizar la ley con ID ${id}`);
+  // Editar una ley existente
+  const editLeyMutation = useMutation(
+    ({ id, leyData }: { id: number; leyData: Partial<Ley> }) => updateLey(id, leyData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('leyes');
+      },
     }
-  };
+  );
 
-  // Función para eliminar una ley por ID
-  const removeLey = async (id: number) => {
-    try {
-      setError(null); // Limpiar cualquier error anterior
-      await deleteLey(id); // Eliminar ley del backend
-      setLeyes(leyes.filter((ley) => ley.id !== id)); // Eliminar la ley del estado
-    } catch (error) {
-      setError(`Error al eliminar la ley con ID ${id}`);
-    }
-  };
-
-  // useEffect para ejecutar al montar el componente
-  useEffect(() => {
-    fetchLeyes(); // Ejecutar la carga inicial de leyes
-  }, []);
+  // Eliminar una ley
+  const deleteLeyMutation = useMutation((id: number) => deleteLey(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('leyes');
+    },
+  });
 
   return {
-    leyes,           // Lista de todas las leyes
-    loading,         // Estado de carga
-    error,           // Estado de error
-    handleSubmitLey, // Función para crear una nueva ley
-    getLeyDetails,   // Función para obtener los detalles de una ley
-    removeLey,       // Función para eliminar una ley
-    selectedLey,     // Ley seleccionada
-    fetchLeyes,
-    editLey       // Añadimos fetchLeyes aquí
+    leyes,
+    loading,
+    error,
+    selectedLey,
+    getLeyDetails,
+    createLey: createLeyMutation.mutateAsync,
+    editLey: editLeyMutation.mutateAsync,
+    removeLey: deleteLeyMutation.mutateAsync,
   };
 };

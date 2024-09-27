@@ -1,7 +1,21 @@
+import { Ley } from "./ley";
+
 export interface Licencia {
-    nombre : string;
-    descripcion : string;
-    codigoLicencia : string;
+    id:number;
+    nombre: string;
+    descripcion: string;
+    codigoLicencia: string;
     modoAdquisicion: string;
     leyId?: number;
+    ley?: Ley;
 }
+
+// types/dtos.ts
+export interface CreateLicenciaDTO {
+    nombre: string;
+    descripcion: string;
+    codigoLicencia: string;
+    modoAdquisicion: string;
+    leyId?: number;
+  }
+  

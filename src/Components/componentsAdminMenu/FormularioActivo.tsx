@@ -217,7 +217,7 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
                     <option value="">Seleccione una Ley</option>
                     {leyes.map((ley) => (
                       <option key={ley.id} value={ley.id}>
-                        {ley.nombre}
+                        {ley.numLey}
                       </option>
                     ))}
                   </select>

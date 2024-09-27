@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Licencia } from '../types/licencia';
+import { CreateLicenciaDTO, Licencia } from '../types/licencia';
 
 const API_URL = 'http://localhost:3000/licencia'; // Cambia la URL según tu backend
 
@@ -9,13 +9,16 @@ export const getLicencias = async (): Promise<Licencia[]> => {
   return response.data;
 };
 
-// Crear una nueva licencia
-export const createLicencia = async (licencia: Licencia): Promise<Licencia> => {
-  const response = await axios.post(API_URL, licencia);
+export const createLicencia = async (licencia: CreateLicenciaDTO): Promise<void> => {
+  await axios.post(API_URL, licencia);
+};
+
+export const updateLicencia = async (id: number, licencia: Partial<Licencia>): Promise<Licencia> => {
+  const response = await axios.patch(`${API_URL}/${id}`, licencia);
   return response.data;
 };
 
 // Eliminar una licencia por su código
-export const deleteLicencia = async (codigoLicencia: string): Promise<void> => {
-  await axios.delete(`${API_URL}/${codigoLicencia}`);
+export const deleteLicencia = async (id: number): Promise<void> => {
+  await axios.delete(`${API_URL}/${id}`);
 };

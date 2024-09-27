@@ -2,10 +2,10 @@ import React from 'react';
 import Arriba from '../../assets/Arriba.png';
 import DashboardDocente from '../componentsPagesDocente/DashboardDocentes';
 import SearchBarDocente from '../componentsPagesDocente/SearchBarDocente';
-import TableComponentDocente from './TableComponentDocente';
 import ProfileDocenteComponent from '../componentsPagesDocente/PerfileDocenteComponent';
+import TablePrestamosDocente from './TablePrestamosDocente';
 
-const MenuDocente: React.FC = () => {
+const MenuPrestamosDocente: React.FC = () => {
   return (
     <div className="relative w-full h-screen flex">
       {/* Sidebar */}
@@ -35,12 +35,11 @@ const MenuDocente: React.FC = () => {
 
           {/* Tabla con márgenes laterales */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <TableComponentDocente />
+            <TablePrestamosDocente />
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export default MenuDocente;
+export default MenuPrestamosDocente;

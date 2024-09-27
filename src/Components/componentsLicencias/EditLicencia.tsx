@@ -1,40 +1,48 @@
 import React from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
+import { Licencia } from '../../types/licencia';
 import { useLeyes } from '../../hooks/useLey';
-import { CreateLicenciaDTO } from '../../types/licencia';
+import { useLicencias } from '../../hooks/useLicencia';
 
-interface FormularioLicenciaProps {
+interface EditLicenciaProps {
+  licencia: Licencia;
   onClose: () => void;
-  onSave: (licencia: CreateLicenciaDTO) => Promise<void>;
 }
 
-const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
-  const { leyes, loading: loadingLeyes, error: errorLeyes } = useLeyes();
-  const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
+const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
+  const { updateLicencia } = useLicencias();
+  const { leyes, loading: leyesLoading, error: leyesError } = useLeyes();
+
+  const { handleSubmit, control, formState: { errors } } = useForm<Licencia>({
     defaultValues: {
-      nombre: '',
-      descripcion: '',
-      codigoLicencia: '',
-      modoAdquisicion: 'Ley',
-      leyId: undefined, // Inicializar como undefined
+      id: licencia.id,
+      nombre: licencia.nombre,
+      descripcion: licencia.descripcion,
+      codigoLicencia: licencia.codigoLicencia,
+      modoAdquisicion: licencia.modoAdquisicion,
+      leyId: licencia.leyId || undefined,
     },
   });
 
   const modoAdquisicion = useWatch({
     control,
     name: 'modoAdquisicion',
-    defaultValue: 'Ley',
+    defaultValue: licencia.modoAdquisicion,
   });
 
-  const onSubmit = async (data: CreateLicenciaDTO) => {
-    await onSave(data);
-    onClose();
+  const onSubmit = async (data: Licencia) => {
+    try {
+      await updateLicencia({ id: data.id, licencia: data });
+      onClose();
+    } catch (error) {
+      console.error('Error al actualizar la licencia:', error);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-        <h2 className="text-lg font-bold mb-4">Agregar Licencia</h2>
+        <h2 className="text-lg font-bold mb-4">Editar Licencia</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Licencia</label>
@@ -92,7 +100,6 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             <Controller
               name="modoAdquisicion"
               control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
               render={({ field }) => (
                 <select
                   {...field}
@@ -112,16 +119,15 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               <Controller
                 name="leyId"
                 control={control}
-                rules={{ required: 'Debe Seleccionar una Ley' }}
                 render={({ field }) => (
                   <select
                     {...field}
                     className="w-full border p-2 rounded-md"
-                    disabled={loadingLeyes || errorLeyes !== null}
+                    disabled={leyesLoading || leyesError !== null}
                     defaultValue="" // Esto asegura que "Seleccione una ley" sea el valor por defecto
                   >
                     <option value="" disabled hidden>
-                      Seleccione una Ley
+                      Seleccione una ley
                     </option>
                     {leyes?.map((ley) => (
                       <option key={ley.id} value={ley.id.toString()}>
@@ -132,7 +138,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                 )}
               />
               {errors.leyId && <p className="text-red-500 text-sm">{errors.leyId.message}</p>}
-              {errorLeyes && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
+              {leyesError && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
             </div>
           )}
 
@@ -157,4 +163,4 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
   );
 };
 
-export default FormularioLicencia;
+export default EditLicencia;

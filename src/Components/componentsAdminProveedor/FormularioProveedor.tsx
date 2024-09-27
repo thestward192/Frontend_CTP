@@ -1,32 +1,19 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useProveedores } from '../../hooks/useProveedor';
+import { CreateProveedor } from '../../types/proveedor';
 
 interface FormularioProveedorProps {
   onClose: () => void;
 }
 
 const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) => {
-  const { handleSubmitProveedor } = useProveedores(); // Usamos la función para agregar proveedor
-  const [formData, setFormData] = useState({
-    nombreProveedor: '',
-    nombreEmpresa: '',
-    telefonoProveedor: 0,
-    telefonoEmpresa: 0,
-    email: '',
-  });
+  const { handleSubmitProveedor } = useProveedores();
+  const { handleSubmit, register, formState: { errors } } = useForm<CreateProveedor>();
   const [alertaVisible, setAlertaVisible] = useState(false); // Estado para controlar la visibilidad de la alerta
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const success = await handleSubmitProveedor(formData); // Usamos CreateProveedor sin id
+  const onSubmit = async (data: CreateProveedor) => {
+    const success = await handleSubmitProveedor(data); // Usamos CreateProveedor sin id
     if (success) {
       setAlertaVisible(true); // Mostrar alerta de éxito
       setTimeout(() => {
@@ -45,65 +32,78 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
           </div>
         )}
         <h2 className="text-lg font-bold mb-4">Agregar Proveedor</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Nombre del Proveedor</label>
             <input
               type="text"
-              name="nombreProveedor"
-              value={formData.nombreProveedor}
-              onChange={handleInputChange}
+              {...register('nombreProveedor', { required: 'Este campo es obligatorio' })}
               className="w-full border p-2 rounded-md"
               placeholder="Nombre del Proveedor"
             />
+            {errors.nombreProveedor && <p className="text-red-500">{errors.nombreProveedor.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Empresa</label>
             <input
               type="text"
-              name="nombreEmpresa"
-              value={formData.nombreEmpresa}
-              onChange={handleInputChange}
+              {...register('nombreEmpresa', { required: 'Este campo es obligatorio' })}
               className="w-full border p-2 rounded-md"
               placeholder="Nombre de la Empresa"
             />
+            {errors.nombreEmpresa && <p className="text-red-500">{errors.nombreEmpresa.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Teléfono del Proveedor</label>
             <input
               type="text"
-              name="telefonoProveedor"
-              value={formData.telefonoProveedor}
-              onChange={handleInputChange}
+              {...register('telefonoProveedor', {
+                required: 'Este campo es obligatorio',
+                pattern: {
+                  value: /^\d{4}-\d{4}$/,
+                  message: 'El teléfono debe tener el formato ####-####'
+                }
+              })}
               className="w-full border p-2 rounded-md"
-              placeholder="Teléfono del Proveedor"
+              placeholder="####-####"
             />
+            {errors.telefonoProveedor && <p className="text-red-500">{errors.telefonoProveedor.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Teléfono de la Empresa</label>
             <input
               type="text"
-              name="telefonoEmpresa"
-              value={formData.telefonoEmpresa}
-              onChange={handleInputChange}
+              {...register('telefonoEmpresa', {
+                required: 'Este campo es obligatorio',
+                pattern: {
+                  value: /^\d{4}-\d{4}$/,
+                  message: 'El teléfono debe tener el formato ####-####'
+                }
+              })}
               className="w-full border p-2 rounded-md"
-              placeholder="Teléfono de la Empresa"
+              placeholder="####-####"
             />
+            {errors.telefonoEmpresa && <p className="text-red-500">{errors.telefonoEmpresa.message}</p>}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Email</label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
+              {...register('email', {
+                required: 'Este campo es obligatorio',
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                  message: 'Formato de email inválido'
+                }
+              })}
               className="w-full border p-2 rounded-md"
               placeholder="Correo Electrónico"
             />
+            {errors.email && <p className="text-red-500">{errors.email.message}</p>}
           </div>
 
           <div className="flex justify-end space-x-2">

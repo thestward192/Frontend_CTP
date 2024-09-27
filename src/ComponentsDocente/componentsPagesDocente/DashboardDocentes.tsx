@@ -27,20 +27,20 @@ const DashboardDocente: React.FC = () => {
       <div className="flex-1 w-full">
         <ul className="space-y-6">
           <li className="flex items-center text-base font-['DM Sans'] group">
-            <HomeIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/docente/inicio')}`} />
-            <Link to="/docente/inicio" className={`${getActiveClass('/MenuDocente')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
+            <HomeIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/MenuDocente')}`} />
+            <Link to="/MenuDocente" className={`${getActiveClass('/MenuDocente')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
               Inicio
             </Link>
           </li>
           <li className="flex items-center text-base font-['DM Sans'] group">
-            <FolderIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/docente/prestamos')}`} />
-            <Link to="/docente/prestamos" className={`${getActiveClass('/docente/prestamos')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
+            <FolderIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/PrestamosDocente')}`} />
+            <Link to="/PrestamosDocente" className={`${getActiveClass('/PrestamosDocente')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
               Préstamos
             </Link>
           </li>
           <li className="flex items-center text-base font-['DM Sans'] group">
-            <FolderIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/docente/inventario')}`} />
-            <Link to="/docente/inventario" className={`${getActiveClass('/docente/inventario')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
+            <FolderIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/InventarioDocente')}`} />
+            <Link to="/InventarioDocente" className={`${getActiveClass('/InventarioDocente')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>
               Inventario
             </Link>
           </li>
