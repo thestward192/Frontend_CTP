@@ -1,44 +1,62 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioDocente from './FormularioDocente'; // Formulario para agregar usuarios
-import FormularioEditarUsuario from './FormularioEditarUsuario'; // Formulario para editar usuarios
+import FormularioDocente from './FormularioDocente';
+import FormularioEditarUsuario from './FormularioEditarUsuario';
 import { User } from '../../types/user';
 import { useUsers } from '../../hooks/useUser';
 import DetailUsuarios from './DetailDocente';
 
 const UsuariosComponent: React.FC = () => {
-  const { users, loading, error, removeUser, editUser } = useUsers(); // Incluimos editUser para editar usuarios
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
-  const [selectedUser, setSelectedUser] = useState<number | null>(null); // Estado para manejar el usuario seleccionado
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<number | null>(null); // Estado para manejar la apertura del modal de eliminación
-  const [isEditModalOpen, setIsEditModalOpen] = useState<number | null>(null); // Estado para manejar la apertura del modal de edición
+  const { users, loading, error, removeUserMutation, editUserMutation } = useUsers();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<number | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<number | null>(null);
 
   const handleViewDetails = (userId: number) => {
-    setSelectedUser(userId); // Mostrar detalles del usuario seleccionado
+    setSelectedUser(userId);
   };
 
   const handleDelete = (userId: number) => {
-    setIsDeleteModalOpen(userId); // Mostrar el modal de confirmación de eliminación
+    setIsDeleteModalOpen(userId);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (isDeleteModalOpen !== null) {
-      removeUser(isDeleteModalOpen);
-      setIsDeleteModalOpen(null); // Cerrar el modal de eliminación
+      try {
+        await removeUserMutation.mutateAsync(isDeleteModalOpen);
+        setIsDeleteModalOpen(null);
+      } catch (error) {
+        console.error('Error al eliminar el usuario:', error);
+      }
     }
   };
 
-  const handleSaveEdit = (userId: number, updatedData: Partial<User>) => {
-    editUser(userId, updatedData);
-    setIsEditModalOpen(null); // Cerrar el modal de edición
+  const handleSaveEdit = async (userId: number, updatedData: Partial<User>) => {
+    try {
+      await editUserMutation.mutateAsync({ userId, updatedData });
+      setIsEditModalOpen(null); // Cierra el modal de edición después de guardar
+      setSelectedUser(null); // Cierra también el modal de detalles
+    } catch (error) {
+      console.error('Error al editar el usuario:', error);
+    }
+  };
+
+  const handleEditFromDetail = (userId: number) => {
+    setIsEditModalOpen(userId); // Abre el modal de edición
+    setSelectedUser(null); // Cierra el modal de detalles
   };
 
   if (loading) {
-    return <div>Cargando usuarios...</div>; // Mostrar mensaje de carga mientras se obtienen los usuarios
+    return <div>Cargando usuarios...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>; // Mostrar mensaje de error si ocurre algún problema
+    return <div>Error al cargar los usuarios: {error instanceof Error ? error.message : 'Ocurrió un error desconocido'}</div>;
+  }
+
+  if (!users || users.length === 0) {
+    return <div>No hay usuarios disponibles</div>;
   }
 
   return (
@@ -121,7 +139,7 @@ const UsuariosComponent: React.FC = () => {
         <DetailUsuarios
           userId={selectedUser}
           onClose={() => setSelectedUser(null)}
-          onEdit={(userId) => setIsEditModalOpen(userId)} // Abrir el modal de edición desde el detalle
+          onEdit={handleEditFromDetail} // Pasamos la función aquí
         />
       )}
 
@@ -129,7 +147,10 @@ const UsuariosComponent: React.FC = () => {
       {isEditModalOpen !== null && (
         <FormularioEditarUsuario
           userId={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(null)}
+          onClose={() => {
+            setIsEditModalOpen(null);
+            setSelectedUser(null); // Cierra también el modal de detalles
+          }}
           onSave={handleSaveEdit}
         />
       )}
@@ -162,3 +183,4 @@ const UsuariosComponent: React.FC = () => {
 };
 
 export default UsuariosComponent;
+

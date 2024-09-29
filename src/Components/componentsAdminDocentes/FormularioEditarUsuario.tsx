@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { User } from '../../types/user';
-import { getUserById } from '../../Services/userService';
-import { Ubicacion } from '../../types/ubicacion';
-import { getUbicaciones } from '../../Services/ubicacionService';
+import { useUbicacion } from '../../hooks/useUbicacion'; 
+import { useUsers } from '../../hooks/useUser';
+import { useRoles } from '../../hooks/useRoles'; // Hook para obtener los roles
 
 interface FormularioEditarUsuarioProps {
   userId: number;
@@ -10,160 +11,137 @@ interface FormularioEditarUsuarioProps {
   onSave: (userId: number, updatedData: Partial<User>) => void;
 }
 
-const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userId, onClose, onSave }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<Partial<User>>({});
-  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userId, onClose }) => {
+  const { editUserMutation, users } = useUsers();
+  const { ubicaciones, loading: ubicacionesLoading } = useUbicacion();
+  const { roles, loading: rolesLoading } = useRoles(); // Obtener roles
 
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Partial<User>>();
+
+  const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
+
+  // Obtener detalles del usuario desde `users`
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const userData = await getUserById(userId);
-        setUser(userData);
-        setFormData({
-          nombre: userData.nombre,
-          apellido_1: userData.apellido_1,
-          apellido_2: userData.apellido_2,
-          email: userData.email,
-          rol: userData.rol,
-          ubicaciones: userData.ubicaciones || [],
-        });
-      } catch (error) {
-        console.error('Error al obtener los detalles del usuario:', error);
-      }
-    };
+    const selectedUser = users?.find((user) => user.id === userId);
+    if (selectedUser) {
+      setValue('nombre', selectedUser.nombre);
+      setValue('apellido_1', selectedUser.apellido_1);
+      setValue('apellido_2', selectedUser.apellido_2);
+      setValue('email', selectedUser.email);
+      setValue('rol', selectedUser.rol?.id || '');
+  
+      // Asignar las ubicaciones correctamente
+      setUbicacionFields(
+        selectedUser.ubicaciones?.map((ubicacion) => ubicacion.id) || []
+      );
+    }
+  }, [userId, users, setValue, setUbicacionFields]);
+  
 
-    const fetchUbicaciones = async () => {
-      try {
-        const ubicacionesData = await getUbicaciones();
-        setUbicaciones(ubicacionesData);
-      } catch (error) {
-        console.error('Error al obtener las ubicaciones:', error);
-      }
-    };
-
-    fetchUserDetails();
-    fetchUbicaciones();
-  }, [userId]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleUbicacionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newUbicacionIds = [...(formData.ubicaciones || [])];
-    newUbicacionIds[index] = { ...newUbicacionIds[index], id: Number(e.target.value) };
-    setFormData({ ...formData, ubicaciones: newUbicacionIds });
-  };
-
-  const addUbicacionField = () => {
-    setFormData({
-      ...formData,
-      ubicaciones: [...(formData.ubicaciones || []), { id: 0, nombre: '' }],
-    });
-  };
-
-  const removeUbicacionField = (index: number) => {
-    const newUbicacionIds = formData.ubicaciones?.filter((_, i) => i !== index) || [];
-    setFormData({ ...formData, ubicaciones: newUbicacionIds });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(userId, formData);
+  const onSubmit = (data: Partial<User>) => {
+    editUserMutation.mutate({ userId, updatedData: data });
     onClose();
   };
-
-  if (!user) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
         <h2 className="text-lg font-bold mb-4">Editar Usuario</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block text-gray-700">Nombre</label>
             <input
-              type="text"
-              name="nombre"
-              value={formData.nombre || ''}
-              onChange={handleChange}
+              {...register('nombre', { required: 'El nombre es obligatorio' })}
               className="w-full border border-gray-300 p-2 rounded-lg"
-              required
             />
+            {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700">Primer Apellido</label>
             <input
-              type="text"
-              name="apellido_1"
-              value={formData.apellido_1 || ''}
-              onChange={handleChange}
+              {...register('apellido_1', { required: 'El primer apellido es obligatorio' })}
               className="w-full border border-gray-300 p-2 rounded-lg"
-              required
             />
+            {errors.apellido_1 && <p className="text-red-500">{errors.apellido_1.message}</p>}
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700">Segundo Apellido</label>
             <input
-              type="text"
-              name="apellido_2"
-              value={formData.apellido_2 || ''}
-              onChange={handleChange}
+              {...register('apellido_2', { required: 'El segundo apellido es obligatorio' })}
               className="w-full border border-gray-300 p-2 rounded-lg"
-              required
             />
+            {errors.apellido_2 && <p className="text-red-500">{errors.apellido_2.message}</p>}
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700">Email</label>
             <input
               type="email"
-              name="email"
-              value={formData.email || ''}
-              onChange={handleChange}
+              {...register('email', { required: 'El correo electrónico es obligatorio' })}
               className="w-full border border-gray-300 p-2 rounded-lg"
-              required
             />
+            {errors.email && <p className="text-red-500">{errors.email.message}</p>}
           </div>
-          {formData.ubicaciones && formData.ubicaciones.map((ubicacion, index) => (
-            <div className="mb-4" key={index}>
-              <label className="block text-gray-700">Ubicación {index + 1}</label>
-              <div className="flex">
+
+          <div className="mb-4">
+            <label className="block text-gray-700">Rol</label>
+            <select
+              {...register('rol', { required: 'El rol es obligatorio' })}
+              className="w-full border border-gray-300 p-2 rounded-lg"
+              disabled={rolesLoading}
+            >
+              <option value="">Selecciona un rol</option>
+              {roles?.map((rol) => (
+                <option key={rol.id} value={rol.id}>
+                  {rol.nombre}
+                </option>
+              ))}
+            </select>
+            {errors.rol && <p className="text-red-500">{errors.rol.message}</p>}
+          </div>
+
+          {/* Ubicaciones (sin cambios, como estaban antes) */}
+          <div className="mb-4">
+            <label className="block text-gray-700">Ubicaciones</label>
+            {ubicacionFields.map((index) => (
+              <div key={index} className="mb-2">
                 <select
-                  name={`ubicacion_${index}`}
-                  value={ubicacion.id || ''}
-                  onChange={(e) => handleUbicacionChange(index, e)}
+                  name={`ubicaciones.${index}`}
                   className="w-full border border-gray-300 p-2 rounded-lg"
+                  disabled={ubicacionesLoading}
                 >
-                  <option value="" disabled>
-                    Selecciona una ubicación
-                  </option>
-                  {ubicaciones.map((ub) => (
-                    <option key={ub.id} value={ub.id}>
-                      {ub.nombre}
+                  <option value="">Selecciona una ubicación</option>
+                  {ubicaciones.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.nombre}
                     </option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => removeUbicacionField(index)}
-                  className="ml-2 bg-red-500 text-white px-4 py-2 rounded-md"
-                >
-                  Quitar
-                </button>
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setUbicacionFields(ubicacionFields.filter((_, i) => i !== index))}
+                    className="ml-2 bg-red-500 text-white px-4 py-2 rounded-md"
+                  >
+                    Quitar
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
           <div className="mb-4">
             <button
               type="button"
-              onClick={addUbicacionField}
+              onClick={() => setUbicacionFields([...ubicacionFields, ubicacionFields.length])}
               className="bg-green-500 text-white px-4 py-2 rounded-md"
             >
               Añadir otra ubicación
             </button>
           </div>
+
           <div className="flex justify-end space-x-2">
             <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md" onClick={onClose}>
               Cancelar

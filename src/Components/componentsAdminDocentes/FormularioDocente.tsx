@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Ubicacion } from '../../types/ubicacion';
 import { getUbicaciones } from '../../Services/ubicacionService';
-import { useUsers } from '../../hooks/useUser';
 import { useRoles } from '../../hooks/useRoles';
+import { useUsers } from '../../hooks/useUser';
 
 interface FormularioDocenteProps {
   onClose: () => void;
 }
 
 const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
-  const { addUser } = useUsers();
+  const { addUserMutation } = useUsers(); // Usamos la mutación aquí
   const { roles, loading: rolesLoading } = useRoles();
   const [formData, setFormData] = useState({
     nombre: '',
@@ -58,10 +58,14 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
     setFormData({ ...formData, ubicacionIds: newUbicacionIds });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addUser(formData);
-    onClose();
+    try {
+      await addUserMutation.mutateAsync(formData); // Usa la mutación para agregar un usuario
+      onClose(); // Cierra el formulario
+    } catch (error) {
+      console.error('Error al agregar el usuario:', error);
+    }
   };
 
   return (

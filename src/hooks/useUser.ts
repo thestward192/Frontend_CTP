@@ -1,54 +1,40 @@
 // src/hooks/useUsers.ts
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { User, CreateUserDTO } from '../types/user';
 import { createUser, getAllUsers, deleteUser, updateUser } from '../Services/userService';
 
 export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await getAllUsers();
-        setUsers(data);
-        setLoading(false);
-      } catch {
-        setError('Error al obtener los usuarios');
-        setLoading(false);
-      }
-    };
+  // Obtener todos los usuarios usando useQuery
+  const { data: users, isLoading: loading, error } = useQuery<User[], Error>('users', getAllUsers);
 
-    fetchUsers();
-  }, []);
+  // Crear un nuevo usuario con useMutation
+  const addUserMutation = useMutation((userData: CreateUserDTO) => createUser(userData), {
+    onSuccess: () => {
+      // Invalida la query 'users' para refrescar la lista después de agregar un nuevo usuario
+      queryClient.invalidateQueries('users');
+    },
+  });
 
-  const addUser = async (userData: CreateUserDTO) => {
-    try {
-      const newUser = await createUser(userData);
-      setUsers([...users, newUser]);
-    } catch {
-      setError('Error al crear el usuario');
+  // Actualizar un usuario
+  const editUserMutation = useMutation(
+    ({ userId, updatedData }: { userId: number; updatedData: Partial<User> }) => updateUser(userId, updatedData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('users');
+      },
     }
-  };
+  );
 
-  const editUser = async (userId: number, updatedData: Partial<User>) => {
-    try {
-      const updatedUser = await updateUser(userId, updatedData);
-      setUsers(users.map(user => (user.id === userId ? updatedUser : user)));
-    } catch {
-      setError('Error al actualizar el usuario');
-    }
-  };
+  // Eliminar un usuario
+  const removeUserMutation = useMutation((userId: number) => deleteUser(userId), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('users');
+    },
+  });
 
-  const removeUser = async (userId: number) => {
-    try {
-      await deleteUser(userId);
-      setUsers(users.filter(user => user.id !== userId));
-    } catch {
-      setError('Error al eliminar el usuario');
-    }
-  };
+  
 
-  return { users, loading, error, addUser, editUser, removeUser };
+  return { users, loading, error, addUserMutation, editUserMutation, removeUserMutation };
 };
