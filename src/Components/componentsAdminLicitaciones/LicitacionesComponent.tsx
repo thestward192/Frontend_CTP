@@ -12,6 +12,7 @@ const LicitacionesComponent: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedLicitacion, setSelectedLicitacion] = useState<Licitacion | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null); // Control del modal de eliminación
 
   const handleViewDetails = (licitacion: Licitacion) => {
     setSelectedLicitacion(licitacion);
@@ -40,6 +41,7 @@ const LicitacionesComponent: React.FC = () => {
 
   const handleDeleteLicitacion = async (id: number) => {
     await removeLicitacion(id);
+    setDeleteModalOpen(null); // Cierra el modal después de eliminar
   };
 
   if (loading) return <p>Cargando licitaciones...</p>;
@@ -92,7 +94,7 @@ const LicitacionesComponent: React.FC = () => {
                       </button>
                       <button
                         className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                        onClick={() => handleDeleteLicitacion(licitacion.id)}
+                        onClick={() => setDeleteModalOpen(licitacion.id)} // Abre el modal de eliminación
                       >
                         <FaTrash className="mr-1" />
                       </button>
@@ -137,6 +139,30 @@ const LicitacionesComponent: React.FC = () => {
             onEdit={handleEdit}
           />
         )
+      )}
+
+      {/* Modal de confirmación para eliminar */}
+      {deleteModalOpen !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Eliminar Licitacion</h2>
+            <p>¿Estás seguro de que deseas eliminar esta Licitacion?</p>
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={() => setDeleteModalOpen(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleDeleteLicitacion(deleteModalOpen!)}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
