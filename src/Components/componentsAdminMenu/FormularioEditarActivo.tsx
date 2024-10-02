@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Activo } from '../../types/activo';
 import { Ley } from '../../types/ley';
-import { Ubicacion } from '../../types/ubicacion';
-import { getUbicaciones } from '../../Services/ubicacionService';
+import { useUbicacion } from '../../hooks/useUbicacion'; // Usamos el hook de ubicaciones
 import { getLeyes } from '../../Services/leyService';
-import {  FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
 
 interface FormularioEditarActivoProps {
   asset: Activo;
@@ -30,21 +29,22 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
   });
 
   const [leyes, setLeyes] = useState<Ley[]>([]);
-  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Usamos el hook useUbicacion para obtener las ubicaciones
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchLeyes = async () => {
       try {
-        const [ubicacionesData, leyesData] = await Promise.all([getUbicaciones(), getLeyes()]);
-        setUbicaciones(ubicacionesData);
+        const leyesData = await getLeyes();
         setLeyes(leyesData);
       } catch (error) {
-        console.error('Error al cargar datos:', error);
+        console.error('Error al obtener las leyes:', error);
       }
     };
 
-    fetchData();
+    fetchLeyes();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -67,6 +67,14 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
       console.error('Error al actualizar el activo:', error);
     }
   };
+
+  if (ubicacionesLoading) {
+    return <p>Cargando ubicaciones...</p>;
+  }
+
+  if (ubicacionesError) {
+    return <p>Error al cargar las ubicaciones</p>;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

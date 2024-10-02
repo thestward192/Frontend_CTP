@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { Ubicacion } from '../../types/ubicacion';
-import { getUbicaciones } from '../../Services/ubicacionService';
 import { useRoles } from '../../hooks/useRoles';
 import { useUsers } from '../../hooks/useUser';
+import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook de ubicaciones
 
 interface FormularioDocenteProps {
   onClose: () => void;
@@ -12,7 +11,7 @@ interface FormularioDocenteProps {
 const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUserMutation } = useUsers();
   const { roles, loading: rolesLoading } = useRoles();
-  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion(); // Usamos el hook de ubicaciones
   const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
 
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm({
@@ -26,19 +25,6 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
       ubicacionIds: [] as number[],
     },
   });
-
-  useEffect(() => {
-    const fetchUbicaciones = async () => {
-      try {
-        const data = await getUbicaciones();
-        setUbicaciones(data);
-      } catch (error) {
-        console.error('Error al obtener las ubicaciones', error);
-      }
-    };
-
-    fetchUbicaciones();
-  }, []);
 
   const onSubmit = async (data: any) => {
     try {
@@ -58,13 +44,16 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
     setUbicacionFields(ubicacionFields.filter((_, i) => i !== index));
   };
 
+  if (ubicacionesLoading) return <p>Cargando ubicaciones...</p>;
+  if (ubicacionesError) return <p>Error al cargar las ubicaciones</p>;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]"> {/* Ancho ajustado */}
+      <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
         <h2 className="text-lg font-bold mb-4">Agregar Usuario</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Dividimos el formulario en columnas */}
-          <div className="grid grid-cols-2 gap-4"> {/* Definimos el grid en dos columnas */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="mb-4">
               <label className="block text-gray-700">Nombre</label>
               <input
