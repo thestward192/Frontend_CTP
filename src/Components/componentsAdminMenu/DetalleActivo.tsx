@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { FaArrowLeft, FaTrash, FaEdit, FaFileExport, FaTags } from 'react-icons/fa';
 import HistorialPrestamos from './HistorialPrestamos';
 import { Activo } from '../../types/activo';
-import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación de activos
-import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
+import { useActivos } from '../../hooks/useActivo';
+import FormularioEditarActivo from './FormularioEditarActivo';
+import useBarcode from '../../hooks/useBarcode'; // Importa el hook useBarcode
 
 interface DetalleComponentProps {
   asset: Activo;
@@ -14,7 +15,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const [activeTab, setActiveTab] = useState('detalle');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
-  const { handleDeleteActivo, handleUpdateActivo } = useActivos(); // Usamos el hook para eliminar y editar activos
+  const [showSticker, setShowSticker] = useState(false); // Nuevo estado para mostrar el sticker
+  const { handleDeleteActivo, handleUpdateActivo } = useActivos();
+
+  // Hook para generar el código de barras usando numPlaca
+  const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString()); // Convertimos numPlaca a string
 
   const handleEliminar = async (id: number) => {
     try {
@@ -43,7 +48,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   };
 
   const handleGenerarSticker = () => {
-    console.log('Generar sticker para activo', asset.id);
+    setShowSticker(true); // Mostrar el sticker
   };
 
   return (
@@ -72,6 +77,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
           <div className="flex justify-between">
             <div className="flex-grow">
+              {/* Información del activo (No. Identificador, Marca, Modelo, etc.) */}
               <div className="border-t border-gray-200 py-2 w-3/4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
@@ -133,6 +139,23 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 <p className="text-sm font-semibold text-gray-600">Observación</p>
                 <p className="text-gray-800">{asset.observacion}</p>
               </div>
+
+              {/* Sticker (Código de barras) */}
+              {showSticker && (
+                <div className="border-t border-gray-200 py-2 w-3/4">
+                  <h3 className="text-sm font-semibold text-gray-600">Sticker del Activo</h3>
+                  {loading ? (
+                    <p>Cargando código de barras...</p>
+                  ) : error ? (
+                    <p>Error al generar el sticker: {error}</p>
+                  ) : barcodeUrl ? (
+                    <div>
+                      <img src={barcodeUrl} alt={`Código de barras para ${asset.numPlaca}`} className="w-60 h-20 object-contain mt-2" />
+                      <p className="text-sm font-semibold text-gray-800 mt-2">Número de Placa: {asset.numPlaca}</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             <div className="flex-shrink-0 ml-4" style={{ marginLeft: '-100px' }}>
