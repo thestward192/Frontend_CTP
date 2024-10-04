@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface SelectionModalProps {
+  isOpen: boolean;  // Agregamos la propiedad isOpen
   onSelectLey: () => void;
   onSelectDonacion: () => void;
   onClose: () => void;

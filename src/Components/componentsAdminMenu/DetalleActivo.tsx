@@ -6,11 +6,11 @@ import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que ge
 import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
 
 interface DetalleComponentProps {
-  asset: Activo;
+  selectedAsset: Activo; // Aquí usamos selectedAsset
   onBack: () => void;
 }
 
-const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) => {
+const DetalleComponent: React.FC<DetalleComponentProps> = ({ selectedAsset, onBack }) => {
   const [activeTab, setActiveTab] = useState('detalle');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
@@ -31,7 +31,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
   const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     try {
-      await handleUpdateActivo(asset.id!, updatedData);
+      await handleUpdateActivo(selectedAsset.id!, updatedData);
       setIsEditModalOpen(false); // Cerrar el modal de edición
     } catch (error) {
       console.error('Error al guardar los cambios del activo:', error);
@@ -39,11 +39,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   };
 
   const handleExportar = () => {
-    console.log('Exportar activo', asset.id);
+    console.log('Exportar activo', selectedAsset.id);
   };
 
   const handleGenerarSticker = () => {
-    console.log('Generar sticker para activo', asset.id);
+    console.log('Generar sticker para activo', selectedAsset.id);
   };
 
   return (
@@ -76,11 +76,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">No. Identificador</p>
-                    <p className="text-gray-800">{asset.id}</p>
+                    <p className="text-gray-800">{selectedAsset.id}</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Marca</p>
-                    <p className="text-gray-800">{asset.marca}</p>
+                    <p className="text-gray-800">{selectedAsset.marca}</p>
                   </div>
                 </div>
               </div>
@@ -89,11 +89,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Modelo</p>
-                    <p className="text-gray-800">{asset.modelo}</p>
+                    <p className="text-gray-800">{selectedAsset.modelo}</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Serie</p>
-                    <p className="text-gray-800">{asset.serie}</p>
+                    <p className="text-gray-800">{selectedAsset.serie}</p>
                   </div>
                 </div>
               </div>
@@ -102,11 +102,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Estado</p>
-                    <p className="text-gray-800">{asset.estado}</p>
+                    <p className="text-gray-800">{selectedAsset.estado}</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Ubicación</p>
-                    <p className="text-gray-800">{asset.ubicacion?.nombre || 'Desconocida'}</p>
+                    <p className="text-gray-800">{selectedAsset.ubicacion?.nombre || 'Desconocida'}</p>
                   </div>
                 </div>
               </div>
@@ -115,29 +115,29 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Modo de Adquisición</p>
-                    <p className="text-gray-800">{asset.modoAdquisicion}</p>
+                    <p className="text-gray-800">{selectedAsset.modoAdquisicion}</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Precio</p>
-                    <p className="text-gray-800">{asset.precio}</p>
+                    <p className="text-gray-800">{selectedAsset.precio}</p>
                   </div>
                 </div>
               </div>
 
               <div className="border-t border-gray-200 py-2 w-3/4">
                 <p className="text-sm font-semibold text-gray-600">Descripción</p>
-                <p className="text-gray-800">{asset.descripcion}</p>
+                <p className="text-gray-800">{selectedAsset.descripcion}</p>
               </div>
 
               <div className="border-t border-gray-200 py-2 w-3/4">
                 <p className="text-sm font-semibold text-gray-600">Observación</p>
-                <p className="text-gray-800">{asset.observacion}</p>
+                <p className="text-gray-800">{selectedAsset.observacion}</p>
               </div>
             </div>
 
             <div className="flex-shrink-0 ml-4" style={{ marginLeft: '-100px' }}>
               <img
-                src={asset.foto}
+                src={selectedAsset.foto}
                 alt="Foto del Activo"
                 className="w-60 h-60 object-cover rounded-lg shadow-md border border-gray-200"
               />
@@ -157,7 +157,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                     Cancelar
                   </button>
                   <button
-                    onClick={() => handleEliminar(asset.id!)}
+                    onClick={() => handleEliminar(selectedAsset.id!)}
                     className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300"
                   >
                     Eliminar
@@ -172,31 +172,25 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
               onClick={handleEditar}
               className="bg-blue-300 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-400 transition-all duration-300 flex items-center text-sm"
             >
-              <FaEdit className="mr-2" /> Editar
+              <FaEdit className="mr-1" /> Editar
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirmation(true)}
+              className="bg-red-300 text-white py-1 px-3 rounded-lg shadow hover:bg-red-400 transition-all duration-300 flex items-center text-sm"
+            >
+              <FaTrash className="mr-1" /> Eliminar
             </button>
             <button
               onClick={handleExportar}
               className="bg-green-300 text-white py-1 px-3 rounded-lg shadow hover:bg-green-400 transition-all duration-300 flex items-center text-sm"
             >
-              <FaFileExport className="mr-2" /> Exportar
+              <FaFileExport className="mr-1" /> Exportar
             </button>
             <button
               onClick={handleGenerarSticker}
-              className="bg-gray-300 text-white py-1 px-3 rounded-lg shadow hover:bg-gray-400 transition-all duration-300 flex items-center text-sm"
+              className="bg-yellow-300 text-white py-1 px-3 rounded-lg shadow hover:bg-yellow-400 transition-all duration-300 flex items-center text-sm"
             >
-              <FaTags className="mr-2" /> Generar Sticker
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirmation(true)}
-              className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaTrash className="mr-2" /> Eliminar
-            </button>
-            <button
-              onClick={onBack}
-              className="bg-blue-500 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-600 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaArrowLeft className="mr-2" /> Volver
+              <FaTags className="mr-1" /> Generar Sticker
             </button>
           </div>
         </>
@@ -204,10 +198,17 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
         <HistorialPrestamos />
       )}
 
-      {/* Modal para editar el activo */}
+      <button
+        onClick={onBack}
+        className="absolute top-4 left-4 bg-gray-500 text-white py-1 px-2 rounded-lg shadow hover:bg-gray-600 transition-all duration-300 flex items-center text-sm"
+      >
+        <FaArrowLeft className="mr-1" /> Volver
+      </button>
+
+      {/* Modal de edición */}
       {isEditModalOpen && (
         <FormularioEditarActivo
-          asset={asset}
+          asset={selectedAsset}
           onClose={() => setIsEditModalOpen(false)}
           onSave={handleSaveEdit}
         />

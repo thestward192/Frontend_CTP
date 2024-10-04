@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useActivos } from '../../hooks/useActivo';
 import { useAuth } from '../../hooks/AuthContext';
-import DetalleActivoDocente from './DetalleActivoDocente';
-import { Activo } from '../../types/activo'; // Asegúrate de tener un tipo definido para Activo
+import DetalleActivoDocente from './DetalleActivoDocente'; 
+import { Activo } from '../../types/activo'; 
 
 const TableComponentDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,6 +11,11 @@ const TableComponentDocente: React.FC = () => {
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
   const [selectedActivo, setSelectedActivo] = useState<Activo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Filtros
+  const [filterEstado, setFilterEstado] = useState('');
+  const [filterMarca, setFilterMarca] = useState('');
+  const [filterNombre, setFilterNombre] = useState('');
 
   useEffect(() => {
     if (ubicaciones.length > 0 && selectedUbicacion === null) {
@@ -45,7 +50,16 @@ const TableComponentDocente: React.FC = () => {
 
   const itemsPerPage = 5;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
+
+  // Filtrar activos por ubicación y aplicar filtros adicionales
+  const filteredActivos = activos
+    .filter(activo =>
+      (filterEstado === '' || activo.estado === filterEstado) &&
+      (filterMarca === '' || activo.marca.toLowerCase().includes(filterMarca.toLowerCase())) &&
+      (filterNombre === '' || activo.nombre.toLowerCase().includes(filterNombre.toLowerCase()))
+    );
+
+  const paginatedData = filteredActivos.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full flex justify-center py-6">
@@ -67,6 +81,33 @@ const TableComponentDocente: React.FC = () => {
                   {ubicacion.nombre}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Filtros adicionales */}
+          <div className="flex space-x-4">
+            <input
+              type="text"
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              placeholder="Filtrar por nombre"
+              value={filterNombre}
+              onChange={(e) => setFilterNombre(e.target.value)}
+            />
+            <input
+              type="text"
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              placeholder="Filtrar por marca"
+              value={filterMarca}
+              onChange={(e) => setFilterMarca(e.target.value)}
+            />
+            <select
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              value={filterEstado}
+              onChange={(e) => setFilterEstado(e.target.value)}
+            >
+              <option value="">Filtrar por estado</option>
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
             </select>
           </div>
         </div>
@@ -112,7 +153,7 @@ const TableComponentDocente: React.FC = () => {
 
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
+            <p className="text-sm text-gray-600">Total de Activos: {filteredActivos.length}</p>
           </div>
           <div className="flex space-x-1">
             <button
@@ -122,10 +163,10 @@ const TableComponentDocente: React.FC = () => {
             >
               &lt;
             </button>
-            {Array.from({ length: Math.ceil(activos.length / itemsPerPage) }, (_, index) => (
+            {Array.from({ length: Math.ceil(filteredActivos.length / itemsPerPage) }, (_, index) => (
               <button
                 key={index}
-                className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                 onClick={() => handlePageChange(index + 1)}
               >
                 {index + 1}
@@ -134,20 +175,18 @@ const TableComponentDocente: React.FC = () => {
             <button
               className="px-3 py-1 bg-gray-200 rounded-md"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === Math.ceil(activos.length / itemsPerPage)}
+              disabled={currentPage === Math.ceil(filteredActivos.length / itemsPerPage)}
             >
               &gt;
             </button>
           </div>
         </div>
-
-        {isModalOpen && selectedActivo && (
-          <DetalleActivoDocente
-            activo={selectedActivo}
-            onClose={closeModal}
-          />
-        )}
       </div>
+
+      {/* Modal de detalle */}
+      {isModalOpen && selectedActivo && (
+        <DetalleActivoDocente activo={selectedActivo} onClose={closeModal} />
+      )}
     </div>
   );
 };
