@@ -1,3 +1,5 @@
+import { Ubicacion } from "./ubicacion";
+
 export interface Activo {
     id?: number; // ID opcional
     nombre: string;
@@ -11,7 +13,8 @@ export interface Activo {
     precio: number;
     observacion: string;
     modoAdquisicion: string; // Ley o Donación
-    ubicacionId: number; // Relación con la ubicación
+    ubicacionId: number;
+    ubicacion?: Ubicacion; // Relación con la ubicación
     leyId?: number; // Relación opcional con la ley si es por "Ley"
   }
   

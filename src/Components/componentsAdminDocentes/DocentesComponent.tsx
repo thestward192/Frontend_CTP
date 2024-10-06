@@ -83,8 +83,8 @@ const UsuariosComponent: React.FC = () => {
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Apellido Paterno</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Apellido Materno</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Primer Apellido</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Segundo Apellido</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Email</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
               </tr>
