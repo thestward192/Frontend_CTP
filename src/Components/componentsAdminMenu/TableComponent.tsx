@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
-import FormularioActivo from './FormularioActivo';
+ // Usar el formulario de agregar activo
 import DetalleComponent from './DetalleActivo';
 import Filters from './Filters';
 import SelectionModal from './SelectionModal';
 import { useActivos } from '../../hooks/useActivo';
 import { Activo } from '../../types/activo';
+import FormularioAgregarActivo from './FormularioActivo';
 
 interface TableComponentProps {
   onAssetSelect: (isSelected: boolean) => void;
@@ -16,9 +17,10 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);  // Controla el modal de selección
   const [modoAdquisicion, setModoAdquisicion] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
+  const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
 
   const { activos, loading, error } = useActivos();
@@ -56,16 +58,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const handleSelectLey = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Ley');
-    onAddAsset(true);
+    setIsAddingActivo(true);  // Abrimos el formulario de agregar activo
   };
 
   const handleSelectDonacion = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Donación');
-    onAddAsset(true);
+    setIsAddingActivo(true);  // Abrimos el formulario de agregar activo
   };
 
   const handleCloseForm = () => {
+    setIsAddingActivo(false);  // Cerramos el formulario
     setModoAdquisicion(null);
     onAddAsset(false);
   };
@@ -79,8 +82,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   }
 
   return (
-    <div className="w-full flex justify-center py-10">
-      {!modoAdquisicion && !selectedAsset ? (
+    <div className="w-full flex justify-center py-10 relative">
+      {!modoAdquisicion && !selectedAsset && !isAddingActivo ? (
         <div
           className="w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
           style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
@@ -153,7 +156,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
                     <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
-                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {row.estado}
                       </span>
                     </td>
@@ -203,8 +206,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
           )}
         </div>
       ) : modoAdquisicion ? (
-        <div className="w-full max-w-5xl p-8 relative">
-          <FormularioActivo onBack={handleCloseForm} modoAdquisicion={modoAdquisicion} />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <FormularioAgregarActivo onClose={handleCloseForm} modoAdquisicion={modoAdquisicion} />
         </div>
       ) : selectedAsset ? (
         <DetalleComponent

@@ -6,7 +6,8 @@ export interface Activo {
     descripcion: string;
     marca: string;
     serie: string;
-    estado: string;
+    estado?: string;
+    disponibilidad?: string;
     modelo: string;
     numPlaca: number;
     foto: string;

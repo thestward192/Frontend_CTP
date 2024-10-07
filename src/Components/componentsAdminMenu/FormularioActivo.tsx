@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
-import { createActivo } from '../../Services/activoService';
+import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
 import { Ley } from '../../types/ley';
 import { Ubicacion } from '../../types/ubicacion';
 import { getUbicaciones } from '../../Services/ubicacionService';
 import { getLeyes } from '../../Services/leyService';
+import { useActivos } from '../../hooks/useActivo';
 
-const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }> = ({ onBack, modoAdquisicion }) => {
-  const [formData, setFormData] = useState<Activo>({
+const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: string }> = ({ onClose, modoAdquisicion }) => {
+  const [formData, setFormData] = useState<Omit<Activo, 'id'>>({
     nombre: '',
     descripcion: '',
     marca: '',
     serie: '',
-    estado: 'Activo', // Valor predeterminado
     modelo: '',
     numPlaca: 0,
     foto: '',
@@ -26,7 +25,9 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
 
   const [leyes, setLeyes] = useState<Ley[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para la notificación de éxito
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const { handleCreateActivo, loading, error } = useActivos();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +39,6 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
         console.error('Error al cargar datos:', error);
       }
     };
-
     fetchData();
   }, []);
 
@@ -52,28 +52,20 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createActivo(formData);
-      setSuccessMessage('Activo creado exitosamente'); // Mostrar mensaje de éxito
+      await handleCreateActivo(formData);
+      setSuccessMessage('Activo creado exitosamente');
       setTimeout(() => {
-        setSuccessMessage(null); // Ocultar el mensaje después de 3 segundos
-        onBack(); // Volver a la tabla
-      }, 3000); // 3 segundos de espera
+        setSuccessMessage(null);
+        onClose();  // Cerramos el formulario al crear el activo
+      }, 1000);
     } catch (error) {
       console.error('Error al crear el activo:', error);
     }
   };
 
   return (
-    <div className="w-full flex justify-center items-start py-10" style={{ marginTop: '-30px' }}>
-      <div
-        className="w-full max-w-[90%] bg-white shadow-lg rounded-lg p-12"
-        style={{
-          marginBottom: '60px',
-          marginLeft: '5%',
-          marginRight: '5%',
-        }}
-      >
-        {/* Notificación de éxito */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
             <FaCheckCircle className="mr-2" />
@@ -81,117 +73,107 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
           </div>
         )}
 
-        {/* Título */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-700">
-            {`Agregar Activo (${modoAdquisicion})`}
-          </h2>
-          <p className="text-sm text-gray-500">Complete la información del nuevo activo.</p>
-        </div>
-
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <h2 className="text-lg font-bold mb-4">Agregar Activo</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Usamos grid para crear 2 columnas */}
+          <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium mb-2">Nombre</label>
+              <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
                 type="text"
                 name="nombre"
                 value={formData.nombre}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               />
             </div>
 
             {/* Marca */}
             <div>
-              <label className="block text-sm font-medium mb-2">Marca</label>
+              <label className="block text-sm font-medium text-gray-700">Marca</label>
               <input
                 type="text"
                 name="marca"
                 value={formData.marca}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               />
             </div>
 
             {/* Modelo */}
             <div>
-              <label className="block text-sm font-medium mb-2">Modelo</label>
+              <label className="block text-sm font-medium text-gray-700">Modelo</label>
               <input
                 type="text"
                 name="modelo"
                 value={formData.modelo}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               />
             </div>
 
             {/* Serie */}
             <div>
-              <label className="block text-sm font-medium mb-2">Serie</label>
+              <label className="block text-sm font-medium text-gray-700">Serie</label>
               <input
                 type="text"
                 name="serie"
                 value={formData.serie}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               />
             </div>
 
-            {/* Estado */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Estado</label>
-              <select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full border p-3 rounded-md"
-                required
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-              </select>
-            </div>
-
             {/* Número de Placa */}
             <div>
-              <label className="block text-sm font-medium mb-2">Número de Placa</label>
+              <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
                 type="number"
                 name="numPlaca"
                 value={formData.numPlaca}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               />
             </div>
 
+            {/* Precio */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Precio</label>
+              <input
+                type="number"
+                name="precio"
+                value={formData.precio}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              />
+            </div>
+
             {/* Descripción */}
-            <div className="col-span-3">
-              <label className="block text-sm font-medium mb-2">Descripción</label>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea
                 name="descripcion"
                 value={formData.descripcion}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               />
             </div>
 
             {/* Ubicación */}
             <div>
-              <label className="block text-sm font-medium mb-2">Ubicación</label>
+              <label className="block text-sm font-medium text-gray-700">Ubicación</label>
               <select
                 name="ubicacionId"
                 value={formData.ubicacionId}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-md"
+                className="w-full border border-gray-300 p-2 rounded-lg"
                 required
               >
                 <option value="">Seleccione una Ubicación</option>
@@ -207,12 +189,12 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
             {modoAdquisicion === 'Ley' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Ley</label>
+                  <label className="block text-sm font-medium text-gray-700">Ley</label>
                   <select
                     name="leyId"
                     value={formData.leyId}
                     onChange={handleChange}
-                    className="w-full border p-3 rounded-md"
+                    className="w-full border border-gray-300 p-2 rounded-lg"
                   >
                     <option value="">Seleccione una Ley</option>
                     {leyes.map((ley) => (
@@ -223,26 +205,14 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
                   </select>
                 </div>
 
-                {/* Precio */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Precio</label>
-                  <input
-                    type="number"
-                    name="precio"
-                    value={formData.precio}
-                    onChange={handleChange}
-                    className="w-full border p-3 rounded-md"
-                  />
-                </div>
-
                 {/* Observaciones */}
-                <div className="col-span-3">
-                  <label className="block text-sm font-medium mb-2">Observaciones</label>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">Observaciones</label>
                   <textarea
                     name="observacion"
                     value={formData.observacion}
                     onChange={handleChange}
-                    className="w-full border p-3 rounded-md"
+                    className="w-full border border-gray-300 p-2 rounded-lg"
                   />
                 </div>
               </>
@@ -250,19 +220,20 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
           </div>
 
           {/* Botones */}
-          <div className="mt-6 flex justify-between space-x-4">
+          <div className="flex justify-end space-x-4 mt-4">
             <button
               type="button"
-              onClick={onBack}
-              className="bg-gray-600 text-white py-2 px-6 rounded-lg shadow hover:bg-gray-700 transition-all flex items-center"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              onClick={onClose}  // Aseguramos que el botón de cancelar cierre el formulario
             >
-              <FaArrowLeft className="mr-2" /> Volver
+              Cancelar
             </button>
             <button
               type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-lg shadow hover:bg-blue-700 transition-all"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              disabled={loading}
             >
-              Crear Activo
+              {loading ? 'Creando...' : 'Crear Activo'}
             </button>
           </div>
         </form>
@@ -271,4 +242,4 @@ const FormularioActivo: React.FC<{ onBack: () => void; modoAdquisicion: string }
   );
 };
 
-export default FormularioActivo;
+export default FormularioAgregarActivo;

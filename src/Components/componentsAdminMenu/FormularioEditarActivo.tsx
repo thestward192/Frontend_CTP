@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
 import { Ley } from '../../types/ley';
 import { useUbicacion } from '../../hooks/useUbicacion'; // Usamos el hook de ubicaciones
 import { getLeyes } from '../../Services/leyService';
-import { FaCheckCircle } from 'react-icons/fa';
 
 interface FormularioEditarActivoProps {
   asset: Activo;
@@ -18,14 +18,15 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     marca: asset.marca,
     serie: asset.serie,
     estado: asset.estado,
+    disponibilidad: asset.disponibilidad, // Incluimos la disponibilidad
     modelo: asset.modelo,
     numPlaca: asset.numPlaca,
     foto: asset.foto,
     precio: asset.precio,
     observacion: asset.observacion,
-    ubicacionId: asset.ubicacionId,
+    ubicacionId: asset.ubicacion?.id || 0, // Aseguramos que tenga el ID de la ubicación actual
     modoAdquisicion: asset.modoAdquisicion,
-    leyId: asset.leyId,
+    leyId: asset.ley?.id || '', // Aseguramos que el leyId sea el valor del ID de la ley
   });
 
   const [leyes, setLeyes] = useState<Ley[]>([]);
@@ -62,7 +63,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
-      }, 3000);
+      }, 1000);
     } catch (error) {
       console.error('Error al actualizar el activo:', error);
     }
@@ -89,6 +90,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
         <h2 className="text-lg font-bold mb-4">Editar Activo</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
+            {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
@@ -101,6 +103,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Marca */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Marca</label>
               <input
@@ -113,6 +116,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Modelo */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Modelo</label>
               <input
@@ -125,6 +129,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Serie */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Serie</label>
               <input
@@ -137,20 +142,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Estado</label>
-              <select
-                name="estado"
-                value={formData.estado || 'Activo'}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-              </select>
-            </div>
-
+            {/* Número de Placa */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
@@ -163,6 +155,19 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Precio */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Precio</label>
+              <input
+                type="number"
+                name="precio"
+                value={formData.precio || 0}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              />
+            </div>
+
+            {/* Descripción */}
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea
@@ -174,6 +179,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Ubicación */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Ubicación</label>
               <select
@@ -192,13 +198,14 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               </select>
             </div>
 
+            {/* Ley (si aplica) */}
             {formData.modoAdquisicion === 'Ley' && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Ley</label>
                   <select
                     name="leyId"
-                    value={formData.leyId || ''}
+                    value={formData.leyId || ''} // Preseleccionamos la ley actual
                     onChange={handleChange}
                     className="w-full border border-gray-300 p-2 rounded-lg"
                   >
@@ -209,17 +216,6 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Precio</label>
-                  <input
-                    type="number"
-                    name="precio"
-                    value={formData.precio || 0}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 p-2 rounded-lg"
-                  />
                 </div>
 
                 <div className="col-span-2">
@@ -235,6 +231,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
             )}
           </div>
 
+          {/* Botones de acción */}
           <div className="flex justify-end space-x-4 mt-4">
             <button
               type="button"
