@@ -1,3 +1,4 @@
+import { Ley } from "./ley";
 import { Ubicacion } from "./ubicacion";
 
 export interface Activo {
@@ -16,6 +17,7 @@ export interface Activo {
     modoAdquisicion: string; // Ley o Donación
     ubicacionId: number;
     ubicacion?: Ubicacion; // Relación con la ubicación
-    leyId?: number; // Relación opcional con la ley si es por "Ley"
+    leyId?: number;
+    ley?: Ley;  // Relación opcional con la ley si es por "Ley"
   }
   

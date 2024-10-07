@@ -6,7 +6,7 @@ import Filters from './Filters';
 import SelectionModal from './SelectionModal';
 import { useActivos } from '../../hooks/useActivo';
 import { Activo } from '../../types/activo';
-import FormularioAgregarActivo from './FormularioActivo';
+import FormularioAgregarActivo from './FormularioAgregarActivo';
 
 interface TableComponentProps {
   onAssetSelect: (isSelected: boolean) => void;
@@ -134,7 +134,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Adquisicion</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisicion</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
                 </tr>
               </thead>

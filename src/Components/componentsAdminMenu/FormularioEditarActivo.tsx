@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
-import { Ley } from '../../types/ley';
 import { useUbicacion } from '../../hooks/useUbicacion'; // Usamos el hook de ubicaciones
-import { getLeyes } from '../../Services/leyService';
+import { useLeyes } from '../../hooks/useLey';
+ // Usamos el hook de leyes
 
 interface FormularioEditarActivoProps {
   asset: Activo;
@@ -29,24 +29,13 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     leyId: asset.ley?.id || '', // Aseguramos que el leyId sea el valor del ID de la ley
   });
 
-  const [leyes, setLeyes] = useState<Ley[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Usamos el hook useUbicacion para obtener las ubicaciones
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
 
-  useEffect(() => {
-    const fetchLeyes = async () => {
-      try {
-        const leyesData = await getLeyes();
-        setLeyes(leyesData);
-      } catch (error) {
-        console.error('Error al obtener las leyes:', error);
-      }
-    };
-
-    fetchLeyes();
-  }, []);
+  // Usamos el hook useLeyes para obtener las leyes
+  const { leyes, loading: leyesLoading, error: leyesError } = useLeyes();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -69,12 +58,12 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     }
   };
 
-  if (ubicacionesLoading) {
-    return <p>Cargando ubicaciones...</p>;
+  if (ubicacionesLoading || leyesLoading) {
+    return <p>Cargando ubicaciones y leyes...</p>;
   }
 
-  if (ubicacionesError) {
-    return <p>Error al cargar las ubicaciones</p>;
+  if (ubicacionesError || leyesError) {
+    return <p>Error al cargar los datos</p>;
   }
 
   return (

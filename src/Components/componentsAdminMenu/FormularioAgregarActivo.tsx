@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
 import { Ley } from '../../types/ley';
@@ -8,21 +9,7 @@ import { getLeyes } from '../../Services/leyService';
 import { useActivos } from '../../hooks/useActivo';
 
 const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: string }> = ({ onClose, modoAdquisicion }) => {
-  const [formData, setFormData] = useState<Omit<Activo, 'id'>>({
-    nombre: '',
-    descripcion: '',
-    marca: '',
-    serie: '',
-    modelo: '',
-    numPlaca: 0,
-    foto: '',
-    precio: 0,
-    observacion: '',
-    ubicacionId: 0,
-    modoAdquisicion,
-    leyId: modoAdquisicion === 'Ley' ? undefined : undefined,
-  });
-
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<Omit<Activo, 'id'>>(); // Configuramos react-hook-form
   const [leyes, setLeyes] = useState<Ley[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -42,21 +29,14 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
     fetchData();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: Omit<Activo, 'id'>) => {
     try {
-      await handleCreateActivo(formData);
+      await handleCreateActivo(data);
       setSuccessMessage('Activo creado exitosamente');
       setTimeout(() => {
         setSuccessMessage(null);
-        onClose();  // Cerramos el formulario al crear el activo
+        onClose();
+        reset();
       }, 1000);
     } catch (error) {
       console.error('Error al crear el activo:', error);
@@ -74,7 +54,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
         )}
 
         <h2 className="text-lg font-bold mb-4">Agregar Activo</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Usamos grid para crear 2 columnas */}
           <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
@@ -82,12 +62,10 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
                 type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('nombre', { required: 'El campo Nombre es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.nombre ? 'border-red-500' : ''}`}
               />
+              {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
             </div>
 
             {/* Marca */}
@@ -95,12 +73,10 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               <label className="block text-sm font-medium text-gray-700">Marca</label>
               <input
                 type="text"
-                name="marca"
-                value={formData.marca}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('marca', { required: 'Este campo es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.marca ? 'border-red-500' : ''}`}
               />
+              {errors.marca && <span className="text-red-600 text-xs">{errors.marca.message}</span>}
             </div>
 
             {/* Modelo */}
@@ -108,12 +84,10 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               <label className="block text-sm font-medium text-gray-700">Modelo</label>
               <input
                 type="text"
-                name="modelo"
-                value={formData.modelo}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('modelo', { required: 'Este campo es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.modelo ? 'border-red-500' : ''}`}
               />
+              {errors.modelo && <span className="text-red-600 text-xs">{errors.modelo.message}</span>}
             </div>
 
             {/* Serie */}
@@ -121,12 +95,10 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               <label className="block text-sm font-medium text-gray-700">Serie</label>
               <input
                 type="text"
-                name="serie"
-                value={formData.serie}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('serie', { required: 'Este campo es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.serie ? 'border-red-500' : ''}`}
               />
+              {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
             </div>
 
             {/* Número de Placa */}
@@ -134,12 +106,10 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
                 type="number"
-                name="numPlaca"
-                value={formData.numPlaca}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('numPlaca', { required: 'Este campo es obligatorio', valueAsNumber: true })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.numPlaca ? 'border-red-500' : ''}`}
               />
+              {errors.numPlaca && <span className="text-red-600 text-xs">{errors.numPlaca.message}</span>}
             </div>
 
             {/* Precio */}
@@ -147,9 +117,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               <label className="block text-sm font-medium text-gray-700">Precio</label>
               <input
                 type="number"
-                name="precio"
-                value={formData.precio}
-                onChange={handleChange}
+                {...register('precio', { valueAsNumber: true })}
                 className="w-full border border-gray-300 p-2 rounded-lg"
               />
             </div>
@@ -158,23 +126,18 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea
-                name="descripcion"
-                value={formData.descripcion}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('descripcion', { required: 'Este campo es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.descripcion ? 'border-red-500' : ''}`}
               />
+              {errors.descripcion && <span className="text-red-600 text-xs">{errors.descripcion.message}</span>}
             </div>
 
             {/* Ubicación */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Ubicación</label>
               <select
-                name="ubicacionId"
-                value={formData.ubicacionId}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
+                {...register('ubicacionId', { required: 'Este campo es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.ubicacionId ? 'border-red-500' : ''}`}
               >
                 <option value="">Seleccione una Ubicación</option>
                 {ubicaciones.map((ubicacion) => (
@@ -183,6 +146,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
                   </option>
                 ))}
               </select>
+              {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
             </div>
 
             {/* Ley (solo si es modo Ley) */}
@@ -191,9 +155,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Ley</label>
                   <select
-                    name="leyId"
-                    value={formData.leyId}
-                    onChange={handleChange}
+                    {...register('leyId')}
                     className="w-full border border-gray-300 p-2 rounded-lg"
                   >
                     <option value="">Seleccione una Ley</option>
@@ -209,9 +171,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700">Observaciones</label>
                   <textarea
-                    name="observacion"
-                    value={formData.observacion}
-                    onChange={handleChange}
+                    {...register('observacion')}
                     className="w-full border border-gray-300 p-2 rounded-lg"
                   />
                 </div>
