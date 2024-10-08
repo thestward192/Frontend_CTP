@@ -67,3 +67,16 @@ export const deleteActivo = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+// Obtener código de barras para un activo dado su número de placa
+export const getBarcode = async (numPlaca: string): Promise<Blob> => {
+  try {
+    const response = await axios.get(`${API_URL}/activo/barcode/${numPlaca}`, {
+      responseType: 'blob', // Esto es importante para que axios trate la respuesta como un Blob
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error al generar el código de barras para el número de placa ${numPlaca}:`, error);
+    throw error;
+  }
+};

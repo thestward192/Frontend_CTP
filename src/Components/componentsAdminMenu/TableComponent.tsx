@@ -5,6 +5,7 @@ import DetalleComponent from './DetalleActivo';
 import Filters from './Filters';
 import SelectionModal from './SelectionModal';
 import { useActivos } from '../../hooks/useActivo';
+import { useExportToExcel } from '../../hooks/useExportToExcel';  // Importamos el hook para exportar
 import { Activo } from '../../types/activo';
 import FormularioAgregarActivo from './FormularioAgregarActivo';
 
@@ -24,6 +25,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [currentPage, setCurrentPage] = useState(1);
 
   const { activos, loading, error } = useActivos();
+  const { tomo, setTomo, exportToExcel } = useExportToExcel();  // Usamos el hook
 
   const itemsPerPage = 33;
   const totalPages = Math.ceil(activos.length / itemsPerPage);
@@ -73,6 +75,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     onAddAsset(false);
   };
 
+  // Manejar selección de activos
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  // Filtrar los activos seleccionados
+  const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
+
   if (loading) {
     return <p>Cargando activos...</p>;
   }
@@ -110,8 +122,26 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                 </button>
               ) : (
                 <div className="flex space-x-4">
-                  <button className="bg-green-600 text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm">Exportar</button>
-                  <button className="bg-gray-500 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-600 transition text-sm">Generar Sticker</button>
+                  {/* Input para el número de tomo */}
+                  <input
+                    type="number"
+                    placeholder="Introduce el número de tomo"
+                    value={tomo !== null ? tomo : ''}
+                    onChange={(e) => setTomo(Number(e.target.value))}
+                    className="border p-2"
+                  />
+                  <button
+                    onClick={() => exportToExcel(selectedActivos)}
+                    className={`${
+                      selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                    } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    disabled={selectedItems.length === 0}
+                  >
+                    Exportar
+                  </button>
+                  <button className="bg-gray-500 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-600 transition text-sm">
+                    Generar Sticker
+                  </button>
                   <button
                     onClick={handleCancel}
                     className="bg-red-600 text-white px-3 py-1 rounded-lg shadow hover:bg-red-700 transition text-sm"
@@ -140,17 +170,21 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               </thead>
               <tbody>
                 {paginatedData.map((row) => (
-                  <tr key={row.id} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => handleSelectAsset(row)}>
+                  <tr
+                    key={row.id ? row.id : `row-${Math.random()}`} // Proveer una clave única si `id` no está definido
+                    className="border-b hover:bg-gray-100 cursor-pointer"
+                    onClick={() => !isSelectionMode && row.id && handleSelectAsset(row)} // Evitar si `id` es undefined
+                  >
                     {isSelectionMode && (
                       <td className="px-2 py-2 text-sm">
                         <input
                           type="checkbox"
-                          checked={selectedItems.includes(row.id?.toString() || '')}
-                          onChange={() => setSelectedItems([...selectedItems, row.id?.toString() || ''])}
+                          checked={row.id ? selectedItems.includes(row.id.toString()) : false} // Verificamos si `id` es válido
+                          onChange={() => row.id && toggleSelectItem(row.id.toString())} // Solo cambiar si `id` es válido
                         />
                       </td>
                     )}
-                    <td className="px-4 py-2 text-sm">{row.id}</td>
+                    <td className="px-4 py-2 text-sm">{row.id ?? 'Sin ID'}</td> {/* Mostrar 'Sin ID' si no hay ID */}
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
@@ -181,7 +215,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index}
-                  className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
                   onClick={() => handlePageChange(index + 1)}
                 >
                   {index + 1}
