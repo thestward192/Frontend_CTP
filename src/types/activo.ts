@@ -1,5 +1,5 @@
-import { Ley } from "./ley";
 import { Ubicacion } from "./ubicacion";
+import { Licitacion } from "./licitacion"; // Importamos el tipo Licitacion
 
 export interface Activo {
     id?: number; // ID opcional
@@ -17,7 +17,6 @@ export interface Activo {
     modoAdquisicion: string; // Ley o Donación
     ubicacionId: number;
     ubicacion?: Ubicacion; // Relación con la ubicación
-    leyId?: number;
-    ley?: Ley;  // Relación opcional con la ley si es por "Ley"
-  }
-  
+    licitacionId?: number; // Nueva relación con Licitacion
+    licitacion?: Licitacion; // Relación opcional con la licitación
+}

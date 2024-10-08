@@ -2,26 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
-import { Ley } from '../../types/ley';
+import { Licitacion } from '../../types/licitacion';
 import { Ubicacion } from '../../types/ubicacion';
 import { getUbicaciones } from '../../Services/ubicacionService';
-import { getLeyes } from '../../Services/leyService';
+import { getLicitaciones } from '../../Services/licitacionService'; // Servicio para obtener licitaciones
 import { useActivos } from '../../hooks/useActivo';
 
 const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: string }> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<Omit<Activo, 'id'>>(); // Configuramos react-hook-form
-  const [leyes, setLeyes] = useState<Ley[]>([]);
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<Omit<Activo, 'id'>>();
+  const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { handleCreateActivo, loading, error } = useActivos();
 
+  // Obtenemos el valor de la licitación seleccionada usando `watch`
+  const selectedLicitacionId = watch('licitacionId');
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ubicacionesData, leyesData] = await Promise.all([getUbicaciones(), getLeyes()]);
+        const [ubicacionesData, licitacionesData] = await Promise.all([getUbicaciones(), getLicitaciones()]);
         setUbicaciones(ubicacionesData);
-        setLeyes(leyesData);
+        setLicitaciones(licitacionesData);
       } catch (error) {
         console.error('Error al cargar datos:', error);
       }
@@ -29,14 +32,27 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
     fetchData();
   }, []);
 
+  // Actualizar el `modoAdquisicion` basado en la licitación seleccionada
+  useEffect(() => {
+    const selectedLicitacion = licitaciones.find(licitacion => licitacion.id === Number(selectedLicitacionId));
+    
+    if (selectedLicitacion) {
+      setValue('modoAdquisicion', 'Ley'); // Cambiamos a 'Ley' cuando se selecciona una licitación
+    } else {
+      setValue('modoAdquisicion', ''); // Limpiamos el campo si no hay licitación seleccionada
+    }
+  }, [selectedLicitacionId, licitaciones, setValue]);
+
   const onSubmit = async (data: Omit<Activo, 'id'>) => {
     try {
-      await handleCreateActivo(data);
+      console.log('Datos enviados al servidor:', data); // Verificar los datos antes de enviarlos al servidor
+      await handleCreateActivo(data); // Enviamos los datos al servidor
+
       setSuccessMessage('Activo creado exitosamente');
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
-        reset();
+        reset();  // Reseteamos el formulario
       }, 1000);
     } catch (error) {
       console.error('Error al crear el activo:', error);
@@ -55,7 +71,6 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
 
         <h2 className="text-lg font-bold mb-4">Agregar Activo</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Usamos grid para crear 2 columnas */}
           <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
@@ -149,22 +164,23 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
             </div>
 
-            {/* Ley (solo si es modo Ley) */}
+            {/* Licitación (solo si es modo Ley) */}
             {modoAdquisicion === 'Ley' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Ley</label>
+                  <label className="block text-sm font-medium text-gray-700">Licitación</label>
                   <select
-                    {...register('leyId')}
-                    className="w-full border border-gray-300 p-2 rounded-lg"
+                    {...register('licitacionId', { required: 'Este campo es obligatorio' })}
+                    className={`w-full border border-gray-300 p-2 rounded-lg ${errors.licitacionId ? 'border-red-500' : ''}`}
                   >
-                    <option value="">Seleccione una Ley</option>
-                    {leyes.map((ley) => (
-                      <option key={ley.id} value={ley.id}>
-                        {ley.numLey}
+                    <option value="">Seleccione una Licitación</option>
+                    {licitaciones.map((licitacion) => (
+                      <option key={licitacion.id} value={licitacion.id}>
+                        {licitacion.nombre}
                       </option>
                     ))}
                   </select>
+                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
                 </div>
 
                 {/* Observaciones */}
@@ -184,7 +200,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
             <button
               type="button"
               className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-              onClick={onClose}  // Aseguramos que el botón de cancelar cierre el formulario
+              onClick={onClose}
             >
               Cancelar
             </button>

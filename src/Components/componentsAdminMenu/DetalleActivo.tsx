@@ -39,7 +39,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     }
   };
   
-
   const handleExportar = () => {
     console.log('Exportar activo', asset.id);
   };
@@ -100,7 +99,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 </div>
               </div>
 
-              {/* Añadimos Número de Placa */}
               <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
@@ -114,6 +112,22 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 </div>
               </div>
 
+              {/* Mostrar licitación y ley solo si el modo de adquisición es Ley */}
+              {asset.modoAdquisicion === 'Ley' && asset.licitacion && (
+                <div className="border-t border-gray-200 py-2 w-full">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-1">
+                      <p className="text-sm font-semibold text-gray-600">Licitación</p>
+                      <p className="text-gray-800">{asset.licitacion.nombre}</p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-sm font-semibold text-gray-600">Ley Asociada</p>
+                      <p className="text-gray-800">{asset.licitacion.ley?.nombre || 'No disponible'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
@@ -123,19 +137,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Disponibilidad</p>
                     <p className="text-gray-800">{asset.disponibilidad}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 py-2 w-full">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Modo de Adquisición</p>
-                    <p className="text-gray-800">{asset.modoAdquisicion}</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Precio</p>
-                    <p className="text-gray-800">{asset.precio}</p>
                   </div>
                 </div>
               </div>
