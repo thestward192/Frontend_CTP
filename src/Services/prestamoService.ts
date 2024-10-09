@@ -1,39 +1,66 @@
 import axios from 'axios';
+import { Prestamo } from '../types/prestamo';
 
-const API_URL = 'http://localhost:3000/prestamos'; // Asegúrate de que esta URL sea la correcta según tu backend
+const API_URL = 'http://localhost:3000/prestamos';
 
-// Obtener el token JWT desde localStorage
-const getToken = () => localStorage.getItem('token');
+const getAuthToken = () => localStorage.getItem('token');
 
-// Función para solicitar un préstamo
-export const solicitarPrestamo = async (prestamoData) => {
-  const token = getToken(); // Obtenemos el token
-  const response = await axios.post(`${API_URL}/solicitar`, prestamoData, {
+export const createPrestamo = async (prestamoData: Omit<Prestamo, 'id'>) => {
+  const token = getAuthToken();
+  const response = await axios.post(API_URL, prestamoData, {
     headers: {
-      Authorization: `Bearer ${token}`, // Añadimos el token en el encabezado
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;
 };
 
-// Función para obtener todas las solicitudes de préstamo (para el Administrador)
-export const obtenerPrestamos = async () => {
-  const token = getToken(); // Obtenemos el token
-  const response = await axios.get(API_URL, {
+export const updatePrestamoEstado = async (id: number, estado: string) => {
+  const token = getAuthToken();
+  const response = await axios.patch(`${API_URL}/${id}/estado`, { estado }, {
     headers: {
-      Authorization: `Bearer ${token}`, // Añadimos el token en el encabezado
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;
 };
 
-// Función para aprobar un préstamo (solo Administrador)
-export const aprobarPrestamo = async (prestamoId) => {
-  const token = getToken(); // Obtenemos el token
-  const response = await axios.patch(`${API_URL}/aprobar/${prestamoId}`, {}, {
+export const deletePrestamo = async (id: number) => {
+  const token = getAuthToken();
+  const response = await axios.delete(`${API_URL}/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`, // Añadimos el token en el encabezado
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;
+};
+
+export const getPrestamosByUbicacion = async (ubicacionId: number) => {
+  const token = getAuthToken();
+  const response = await axios.get(`${API_URL}/ubicacion/${ubicacionId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getPrestamosByUsuario = async (prestadoPorId: number) => {
+  const token = getAuthToken();
+  const response = await axios.get(`${API_URL}/usuario/${prestadoPorId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getPrestamosByEstado = async (estado: string): Promise<any[]> => {
+  try {
+    const response = await axios.get(`${API_URL}?estado=${estado}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener los préstamos por estado:', error);
+    throw error;
+  }
 };
