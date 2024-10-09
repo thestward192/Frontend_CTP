@@ -1,4 +1,3 @@
-// src/componentsPages/Login.tsx
 import React, { useState } from 'react';
 import logo from '../../assets/images-removebg-preview (1).png';
 import backgroundPattern from '../../assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png';
@@ -16,6 +15,12 @@ const Login: React.FC = () => {
     try {
       setError(''); // Limpiar cualquier error previo
 
+      // Validar que los campos no estén vacíos
+      if (!email || !password) {
+        setError('Por favor, completa todos los campos');
+        return;
+      }
+
       const response = await fetch('http://localhost:3000/auth/login', {
         method: 'POST',
         headers: {
@@ -28,22 +33,40 @@ const Login: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Credenciales inválidas');
+        if (response.status === 401) {
+          throw new Error('Credenciales inválidas');
+        } else {
+          throw new Error(`Error en el servidor: ${response.statusText}`);
+        }
       }
 
       const data = await response.json();
+      
+      // Verifica si realmente tienes el token
+      if (!data.access_token) {
+        throw new Error('No se recibió el token de autenticación');
+      }
+
       login(data.access_token); // Autenticar y guardar el token
 
-      const payload = JSON.parse(atob(data.access_token.split('.')[1]));
-      if (payload.role === 'Administrador') {
-        navigate('/MenuAdmin'); // Redirigir al menú del administrador
-      } else {
-        setError('No tienes permisos para acceder a esta área.');
-        localStorage.removeItem('token'); // Elimina el token si no es administrador
+      try {
+        const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+
+        // Dependiendo del rol, redirigir al lugar correcto
+        if (payload.role === 'Administrador') {
+          navigate('/MenuAdmin'); // Redirigir al menú del administrador
+        } else if (payload.role === 'Docente') {
+          navigate('/MenuDocente'); // Redirigir al menú del docente
+        } else {
+          setError('No tienes permisos para acceder a esta área.');
+          localStorage.removeItem('token'); // Elimina el token si no es un rol permitido
+        }
+      } catch (err) {
+        throw new Error('Error al decodificar el token');
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      setError('Credenciales inválidas o error en el servidor');
+    } catch (err: any) {
+      console.error('Error durante el inicio de sesión:', err);
+      setError(err.message || 'Credenciales inválidas o error en el servidor');
     }
   };
 
