@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { FaArrowLeft, FaTrash, FaEdit, FaFileExport, FaTags } from 'react-icons/fa';
-import HistorialPrestamos from './HistorialPrestamos';
 import { Activo } from '../../types/activo';
-import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación de activos
+import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación y actualización de activos
 import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
+import { FaArrowLeft, FaEdit, FaFileExport, FaTags, FaTrash } from 'react-icons/fa';
+import HistorialPrestamos from './HistorialPrestamos';
+import { useState } from 'react';
+import useBarcode from '../../hooks/useBarcode';
 
 interface DetalleComponentProps {
   asset: Activo;
@@ -14,7 +15,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const [activeTab, setActiveTab] = useState('detalle');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
-  const { handleDeleteActivo, handleUpdateActivo } = useActivos(); // Usamos el hook para eliminar y editar activos
+  const [showSticker, setShowSticker] = useState(false); // Nuevo estado para mostrar el sticker
+  const { handleDeleteActivo, handleUpdateActivo } = useActivos();
+
+  // Hook para generar el código de barras usando numPlaca
+  const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString()); // Convertimos numPlaca a string
 
   const handleEliminar = async (id: number) => {
     try {
@@ -31,19 +36,20 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
   const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     try {
-      await handleUpdateActivo(asset.id!, updatedData);
+      await handleUpdateActivo({ id: asset.id!, data: updatedData }); // Actualizar el activo con los nuevos datos
       setIsEditModalOpen(false); // Cerrar el modal de edición
+      onBack();
     } catch (error) {
       console.error('Error al guardar los cambios del activo:', error);
     }
   };
-
+  
   const handleExportar = () => {
     console.log('Exportar activo', asset.id);
   };
 
   const handleGenerarSticker = () => {
-    console.log('Generar sticker para activo', asset.id);
+    setShowSticker(true); // Mostrar el sticker
   };
 
   return (
@@ -72,7 +78,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
           <div className="flex justify-between">
             <div className="flex-grow">
-              <div className="border-t border-gray-200 py-2 w-3/4">
+              <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">No. Identificador</p>
@@ -85,7 +91,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4">
+              <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Modelo</p>
@@ -98,11 +104,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4">
+              <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Estado</p>
-                    <p className="text-gray-800">{asset.estado}</p>
+                    <p className="text-sm font-semibold text-gray-600">Número de Placa</p>
+                    <p className="text-gray-800">{asset.numPlaca}</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Ubicación</p>
@@ -111,31 +117,64 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4">
+              {/* Mostrar licitación y ley solo si el modo de adquisición es Ley */}
+              {asset.modoAdquisicion === 'Ley' && asset.licitacion && (
+                <div className="border-t border-gray-200 py-2 w-full">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-1">
+                      <p className="text-sm font-semibold text-gray-600">Licitación</p>
+                      <p className="text-gray-800">{asset.licitacion.nombre}</p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-sm font-semibold text-gray-600">Ley Asociada</p>
+                      <p className="text-gray-800">{asset.licitacion.ley?.nombre || 'No disponible'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Modo de Adquisición</p>
-                    <p className="text-gray-800">{asset.modoAdquisicion}</p>
+                    <p className="text-sm font-semibold text-gray-600">Estado</p>
+                    <p className="text-gray-800">{asset.estado}</p>
                   </div>
                   <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Precio</p>
-                    <p className="text-gray-800">{asset.precio}</p>
+                    <p className="text-sm font-semibold text-gray-600">Disponibilidad</p>
+                    <p className="text-gray-800">{asset.disponibilidad}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4">
+              <div className="border-t border-gray-200 py-2 w-full">
                 <p className="text-sm font-semibold text-gray-600">Descripción</p>
                 <p className="text-gray-800">{asset.descripcion}</p>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-3/4">
+              <div className="border-t border-gray-200 py-2 w-full">
                 <p className="text-sm font-semibold text-gray-600">Observación</p>
                 <p className="text-gray-800">{asset.observacion}</p>
               </div>
+
+              {/* Sticker (Código de barras) */}
+              {showSticker && (
+                <div className="border-t border-gray-200 py-2 w-3/4">
+                  <h3 className="text-sm font-semibold text-gray-600">Sticker del Activo</h3>
+                  {loading ? (
+                    <p>Cargando código de barras...</p>
+                  ) : error ? (
+                    <p>Error al generar el sticker: {error}</p>
+                  ) : barcodeUrl ? (
+                    <div>
+                      <img src={barcodeUrl} alt={`Código de barras para ${asset.numPlaca}`} className="w-60 h-20 object-contain mt-2" />
+                      <p className="text-sm font-semibold text-gray-800 mt-2">Número de Placa: {asset.numPlaca}</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
 
-            <div className="flex-shrink-0 ml-4" style={{ marginLeft: '-100px' }}>
+            <div className="flex-shrink-0 ml-4">
               <img
                 src={asset.foto}
                 alt="Foto del Activo"

@@ -83,8 +83,8 @@ const UsuariosComponent: React.FC = () => {
             <thead>
               <tr className="bg-gray-50">
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Apellido Paterno</th>
-                <th className="px-4 py-2 text-gray-600 font-semibold">Apellido Materno</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Primer Apellido</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Segundo Apellido</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Email</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
               </tr>
@@ -160,16 +160,16 @@ const UsuariosComponent: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
             <h2 className="text-lg font-bold mb-4">Eliminar Usuario</h2>
-            <p>¿Estás seguro de que deseas eliminar este usuario?</p>
+            <p>¿Estás seguro de que deseas eliminar este Usuario?</p>
             <div className="flex justify-end space-x-4 mt-6">
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={() => setIsDeleteModalOpen(null)}
               >
                 Cancelar
               </button>
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                 onClick={confirmDelete}
               >
                 Eliminar

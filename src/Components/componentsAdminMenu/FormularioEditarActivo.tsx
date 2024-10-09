@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
-import { Ley } from '../../types/ley';
-import { Ubicacion } from '../../types/ubicacion';
-import { getUbicaciones } from '../../Services/ubicacionService';
-import { getLeyes } from '../../Services/leyService';
-import {  FaCheckCircle } from 'react-icons/fa';
+import { useUbicacion } from '../../hooks/useUbicacion'; // Usamos el hook de ubicaciones
+import { useLicitaciones } from '../../hooks/useLicitacion'; // Nuevo hook de licitaciones
 
 interface FormularioEditarActivoProps {
   asset: Activo;
@@ -19,33 +17,50 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     marca: asset.marca,
     serie: asset.serie,
     estado: asset.estado,
+    disponibilidad: asset.disponibilidad,
     modelo: asset.modelo,
     numPlaca: asset.numPlaca,
     foto: asset.foto,
     precio: asset.precio,
     observacion: asset.observacion,
-    ubicacionId: asset.ubicacionId,
+    ubicacionId: asset.ubicacion?.id || 0,
     modoAdquisicion: asset.modoAdquisicion,
-    leyId: asset.leyId,
+    licitacionId: asset.licitacion?.id || '', // Aseguramos que el licitacionId sea el valor del ID de la licitación
   });
 
-  const [leyes, setLeyes] = useState<Ley[]>([]);
-  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const isDadoDeBaja = formData.disponibilidad === 'Dado de Baja'; // Verificamos si está "Dado de Baja"
 
+  // Usamos el hook useUbicacion para obtener las ubicaciones
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+
+  // Usamos el hook useLicitaciones para obtener las licitaciones
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
+
+  // Actualizar `modoAdquisicion` cuando cambie la licitación seleccionada
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [ubicacionesData, leyesData] = await Promise.all([getUbicaciones(), getLeyes()]);
-        setUbicaciones(ubicacionesData);
-        setLeyes(leyesData);
-      } catch (error) {
-        console.error('Error al cargar datos:', error);
-      }
-    };
+    if (formData.licitacionId) {
+      setFormData(prevState => ({
+        ...prevState,
+        modoAdquisicion: 'Ley',
+      }));
+    } else {
+      setFormData(prevState => ({
+        ...prevState,
+        modoAdquisicion: 'Donación', // Otro valor predeterminado si no hay licitación seleccionada
+      }));
+    }
+  }, [formData.licitacionId]);
 
-    fetchData();
-  }, []);
+  // Controlar el cambio de estado basado en disponibilidad
+  useEffect(() => {
+    if (formData.disponibilidad === 'Dado de Baja') {
+      setFormData(prevState => ({
+        ...prevState,
+        estado: 'Malo',
+      }));
+    }
+  }, [formData.disponibilidad]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -62,11 +77,19 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
-      }, 3000);
+      }, 1000);
     } catch (error) {
       console.error('Error al actualizar el activo:', error);
     }
   };
+
+  if (ubicacionesLoading || licitacionesLoading) {
+    return <p>Cargando ubicaciones y licitaciones...</p>;
+  }
+
+  if (ubicacionesError || licitacionesError) {
+    return <p>Error al cargar los datos</p>;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -81,6 +104,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
         <h2 className="text-lg font-bold mb-4">Editar Activo</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
+            {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
@@ -93,6 +117,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Marca */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Marca</label>
               <input
@@ -105,6 +130,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Modelo */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Modelo</label>
               <input
@@ -117,6 +143,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Serie */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Serie</label>
               <input
@@ -129,20 +156,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Estado</label>
-              <select
-                name="estado"
-                value={formData.estado || 'Activo'}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-              </select>
-            </div>
-
+            {/* Número de Placa */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
@@ -155,6 +169,51 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Precio */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Precio</label>
+              <input
+                type="number"
+                name="precio"
+                value={formData.precio || 0}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              />
+            </div>
+
+            {/* Estado */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Estado</label>
+              <select
+                name="estado"
+                value={formData.estado || 'Bueno'} // Preseleccionamos "Bueno" como valor por defecto
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+                required
+                disabled={isDadoDeBaja} // Deshabilitar si disponibilidad es "Dado de Baja"
+              >
+                <option value="Bueno">Bueno</option>
+                <option value="Regular">Regular</option>
+                <option value="Malo">Malo</option>
+              </select>
+            </div>
+
+            {/* Disponibilidad */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Disponibilidad</label>
+              <select
+                name="disponibilidad"
+                value={formData.disponibilidad || 'Activo'} // Preseleccionamos "Activo" como valor por defecto
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+                required
+              >
+                <option value="Activo">Activo</option>
+                <option value="Dado de Baja">Dado de Baja</option>
+              </select>
+            </div>
+
+            {/* Descripción */}
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea
@@ -166,6 +225,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
+            {/* Ubicación */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Ubicación</label>
               <select
@@ -184,34 +244,24 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               </select>
             </div>
 
+            {/* Licitación (solo si es modo Ley) */}
             {formData.modoAdquisicion === 'Ley' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Ley</label>
+                  <label className="block text-sm font-medium text-gray-700">Licitación</label>
                   <select
-                    name="leyId"
-                    value={formData.leyId || ''}
+                    name="licitacionId"
+                    value={formData.licitacionId || ''} // Preseleccionamos la licitación actual
                     onChange={handleChange}
                     className="w-full border border-gray-300 p-2 rounded-lg"
                   >
-                    <option value="">Seleccione una Ley</option>
-                    {leyes.map((ley) => (
-                      <option key={ley.id} value={ley.id}>
-                        {ley.nombre}
+                    <option value="">Seleccione una Licitación</option>
+                    {licitaciones.map((licitacion) => (
+                      <option key={licitacion.id} value={licitacion.id}>
+                        {licitacion.nombre}
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Precio</label>
-                  <input
-                    type="number"
-                    name="precio"
-                    value={formData.precio || 0}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 p-2 rounded-lg"
-                  />
                 </div>
 
                 <div className="col-span-2">
@@ -227,6 +277,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
             )}
           </div>
 
+          {/* Botones de acción */}
           <div className="flex justify-end space-x-4 mt-4">
             <button
               type="button"

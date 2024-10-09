@@ -21,8 +21,8 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
       monto: undefined,
       descripcion: '',
       fecha: new Date(),
-      idProveedor: 0,
-      idLey: 0,
+      idProveedor: '', 
+      idLey: '',
     },
   });
 
