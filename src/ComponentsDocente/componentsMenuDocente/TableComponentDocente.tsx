@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useActivos } from '../../hooks/useActivo';
 import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoDocente from './DetalleActivoDocente';
+import SolicitarPrestamo from './SolicitarPrestamo'; // Importamos el nuevo componente
 import { Activo } from '../../types/activo'; // Asegúrate de tener un tipo definido para Activo
 
 const TableComponentDocente: React.FC = () => {
@@ -11,6 +12,7 @@ const TableComponentDocente: React.FC = () => {
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
   const [selectedActivo, setSelectedActivo] = useState<Activo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrestamoModalOpen, setIsPrestamoModalOpen] = useState(false); // Para manejar el modal del préstamo
 
   useEffect(() => {
     if (ubicaciones.length > 0 && selectedUbicacion === null) {
@@ -43,6 +45,14 @@ const TableComponentDocente: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const openPrestamoModal = () => {
+    setIsPrestamoModalOpen(true); // Abrir el modal para solicitar préstamo
+  };
+
+  const closePrestamoModal = () => {
+    setIsPrestamoModalOpen(false); // Cerrar el modal
+  };
+
   const itemsPerPage = 5;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
@@ -69,6 +79,13 @@ const TableComponentDocente: React.FC = () => {
               ))}
             </select>
           </div>
+          {/* Botón para abrir el modal de Solicitar Préstamo */}
+          <button
+            onClick={openPrestamoModal}
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition"
+          >
+            Solicitar Préstamo
+          </button>
         </div>
 
         <div className="flex-grow overflow-y-auto">
@@ -146,6 +163,10 @@ const TableComponentDocente: React.FC = () => {
             activo={selectedActivo}
             onClose={closeModal}
           />
+        )}
+
+        {isPrestamoModalOpen && (
+          <SolicitarPrestamo onClose={closePrestamoModal} ubicaciones={ubicaciones} />
         )}
       </div>
     </div>
