@@ -1,12 +1,25 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Activo } from '../types/activo';
-import { createActivo, getActivos, updateActivo, deleteActivo } from '../Services/activoService';
+import { createActivo, getActivos, updateActivo, deleteActivo, getActivosByUbicacion } from '../Services/activoService';
 
 export const useActivos = () => {
   const queryClient = useQueryClient();
+  const [activosFiltrados, setActivosFiltrados] = useState<Activo[]>([]);
+
 
   // Obtener todos los activos
   const { data: activos = [], isLoading: loading, error } = useQuery<Activo[], Error>(['activos'], getActivos);
+
+  const fetchActivosByUbicacion = async (ubicacionId: number) => {
+    try {
+      const data = await getActivosByUbicacion(ubicacionId);
+      setActivosFiltrados(data);  // Actualiza el estado local con los activos filtrados
+    } catch (error) {
+      console.error('Error al obtener activos por ubicación:', error);
+      throw error;
+    }
+  };
 
   // Crear un nuevo activo
   const { mutate: handleCreateActivo, isLoading: creating, error: createError } = useMutation<
@@ -52,6 +65,7 @@ export const useActivos = () => {
 
   return {
     activos,
+    activosFiltrados,
     loading,
     error: error || createError || updateError || deleteError,  // Manejo de errores unificado
     creating,
@@ -60,5 +74,6 @@ export const useActivos = () => {
     handleCreateActivo,  // Función para crear activos
     handleUpdateActivo,  // Función para actualizar activos
     handleDeleteActivo,  // Función para eliminar activos
+    fetchActivosByUbicacion,
   };
 };

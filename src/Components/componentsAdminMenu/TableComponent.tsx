@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
- // Usar el formulario de agregar activo
 import DetalleComponent from './DetalleActivo';
 import Filters from './Filters';
 import SelectionModal from './SelectionModal';
@@ -14,7 +13,7 @@ interface TableComponentProps {
   onAddAsset: (isAdding: boolean) => void;
 }
 
-const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
+  const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -23,6 +22,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
   const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [filterNombre, setFilterNombre] = useState('');
+  const [filterUbicacion, setFilterUbicacion] = useState('');
+  const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
 
   const { activos, loading, error } = useActivos();
   const { tomo, setTomo, exportToExcel } = useExportToExcel();  // Usamos el hook
@@ -34,8 +38,28 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     setCurrentPage(page);
   };
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
+  const handleFilterChange = (filterName: string, value: string) => {
+    if (filterName === 'nombre') {
+      setFilterNombre(value);
+    } else if (filterName === 'ubicacion') {
+      setFilterUbicacion(value);
+    }else if (filterName === 'modoAdquisicion') {
+      setFilterModoAdquisicion(value);
+    } else if (filterName === 'estado') {
+      setFilterEstado(value);
+    }
+
+  };
+
+    const filteredData = activos.filter((activo) => {
+    const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
+    const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
+    const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
+    const matchesEstado = !filterEstado || activo.estado === filterEstado;
+
+    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado;
+  });
+  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const enableSelectionMode = () => {
     setIsSelectionMode(true);
@@ -153,7 +177,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             </div>
           </div>
 
-          <Filters />
+          <Filters onFilterChange={handleFilterChange} />
 
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">

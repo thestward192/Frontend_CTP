@@ -42,10 +42,10 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
             onChange={handleEstadoChange}
             className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
+            <option value="Bueno">Bueno</option>
+            <option value="Regular">Regular</option>
+            <option value="Malo">Malo</option>
             <option value="En reparación">En reparación</option>
-            <option value="Dado de baja">Dado de baja</option>
           </select>
         </div>
 
