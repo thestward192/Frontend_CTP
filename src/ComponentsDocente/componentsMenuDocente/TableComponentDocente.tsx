@@ -85,7 +85,7 @@ const TableComponentDocente: React.FC = () => {
           <div className="flex items-center">
             <div className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</div>
             <select
-              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              className="bg-white w-[160px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-s"
               value={selectedUbicacion || ''}
               onChange={handleUbicacionSelect}
             >
@@ -98,27 +98,27 @@ const TableComponentDocente: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex space-x-6">
             <input
               type="text"
-              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
-              placeholder="Filtrar por nombre"
+              className="bg-white w-[160px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-s"
+              placeholder="Buscar por nombre"
               value={filterNombre}
               onChange={(e) => setFilterNombre(e.target.value)}
             />
             <input
               type="text"
-              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
-              placeholder="Filtrar por marca"
+              className="bg-white w-[160px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-s"
+              placeholder="Buscar por marca"
               value={filterMarca}
               onChange={(e) => setFilterMarca(e.target.value)}
             />
             <select
-              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              className="bg-white w-[170px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-s"
               value={filterEstado}
               onChange={(e) => setFilterEstado(e.target.value)}
             >
-              <option value="">Todos</option>
+              <option value="">Todos los Estados</option>
               <option value="Bueno">Bueno</option>
               <option value="Regular">Regular</option>
               <option value="Dañado">Dañado</option>
