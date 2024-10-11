@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Activo } from '../types/activo';
-import { createActivo, getActivos, updateActivo, deleteActivo } from '../Services/activoService';
+import { createActivo, getActivos, updateActivo, deleteActivo, getActivosByUbicacion } from '../Services/activoService';
 
 export const useActivos = () => {
   const queryClient = useQueryClient();
@@ -22,6 +22,16 @@ export const useActivos = () => {
     }
   );
 
+  const useActivosByUbicacion = (ubicacionId: number) => {
+    return useQuery<Activo[], Error>(
+      ['activosByUbicacion', ubicacionId], // La query se identifica por ubicación
+      () => getActivosByUbicacion(ubicacionId), // Función que obtiene los activos por ubicación
+      {
+        enabled: !!ubicacionId, // Solo se ejecuta si el ubicacionId es válido
+      }
+    );
+  };
+
   // Actualizar un activo existente (usando PATCH)
   const { mutate: handleUpdateActivo, isLoading: updating, error: updateError } = useMutation<
     Activo,
@@ -35,6 +45,8 @@ export const useActivos = () => {
       },
     }
   );
+
+
 
   // Eliminar un activo existente
   const { mutate: handleDeleteActivo, isLoading: deleting, error: deleteError } = useMutation<
@@ -59,6 +71,7 @@ export const useActivos = () => {
     deleting,
     handleCreateActivo,  // Función para crear activos
     handleUpdateActivo,  // Función para actualizar activos
-    handleDeleteActivo,  // Función para eliminar activos
+    handleDeleteActivo,
+    useActivosByUbicacion  // Función para eliminar activos
   };
 };

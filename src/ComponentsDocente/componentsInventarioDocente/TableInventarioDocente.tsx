@@ -1,29 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useActivos } from '../../hooks/useActivo';
+import { useActivos } from '../../hooks/useActivo'; // Hook de activos
 import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoInventario from './DetalleActivoInventario';
 
 const TableInventarioDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { activos, loading, fetchActivosByUbicacion } = useActivos();
   const { ubicaciones } = useAuth();
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
   const [selectedActivo, setSelectedActivo] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Usamos el hook `useActivosByUbicacion` para obtener activos basados en la ubicación seleccionada
+  const { useActivosByUbicacion } = useActivos();
+  const { data: activos = [], isLoading: loading } = useActivosByUbicacion(selectedUbicacion || 0);
+
   useEffect(() => {
     if (ubicaciones.length > 0 && selectedUbicacion === null) {
       const defaultUbicacionId = ubicaciones[0].id;
       setSelectedUbicacion(defaultUbicacionId);
-      fetchActivosByUbicacion(defaultUbicacionId);
     }
   }, [ubicaciones]);
-
-  useEffect(() => {
-    if (selectedUbicacion !== null) {
-      fetchActivosByUbicacion(selectedUbicacion);
-    }
-  }, [selectedUbicacion]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
