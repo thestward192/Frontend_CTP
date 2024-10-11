@@ -3,9 +3,13 @@ import SearchBarComponent from './SearchBarComponent';
 import TableComponent from './TableComponent';
 import Dashboard from '../componentsPages/Dashboard';
 import Arriba from '../../assets/Arriba.png';
+import ProfileComponent from '../componentsPages/ProfileComponent';
 
 const MenuAdminComponent: React.FC = () => {
   const [isAssetSelected, setIsAssetSelected] = useState(false); // Controla si se ha seleccionado un activo
+  const [isAddingAsset, setIsAddingAsset] = useState(false); // Controla si estamos agregando un activo
+
+ 
 
   return (
     <div className="relative w-full h-screen flex">
@@ -24,16 +28,22 @@ const MenuAdminComponent: React.FC = () => {
         />
 
         <div className="relative z-10">
-          {/* Solo mostramos el buscador si no hay un activo seleccionado */}
-          {!isAssetSelected && (
-            <div className="pt-[40px] px-10">
-              <SearchBarComponent />
-            </div>
+          {/* Ocultamos el perfil y el buscador si se está en el detalle o al agregar activo */}
+          {!isAddingAsset && !isAssetSelected && (
+            <>
+              <div className="absolute top-4 right-6">
+                <ProfileComponent />
+              </div>
+
+              <div className="pt-[40px] px-10">
+                <SearchBarComponent />
+              </div>
+            </>
           )}
 
           {/* Tabla con márgenes laterales */}
           <div className="relative z-20 ml-10 mr-10" style={{ marginTop: isAssetSelected ? '30px' : '-30px' }}>
-            <TableComponent onAssetSelect={setIsAssetSelected} />
+            <TableComponent onAssetSelect={setIsAssetSelected} onAddAsset={setIsAddingAsset} />
           </div>
         </div>
       </div>

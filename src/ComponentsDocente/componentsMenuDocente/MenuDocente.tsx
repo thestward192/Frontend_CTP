@@ -1,14 +1,15 @@
 import React from 'react';
 import Arriba from '../../assets/Arriba.png';
-import DashboardDocente from '../componentsPrestamos/DashboardDocentes';
-import SearchBarDocente from '../componentsPrestamos/SearchBarDocente';
+import DashboardDocente from '../componentsPagesDocente/DashboardDocentes';
+import SearchBarDocente from '../componentsPagesDocente/SearchBarDocente';
 import TableComponentDocente from './TableComponentDocente';
+import ProfileDocenteComponent from '../componentsPagesDocente/PerfileDocenteComponent';
 
 const MenuDocente: React.FC = () => {
   return (
     <div className="relative w-full h-screen flex">
       {/* Sidebar */}
-      <div className="z-10 w-[270px]"> {/* Aumentamos un poco el ancho del sidebar para eliminar el espacio */}
+      <div className="z-10 w-[270px]">
         <DashboardDocente />
       </div>
 
@@ -22,14 +23,18 @@ const MenuDocente: React.FC = () => {
         />
 
         <div className="relative z-10">
+          {/* Perfil del Docente */}
+          <div className="absolute top-4 right-6">
+            <ProfileDocenteComponent />
+          </div>
+
           {/* Espaciado superior para buscadores */}
-          <div className="pt-[40px] px-10"> {/* Reducimos el padding-top para subir los buscadores */}
-            {/* Elementos de búsqueda */}
+          <div className="pt-[20px] px-10"> {/* Reducimos el padding-top */}
             <SearchBarDocente />
           </div>
 
           {/* Tabla con márgenes laterales */}
-          <div className="relative z-20 -mt-6 ml-10 mr-10"> {/* Reducimos el margen superior de la tabla */}
+          <div className="relative z-20 -mt-6 ml-10 mr-10">
             <TableComponentDocente />
           </div>
         </div>

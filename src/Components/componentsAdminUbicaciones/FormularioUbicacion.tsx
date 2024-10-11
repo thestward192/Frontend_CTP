@@ -1,71 +1,88 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { useUbicacion } from '../../hooks/useUbicacion';
 
 interface FormularioUbicacionProps {
   onClose: () => void;
 }
 
-const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose }) => {
-  const { formData, handleInputChange, handleSubmitUbicacion } = useUbicacion();
-  const [alertaVisible, setAlertaVisible] = useState(false);
+interface FormData {
+  nombre: string;
+  descripcion: string;
+  pabellon: string;
+}
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const success = await handleSubmitUbicacion();
-    if (success) {
-      setAlertaVisible(true);
-      setTimeout(() => {
-        setAlertaVisible(false);
-        onClose(); // Cerrar el formulario al crear una ubicación
-      }, 2000); // Cerrar después de 2 segundos
-    }
+const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose }) => {
+  const { handleSubmitUbicacion, isLoading, isError } = useUbicacion();
+
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    handleSubmitUbicacion(data, {
+      onSuccess: () => {
+        onClose(); // Cerrar el formulario inmediatamente al crear una ubicación
+      },
+    });
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] relative">
-        {alertaVisible && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-md">
-            <p>Ubicación creada exitosamente</p>
-          </div>
-        )}
         <h2 className="text-lg font-bold mb-4">Agregar Ubicación</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label className="block mb-1">Nombre</label>
             <input
               type="text"
-              name="nombre" // Asegúrate de que el 'name' coincida con 'nombre' en formData
-              value={formData.nombre}
-              onChange={handleInputChange}
+              {...register('nombre', { required: 'El nombre es obligatorio' })}
               className="w-full border p-2 rounded-md"
               placeholder="Nombre de la Ubicación"
+              disabled={isLoading} // Deshabilitar si está cargando
             />
+            {errors.nombre && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.nombre.message}
+              </p>
+            )}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Descripción</label>
             <textarea
-              name="descripcion" // Asegúrate de que el 'name' coincida con 'descripcion' en formData
-              value={formData.descripcion}
-              onChange={handleInputChange}
+              {...register('descripcion', { required: 'La descripción es obligatoria' })}
               className="w-full border p-2 rounded-md"
               placeholder="Descripción"
               rows={4}
+              disabled={isLoading} // Deshabilitar si está cargando
             />
+            {errors.descripcion && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.descripcion.message}
+              </p>
+            )}
           </div>
 
           <div className="mb-4">
             <label className="block mb-1">Pabellón</label>
             <input
               type="text"
-              name="pabellon" // Asegúrate de que el 'name' coincida con 'pabellon' en formData
-              value={formData.pabellon}
-              onChange={handleInputChange}
+              {...register('pabellon', { required: 'El pabellón es obligatorio' })}
               className="w-full border p-2 rounded-md"
               placeholder="Pabellón de la Ubicación"
+              disabled={isLoading} // Deshabilitar si está cargando
             />
+            {errors.pabellon && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.pabellon.message}
+              </p>
+            )}
           </div>
+
+          {isError && (
+            <div className="text-red-500 mb-4">
+              Error al crear la ubicación. Intenta de nuevo.
+            </div>
+          )}
 
           <div className="flex justify-end space-x-2">
             <button
@@ -78,12 +95,12 @@ const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose }) =>
             <button
               type="submit"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              disabled={isLoading}
             >
-              Crear
+              {isLoading ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );

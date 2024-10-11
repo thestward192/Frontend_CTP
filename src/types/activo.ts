@@ -1,16 +1,22 @@
+import { Ubicacion } from "./ubicacion";
+import { Licitacion } from "./licitacion"; // Importamos el tipo Licitacion
+
 export interface Activo {
-    id?: number;
-    nombre : string;
+    id?: number; // ID opcional
+    nombre: string;
     descripcion: string;
     marca: string;
     serie: string;
-    estado: string;
+    estado?: string;
+    disponibilidad?: string;
     modelo: string;
     numPlaca: number;
     foto: string;
     precio: number;
     observacion: string;
+    modoAdquisicion: string; // Ley o Donación
     ubicacionId: number;
-    leyId?: number;
-    donadorId?: number;
+    ubicacion?: Ubicacion; // Relación con la ubicación
+    licitacionId?: number; // Nueva relación con Licitacion
+    licitacion?: Licitacion; // Relación opcional con la licitación
 }

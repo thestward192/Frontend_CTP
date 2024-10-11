@@ -1,74 +1,65 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
-import FormularioActivo from './FormularioActivo'; // Asegúrate de que la ruta es correcta
-import DetalleComponent from './DetalleActivo'; // Asegúrate de que la ruta es correcta
-import upsImage from '../../assets/Opera Captura de pantalla_2024-09-14_001500_download.schneider-electric.com.png'; 
-
-// Definimos una interfaz para describir la estructura de un activo
-interface Asset {
-  id: string;
-  marca: string;
-  modelo: string;
-  ubicacion: string;
-  precio: string;
-  estado: string;
-  descripcion: string;
-  serie: string;
-  modoAdquisicion: string;
-  observacion: string;
-  foto: string;
-}
+import DetalleComponent from './DetalleActivo';
+import Filters from './Filters';
+import SelectionModal from './SelectionModal';
+import { useActivos } from '../../hooks/useActivo';
+import { useExportToExcel } from '../../hooks/useExportToExcel';  // Importamos el hook para exportar
+import { Activo } from '../../types/activo';
+import FormularioAgregarActivo from './FormularioAgregarActivo';
 
 interface TableComponentProps {
-  onAssetSelect: (isSelected: boolean) => void; // Prop para notificar la selección
+  onAssetSelect: (isSelected: boolean) => void;
+  onAddAsset: (isAdding: boolean) => void;
 }
 
-const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
+  const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);  // Controla el modal de selección
+  const [modoAdquisicion, setModoAdquisicion] = useState<string | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
+  const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
 
-  const tableData: Asset[] = [
-    {
-      id: '4197-3561',
-      marca: 'CPU',
-      modelo: 'PHD-555-0118',
-      ubicacion: 'LABORATORIO#1',
-      precio: '35.000,00',
-      estado: 'Activo',
-      descripcion: 'Descripción del activo',
-      serie: 'ABC123',
-      modoAdquisicion: 'Compra',
-      observacion: 'Observación 1',
-      foto: upsImage
-    },
-    {
-      id: '4197-3092',
-      marca: 'CPU',
-      modelo: 'HID-555-0100',
-      ubicacion: 'LABORATORIO#5',
-      precio: '35.000,00',
-      estado: 'Inactivo',
-      descripcion: 'Descripción del activo 2',
-      serie: 'DEF456',
-      modoAdquisicion: 'Donación',
-      observacion: 'Observación 2',
-      foto: upsImage
-    },
-  ];
+  const [filterNombre, setFilterNombre] = useState('');
+  const [filterUbicacion, setFilterUbicacion] = useState('');
+  const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
+
+  const { activos, loading, error } = useActivos();
+  const { tomo, setTomo, exportToExcel } = useExportToExcel();  // Usamos el hook
 
   const itemsPerPage = 33;
-  const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  const totalPages = Math.ceil(activos.length / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = tableData.slice(startIndex, startIndex + itemsPerPage);
+  const handleFilterChange = (filterName: string, value: string) => {
+    if (filterName === 'nombre') {
+      setFilterNombre(value);
+    } else if (filterName === 'ubicacion') {
+      setFilterUbicacion(value);
+    }else if (filterName === 'modoAdquisicion') {
+      setFilterModoAdquisicion(value);
+    } else if (filterName === 'estado') {
+      setFilterEstado(value);
+    }
+
+  };
+
+    const filteredData = activos.filter((activo) => {
+    const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
+    const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
+    const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
+    const matchesEstado = !filterEstado || activo.estado === filterEstado;
+
+    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado;
+  });
+  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const enableSelectionMode = () => {
     setIsSelectionMode(true);
@@ -81,16 +72,56 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
     setSelectedItems([]);
   };
 
-  const handleSelectAsset = (asset: Asset) => {
+  const handleSelectAsset = (asset: Activo) => {
     setSelectedAsset(asset);
-    onAssetSelect(true); // Notificamos que un activo ha sido seleccionado
+    onAssetSelect(true); // Notifica que un activo ha sido seleccionado
   };
 
+  const handleAddActivo = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleSelectLey = () => {
+    setIsModalOpen(false);
+    setModoAdquisicion('Ley');
+    setIsAddingActivo(true);  // Abrimos el formulario de agregar activo
+  };
+
+  const handleSelectDonacion = () => {
+    setIsModalOpen(false);
+    setModoAdquisicion('Donación');
+    setIsAddingActivo(true);  // Abrimos el formulario de agregar activo
+  };
+
+  const handleCloseForm = () => {
+    setIsAddingActivo(false);  // Cerramos el formulario
+    setModoAdquisicion(null);
+    onAddAsset(false);
+  };
+
+  // Manejar selección de activos
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  // Filtrar los activos seleccionados
+  const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
+
+  if (loading) {
+    return <p>Cargando activos...</p>;
+  }
+
+  if (error) {
+    return <p>Error al cargar los activos: {error}</p>;
+  }
+
   return (
-    <div className="w-full flex justify-center py-10">
-      {!selectedAsset ? (
+    <div className="w-full flex justify-center py-10 relative">
+      {!modoAdquisicion && !selectedAsset && !isAddingActivo ? (
         <div
-          className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+          className="w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
           style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
         >
           <div className="flex justify-between items-center mb-4">
@@ -98,11 +129,10 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
               <h1 className="text-[22px] font-semibold text-black">Activos</h1>
             </div>
 
-            {/* Botones para agregar y seleccionar */}
             <div className="flex space-x-4">
               <button
                 className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-                onClick={() => setIsModalOpen(true)}
+                onClick={handleAddActivo}
               >
                 <FaPlus />
                 <span>Agregar Activo</span>
@@ -116,8 +146,26 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
                 </button>
               ) : (
                 <div className="flex space-x-4">
-                  <button className="bg-green-600 text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm">Exportar</button>
-                  <button className="bg-gray-500 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-600 transition text-sm">Generar Sticker</button>
+                  {/* Input para el número de tomo */}
+                  <input
+                    type="number"
+                    placeholder="Introduce el número de tomo"
+                    value={tomo !== null ? tomo : ''}
+                    onChange={(e) => setTomo(Number(e.target.value))}
+                    className="border p-2"
+                  />
+                  <button
+                    onClick={() => exportToExcel(selectedActivos)}
+                    className={`${
+                      selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                    } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    disabled={selectedItems.length === 0}
+                  >
+                    Exportar
+                  </button>
+                  <button className="bg-gray-500 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-600 transition text-sm">
+                    Generar Sticker
+                  </button>
                   <button
                     onClick={handleCancel}
                     className="bg-red-600 text-white px-3 py-1 rounded-lg shadow hover:bg-red-700 transition text-sm"
@@ -129,80 +177,44 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </div>
           </div>
 
-          {/* Filtros de productos en una línea */}
-          <div className="mb-4 flex justify-between items-center">
-            {/* Filtros desplegables */}
-            <div className="flex space-x-6">
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Leyes</option>
-                </select>
-              </div>
+          <Filters onFilterChange={handleFilterChange} />
 
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Ubicación</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Proveedor</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Licitación</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                  <option>Buscar Por Fecha</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Filtro de estado */}
-            <div className="relative">
-              <select className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs">
-                <option>Mostrar Todos</option>
-                <option>Productos Activos</option>
-                <option>Productos Inactivos</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tabla con scroll */}
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
                   {isSelectionMode && <th className="px-2 py-2 text-gray-600 font-semibold">Seleccionar</th>}
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Precio</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisicion</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedData.map((row) => (
-                  <tr key={row.id} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => handleSelectAsset(row)}>
+                  <tr
+                    key={row.id ? row.id : `row-${Math.random()}`} // Proveer una clave única si `id` no está definido
+                    className="border-b hover:bg-gray-100 cursor-pointer"
+                    onClick={() => !isSelectionMode && row.id && handleSelectAsset(row)} // Evitar si `id` es undefined
+                  >
                     {isSelectionMode && (
                       <td className="px-2 py-2 text-sm">
-                        <input type="checkbox" checked={selectedItems.includes(row.id)} onChange={() => setSelectedItems([...selectedItems, row.id])} />
+                        <input
+                          type="checkbox"
+                          checked={row.id ? selectedItems.includes(row.id.toString()) : false} // Verificamos si `id` es válido
+                          onChange={() => row.id && toggleSelectItem(row.id.toString())} // Solo cambiar si `id` es válido
+                        />
                       </td>
                     )}
-                    <td className="px-4 py-2 text-sm">{row.id}</td>
-                    <td className="px-4 py-2 text-sm">{row.marca}</td>
+                    <td className="px-4 py-2 text-sm">{row.id ?? 'Sin ID'}</td> {/* Mostrar 'Sin ID' si no hay ID */}
+                    <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
-                    <td className="px-4 py-2 text-sm">{row.ubicacion}</td>
-                    <td className="px-4 py-2 text-sm">{row.precio}</td>
+                    <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
+                    <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
-                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {row.estado}
                       </span>
                     </td>
@@ -212,10 +224,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </table>
           </div>
 
-          {/* Paginación y total de activos */}
           <div className="flex justify-between items-center mt-4">
             <div>
-              <p className="text-sm text-gray-600">Total de Activos: {tableData.length}</p>
+              <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
             </div>
             <div className="flex space-x-1">
               <button
@@ -228,7 +239,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index}
-                  className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
                   onClick={() => handlePageChange(index + 1)}
                 >
                   {index + 1}
@@ -244,18 +257,27 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect }) => {
             </div>
           </div>
 
-          {/* Modal */}
-          {isModalOpen && <FormularioActivo onClose={() => setIsModalOpen(false)} />}
+          {isModalOpen && (
+            <SelectionModal
+              onSelectLey={handleSelectLey}
+              onSelectDonacion={handleSelectDonacion}
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
         </div>
-      ) : (
+      ) : modoAdquisicion ? (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <FormularioAgregarActivo onClose={handleCloseForm} modoAdquisicion={modoAdquisicion} />
+        </div>
+      ) : selectedAsset ? (
         <DetalleComponent
           asset={selectedAsset}
           onBack={() => {
             setSelectedAsset(null);
-            onAssetSelect(false); // Notificamos que se ha vuelto a la tabla principal
+            onAssetSelect(false);
           }}
         />
-      )}
+      ) : null}
     </div>
   );
 };

@@ -9,30 +9,103 @@ import MenuLicitaciones from './Components/componentsAdminLicitaciones/MenuLicit
 import MenuLeyes from './Components/componentsAdminLeyes/MenuLeyesComponent';
 import MenuUbicacion from './Components/componentsAdminUbicaciones/MenuUbicacionesComponent';
 import MenuDocenteAdmin from './Components/componentsAdminDocentes/MenuDocentesComponent';
-import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
 import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
-
+import ProtectedRoute from './hooks/ProtectedRoute';
+import { AuthProvider } from './hooks/AuthContext';
+import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
+import MenuPrestamosDocente from './ComponentsDocente/componentsPrestamoDocente/MenuPrestamosDocente';
+import MenuInventarioDocente from './ComponentsDocente/componentsInventarioDocente/MenuInventarioDocente';
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/Register" element={<Register/>} />
-        <Route path="/MenuAdmin" element={<MenuAdminComponent />} />
-        <Route path="/Proveedores" element={<MenuAdminProveedores />} />
-        <Route path="/Licitaciones" element={<MenuLicitaciones />} />
-        <Route path="/Leyes" element={<MenuLeyes />} />
-        <Route path="/Ubicacion" element={<MenuUbicacion />} />
-        <Route path="/DocentesAdmin" element={<MenuDocenteAdmin />} />
-        <Route path="/Licencias" element={<MenuAdminLicencias />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/Register" element={<Register />} />
 
-         {/*Paginas Docente*/}
-        <Route path="/MenuDocente" element={<MenuDocente />} />
-
-         
-
-      </Routes>
+          <Route
+            path="/MenuAdmin"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminComponent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Proveedores"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminProveedores />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Licitaciones"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuLicitaciones />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Leyes"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuLeyes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Ubicacion"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuUbicacion />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/DocentesAdmin"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuDocenteAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Licencias"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminLicencias />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/MenuDocente"
+            element={
+              <ProtectedRoute roles={['Docente']}>
+                <MenuDocente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/PrestamosDocente"
+            element={
+              <ProtectedRoute roles={['Docente']}>
+                <MenuPrestamosDocente />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/InventarioDocente"
+            element={
+              <ProtectedRoute roles={['Docente']}>
+                <MenuInventarioDocente />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 };

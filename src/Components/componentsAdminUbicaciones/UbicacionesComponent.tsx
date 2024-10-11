@@ -1,26 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import FormularioUbicacion from './FormularioUbicacion';
-import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook para manejar ubicaciones
+import DetailUbicacion from './DetailUbicacion';
+import EditUbicacionForm from './EditUbicacion';
+import { useUbicacion } from '../../hooks/useUbicacion';
+import { Ubicacion } from '../../types/ubicacion';
 
 const UbicacionesComponent: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para manejar la apertura del modal de creación
-  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null); // Estado para manejar el modal de eliminación
-  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null); // Estado para manejar el modal de detalles
-  const { ubicaciones, loading, error, getUbicacionDetails, removeUbicacion, selectedUbicacion, handleSubmitUbicacion } = useUbicacion();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [selectedUbicacion, setSelectedUbicacion] = useState<Ubicacion | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);  // Estado para el mensaje de error
+
+  const {
+    ubicaciones,
+    loading,
+    error,
+    removeUbicacion,
+    editUbicacion,
+    getUbicacionDetails,
+  } = useUbicacion();
+
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Error desconocido');
+    }
+  }, [error]);
 
   const handleDelete = async (id: number) => {
     await removeUbicacion(id);
-    setDeleteModalOpen(null); // Cerrar el modal después de eliminar
+    setDeleteModalOpen(null);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const closeDetails = () => {
+    setIsEditing(false);
+    setDetailModalOpen(null);
+    setSelectedUbicacion(null);
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<Ubicacion>) => {
+    await editUbicacion(id, updatedData);
+    setIsEditing(false);
+    setDetailModalOpen(null);
+    setSelectedUbicacion(null);
+  };
+
+  const handleSelectUbicacion = async (id: number) => {
+    const ubicacion = await getUbicacionDetails(id);
+    setSelectedUbicacion(ubicacion);
+    setDetailModalOpen(id);
   };
 
   return (
     <div className="w-full flex justify-center py-10">
-      <div className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative">
+      <div
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
+        style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Ubicaciones</h2>
 
-          {/* Botón para añadir más ubicaciones */}
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
@@ -30,14 +76,12 @@ const UbicacionesComponent: React.FC = () => {
           </button>
         </div>
 
-        {/* Mostrar error si existe */}
-        {error && <p className="text-red-500">Error al cargar ubicaciones.</p>}
+        {errorMessage && <p className="text-red-500">Error al cargar ubicaciones: {errorMessage}</p>}
 
-        {/* Indicador de carga */}
         {loading ? (
           <p>Cargando ubicaciones...</p>
         ) : (
-          <div className="overflow-auto">
+          <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -50,28 +94,23 @@ const UbicacionesComponent: React.FC = () => {
               </thead>
               <tbody>
                 {ubicaciones.map((ubicacion, index) => (
-                  <tr key={index} className="border-b">
+                  <tr key={index} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ubicacion.id}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.nombre}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.pabellon}</td>
                     <td className="px-4 py-2 text-sm truncate max-w-xs">{ubicacion.descripcion}</td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex space-x-2">
-                        {/* Botón de ver detalles */}
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => {
-                            getUbicacionDetails(ubicacion.id); // Obtener los detalles de la ubicación
-                            setDetailModalOpen(ubicacion.id); // Abrir el modal de detalles
-                          }}
+                          onClick={() => handleSelectUbicacion(ubicacion.id)}
                         >
                           <FaEye className="mr-1" />
                         </button>
 
-                        {/* Botón de borrar */}
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => setDeleteModalOpen(ubicacion.id)} // Abrir el modal de eliminación
+                          onClick={() => setDeleteModalOpen(ubicacion.id)}
                         >
                           <FaTrash className="mr-1" />
                         </button>
@@ -84,10 +123,11 @@ const UbicacionesComponent: React.FC = () => {
           </div>
         )}
 
-        {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Mostrando 1 a {ubicaciones.length} de {ubicaciones.length} entradas</p>
+            <p className="text-sm text-gray-600">
+              Mostrando 1 a {ubicaciones.length} de {ubicaciones.length} entradas
+            </p>
           </div>
           <div className="flex space-x-1">
             <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
@@ -97,34 +137,32 @@ const UbicacionesComponent: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal para agregar ubicación */}
-      {isModalOpen && <FormularioUbicacion onClose={() => setIsModalOpen(false)} onSubmit={handleSubmitUbicacion} />}
-
-      {/* Modal para ver detalles de la ubicación */}
-      {detailModalOpen && selectedUbicacion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-            <h2 className="text-lg font-bold mb-4">Detalles de Ubicación</h2>
-            <p><strong>ID:</strong> {selectedUbicacion.id}</p>
-            <p><strong>Nombre:</strong> {selectedUbicacion.nombre}</p>
-            <p><strong>Pabellón:</strong> {selectedUbicacion.pabellon}</p>
-            <p><strong>Descripción:</strong> {selectedUbicacion.descripcion}</p>
-            <button
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              onClick={() => setDetailModalOpen(null)}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+      {isModalOpen && (
+        <FormularioUbicacion onClose={() => setIsModalOpen(false)} />
       )}
 
-      {/* Modal de confirmación de eliminación */}
+      {detailModalOpen && selectedUbicacion && (
+        isEditing ? (
+          <EditUbicacionForm
+            ubicacion={selectedUbicacion}
+            onSave={handleEditSave}
+            onCancel={closeDetails}
+          />
+        ) : (
+          <DetailUbicacion
+            ubicacion={selectedUbicacion}
+            onClose={closeDetails}
+            onEdit={handleEdit}
+          />
+        )
+      )}
+
       {deleteModalOpen !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">¿Deseas eliminar esta ubicación?</h2>
-            <div className="flex justify-end space-x-2">
+            <h2 className="text-lg font-bold mb-4">Eliminar Ubicación</h2>
+            <p>¿Estás seguro de que deseas eliminar esta Ubicación?</p>
+            <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={() => setDeleteModalOpen(null)}
@@ -133,7 +171,7 @@ const UbicacionesComponent: React.FC = () => {
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleDelete(deleteModalOpen!)}
+                onClick={() => handleDelete(deleteModalOpen)}
               >
                 Eliminar
               </button>
