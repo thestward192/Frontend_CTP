@@ -80,7 +80,7 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
           <option value="">Todos los Estados</option>
           <option value="Bueno">Bueno</option>
           <option value="Regular">Regular</option>
-          <option value="Dañado">Dañado</option>
+          <option value="Malo">Malo</option>
         </select>
       </div>
     </div>

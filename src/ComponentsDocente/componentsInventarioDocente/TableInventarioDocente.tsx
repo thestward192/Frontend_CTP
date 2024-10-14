@@ -90,7 +90,7 @@ const TableInventarioDocente: React.FC = () => {
                     <td className="px-4 py-2 text-sm">{row.serie}</td>
                     <td className="px-4 py-2 text-sm">
                       <span
-                        className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                        className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                       >
                         {row.estado}
                       </span>
