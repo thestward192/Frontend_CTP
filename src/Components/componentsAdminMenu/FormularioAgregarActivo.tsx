@@ -120,8 +120,14 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
             <div>
               <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
-                type="number"
-                {...register('numPlaca', { required: 'Este campo es obligatorio', valueAsNumber: true })}
+                type="text"
+                {...register('numPlaca', {
+                  required: 'Este campo es obligatorio',
+                  pattern: {
+                  value: /^\d{4}-\d{4}$/,
+                  message: 'El número de placa debe tener el formato ####-####',
+                  },
+                })}
                 className={`w-full border border-gray-300 p-2 rounded-lg ${errors.numPlaca ? 'border-red-500' : ''}`}
               />
               {errors.numPlaca && <span className="text-red-600 text-xs">{errors.numPlaca.message}</span>}

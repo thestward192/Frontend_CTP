@@ -22,6 +22,8 @@ interface TableComponentProps {
   const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
   const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
+  const [isAllSelected, setIsAllSelected] = useState(false);
+
 
   const [filterNombre, setFilterNombre] = useState('');
   const [filterUbicacion, setFilterUbicacion] = useState('');
@@ -106,6 +108,16 @@ interface TableComponentProps {
     );
   };
 
+  const toggleSelectAll = () => {
+  if (isAllSelected) {
+    setSelectedItems([]); // Deselecciona todo
+  } else {
+    const allIds = paginatedData.map((activo) => activo.id?.toString() || '');
+    setSelectedItems(allIds); // Selecciona todos los visibles en la página actual
+  }
+  setIsAllSelected(!isAllSelected); // Cambia el estado del checkbox "Seleccionar todo"
+};
+
   // Filtrar los activos seleccionados
   const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
 
@@ -151,20 +163,20 @@ interface TableComponentProps {
                     type="number"
                     placeholder="Introduce el número de tomo"
                     value={tomo !== null ? tomo : ''}
-                    onChange={(e) => setTomo(Number(e.target.value))}
+                    onChange={(e) => setTomo(Number(e.target.value) || 1)} // Tomo predeterminado a 1
                     className="border p-2"
                   />
                   <button
-                    onClick={() => exportToExcel(selectedActivos)}
+                    onClick={() => {
+                    exportToExcel(selectedActivos); // Exportar los activos seleccionados
+                    setTomo(null); // Limpiar el valor del tomo después de exportar
+                    }}
                     className={`${
-                      selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                    selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
                     } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
                     disabled={selectedItems.length === 0}
                   >
                     Exportar
-                  </button>
-                  <button className="bg-gray-500 text-white px-3 py-1 rounded-lg shadow hover:bg-gray-600 transition text-sm">
-                    Generar Sticker
                   </button>
                   <button
                     onClick={handleCancel}
@@ -181,17 +193,29 @@ interface TableComponentProps {
 
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
-              <thead>
-                <tr className="bg-gray-50">
-                  {isSelectionMode && <th className="px-2 py-2 text-gray-600 font-semibold">Seleccionar</th>}
-                  <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisicion</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
-                </tr>
-              </thead>
+            <thead>
+             <tr className="bg-gray-50">
+              {isSelectionMode && (
+              <th className="px-2 py-2 text-gray-600 font-semibold">
+              <div className="flex items-center space-x-2">
+              <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={toggleSelectAll}
+              />
+              <span>Seleccionar todo</span>
+              </div>
+              </th>
+              )}
+              <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
+              <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
+              <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
+              <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
+              <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisición</th>
+              <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
+              </tr>
+            </thead>
+
               <tbody>
                 {paginatedData.map((row) => (
                   <tr
