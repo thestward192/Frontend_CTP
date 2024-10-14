@@ -160,9 +160,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
             <div>
               <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
-                type="number"
+                type="text"
                 name="numPlaca"
-                value={formData.numPlaca || 0}
+                value={formData.numPlaca || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 p-2 rounded-lg"
                 required
