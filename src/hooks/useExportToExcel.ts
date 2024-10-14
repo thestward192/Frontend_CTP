@@ -37,8 +37,11 @@ export const useExportToExcel = () => {
 
         // Verificamos el modo de adquisición y mostramos el número de ley si es por licitación
         let modoAdquisicion = activo.modoAdquisicion;
+
         if (modoAdquisicion === 'Ley' && activo.licitacion?.ley) {
-          modoAdquisicion = activo.licitacion.ley.numLey;
+          modoAdquisicion = activo.licitacion.ley.numLey || 'Ley desconocida';
+        } else if (modoAdquisicion === 'Donacion') {
+          modoAdquisicion = 'Donación';
         }
 
         worksheet.addRow([

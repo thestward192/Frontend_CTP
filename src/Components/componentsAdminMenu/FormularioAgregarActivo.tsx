@@ -39,7 +39,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
     if (selectedLicitacion) {
       setValue('modoAdquisicion', 'Ley'); // Cambiamos a 'Ley' cuando se selecciona una licitación
     } else {
-      setValue('modoAdquisicion', ''); // Limpiamos el campo si no hay licitación seleccionada
+      setValue('modoAdquisicion', 'Donacion'); // Limpiamos el campo si no hay licitación seleccionada
     }
   }, [selectedLicitacionId, licitaciones, setValue]);
 
