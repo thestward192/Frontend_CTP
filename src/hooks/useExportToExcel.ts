@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import ExcelJS from 'exceljs';
 import { Activo } from '../types/activo'; // Ajusta la ruta según tu proyecto
-import { getUbicacionById } from '../services/ubicacionService'; // Ajusta la ruta
 
 export const useExportToExcel = () => {
   const [tomo, setTomo] = useState<number | null>(null);
@@ -33,20 +32,12 @@ export const useExportToExcel = () => {
       for (const [index, activo] of activos.entries()) {
         const registradoEn = `${finalTomo}, ${folioCounter}, ${index + 1}`;
 
-        let ubicacionNombre = 'Ubicación desconocida';
-        if (activo.ubicacionId) {
-          try {
-            const ubicacion = await getUbicacionById(activo.ubicacionId);
-            ubicacionNombre = ubicacion?.nombre || 'Ubicación desconocida';
-          } catch (error) {
-            console.error(`Error al obtener la ubicación con ID ${activo.ubicacionId}:`, error);
-          }
-        }
+        // Obtenemos el nombre de la ubicación directamente del objeto activo
+        const ubicacionNombre = activo.ubicacion?.nombre || 'Ubicación desconocida';
 
+        // Verificamos el modo de adquisición y mostramos el número de ley si es por licitación
         let modoAdquisicion = activo.modoAdquisicion;
-
-        // Si es por licitación, mostramos el número de ley en la exportación
-        if (activo.modoAdquisicion === 'Ley' && activo.licitacion?.ley) {
+        if (modoAdquisicion === 'Ley' && activo.licitacion?.ley) {
           modoAdquisicion = activo.licitacion.ley.numLey;
         }
 
