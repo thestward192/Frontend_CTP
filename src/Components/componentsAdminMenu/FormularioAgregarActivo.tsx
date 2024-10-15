@@ -5,15 +5,19 @@ import { Activo } from '../../types/activo';
 import { Licitacion } from '../../types/licitacion';
 import { Ubicacion } from '../../types/ubicacion';
 import { getUbicaciones } from '../../Services/ubicacionService';
-import { getLicitaciones } from '../../Services/licitacionService';
+import { getLicitaciones } from '../../Services/licitacionService'; // Servicio para obtener licitaciones
 import { useActivos } from '../../hooks/useActivo';
 
 const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: string }> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Omit<Activo, 'id'>>();
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<Omit<Activo, 'id' | 'numPlaca'>>(); // Removemos numPlaca del DTO
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const { handleCreateActivo, loading } = useActivos();
+
+  // Obtenemos el valor de la licitación seleccionada usando `watch`
+  const selectedLicitacionId = watch('licitacionId');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,14 +32,18 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
     fetchData();
   }, []);
 
+  // Actualizar el `modoAdquisicion` basado en la licitación seleccionada
   useEffect(() => {
-    if (modoAdquisicion === 'Donación') {
-      setValue('precio', 0); // Establecemos el precio a 0 si es Donación
+    const selectedLicitacion = licitaciones.find(licitacion => licitacion.id === Number(selectedLicitacionId));
+    
+    if (selectedLicitacion) {
+      setValue('modoAdquisicion', 'Ley'); // Cambiamos a 'Ley' cuando se selecciona una licitación
+    } else {
+      setValue('modoAdquisicion', 'Donacion'); // Limpiamos el campo si no hay licitación seleccionada
     }
-    setValue('modoAdquisicion', modoAdquisicion); // Actualizamos el modoAdquisicion según lo seleccionado
-  }, [modoAdquisicion, setValue]);
+  }, [selectedLicitacionId, licitaciones, setValue]);
 
-  const onSubmit = async (data: Omit<Activo, 'id'>) => {
+  const onSubmit = async (data: Omit<Activo, 'id' | 'numPlaca'>) => {
     try {
       console.log('Datos enviados al servidor:', data); // Verificar los datos antes de enviarlos al servidor
       await handleCreateActivo(data); // Enviamos los datos al servidor
@@ -108,42 +116,24 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
             </div>
 
-            {/* Número de Placa */}
+            {/* Precio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
+              <label className="block text-sm font-medium text-gray-700">Precio</label>
               <input
-                type="text"
-                {...register('numPlaca', {
-                  required: 'Este campo es obligatorio',
-                  pattern: {
-                  value: /^\d{4}-\d{4}$/,
-                  message: 'El número de placa debe tener el formato ####-####',
-                  },
-                })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.numPlaca ? 'border-red-500' : ''}`}
+                type="number"
+                {...register('precio', { valueAsNumber: true })}
+                className="w-full border border-gray-300 p-2 rounded-lg"
               />
-              {errors.numPlaca && <span className="text-red-600 text-xs">{errors.numPlaca.message}</span>}
             </div>
 
-            {/* Precio (Solo se muestra si NO es Donación) */}
-            {modoAdquisicion !== 'Donación' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Precio</label>
-                <input
-                  type="number"
-                  {...register('precio', { valueAsNumber: true })}
-                  className="w-full border border-gray-300 p-2 rounded-lg"
-                />
-              </div>
-            )}
-
-            {/* Descripción (No obligatoria) */}
+            {/* Descripción */}
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea
-                {...register('descripcion')}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                {...register('descripcion', { required: 'Este campo es obligatorio' })}
+                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.descripcion ? 'border-red-500' : ''}`}
               />
+              {errors.descripcion && <span className="text-red-600 text-xs">{errors.descripcion.message}</span>}
             </div>
 
             {/* Ubicación */}
@@ -165,31 +155,33 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
 
             {/* Licitación (solo si es modo Ley) */}
             {modoAdquisicion === 'Ley' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Licitación</label>
-                <select
-                  {...register('licitacionId', { required: 'Este campo es obligatorio' })}
-                  className={`w-full border border-gray-300 p-2 rounded-lg ${errors.licitacionId ? 'border-red-500' : ''}`}
-                >
-                  <option value="">Seleccione una Licitación</option>
-                  {licitaciones.map((licitacion) => (
-                    <option key={licitacion.id} value={licitacion.id}>
-                      {licitacion.nombre}
-                    </option>
-                  ))}
-                </select>
-                {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
-              </div>
-            )}
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Licitación</label>
+                  <select
+                    {...register('licitacionId', { required: 'Este campo es obligatorio' })}
+                    className={`w-full border border-gray-300 p-2 rounded-lg ${errors.licitacionId ? 'border-red-500' : ''}`}
+                  >
+                    <option value="">Seleccione una Licitación</option>
+                    {licitaciones.map((licitacion) => (
+                      <option key={licitacion.id} value={licitacion.id}>
+                        {licitacion.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
+                </div>
 
-            {/* Observaciones (Disponible tanto para Ley como Donación) */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Observaciones</label>
-              <textarea
-                {...register('observacion')}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
-            </div>
+                {/* Observaciones */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+                  <textarea
+                    {...register('observacion')}
+                    className="w-full border border-gray-300 p-2 rounded-lg"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Botones */}

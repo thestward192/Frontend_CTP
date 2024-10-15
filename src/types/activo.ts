@@ -10,7 +10,7 @@ export interface Activo {
     estado?: string;
     disponibilidad?: string;
     modelo: string;
-    numPlaca: string;
+    numPlaca?: string;
     foto: string;
     precio: number;
     observacion: string;
