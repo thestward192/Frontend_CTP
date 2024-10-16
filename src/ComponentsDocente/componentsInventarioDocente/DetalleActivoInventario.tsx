@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import { useActivos } from '../../hooks/useActivo';
+
 
 interface DetalleActivoInventarioProps {
   activo: any;
@@ -9,6 +11,7 @@ interface DetalleActivoInventarioProps {
 const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activo, onClose }) => {
   const [estado, setEstado] = useState<string>(activo.estado);
   const [detalles, setDetalles] = useState<string>('');
+  const { handleUpdateActivo } = useActivos();
 
   const handleEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setEstado(e.target.value);
@@ -19,9 +22,11 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
   };
 
   const handleSave = () => {
-    // Lógica para guardar los cambios (por ejemplo, hacer una llamada a la API)
-    console.log('Estado actualizado:', estado);
-    console.log('Detalles agregados:', detalles);
+    // Lógica para guardar el cambio de estado
+    handleUpdateActivo({
+      id: activo.id,
+      data: { estado }
+    });
     onClose(); // Cerrar el modal después de guardar
   };
 
@@ -46,16 +51,6 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
             <option value="Regular">Regular</option>
             <option value="Malo">Malo</option>
           </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Detalles</label>
-          <textarea
-            value={detalles}
-            onChange={handleDetallesChange}
-            className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            rows={4}
-          ></textarea>
         </div>
 
         <div className="flex justify-end space-x-2">
