@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { useActivos } from '../../hooks/useActivo';
 
-
 interface DetalleActivoInventarioProps {
   activo: any;
   onClose: () => void;
@@ -10,22 +9,22 @@ interface DetalleActivoInventarioProps {
 
 const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activo, onClose }) => {
   const [estado, setEstado] = useState<string>(activo.estado);
-  const [detalles, setDetalles] = useState<string>('');
+  const [observacion, setObservacion] = useState<string>(activo.observacion || '');
   const { handleUpdateActivo } = useActivos();
 
   const handleEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setEstado(e.target.value);
   };
 
-  const handleDetallesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDetalles(e.target.value);
+  const handleObservacionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setObservacion(e.target.value);
   };
 
   const handleSave = () => {
-    // Lógica para guardar el cambio de estado
+    // Lógica para guardar el cambio de estado y la observación
     handleUpdateActivo({
       id: activo.id,
-      data: { estado }
+      data: { estado, observacion }
     });
     onClose(); // Cerrar el modal después de guardar
   };
@@ -51,6 +50,16 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
             <option value="Regular">Regular</option>
             <option value="Malo">Malo</option>
           </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Observación</label>
+          <textarea
+            value={observacion}
+            onChange={handleObservacionChange}
+            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            rows={4}
+          />
         </div>
 
         <div className="flex justify-end space-x-2">
