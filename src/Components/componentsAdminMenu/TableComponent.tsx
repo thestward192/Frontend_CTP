@@ -33,6 +33,11 @@ interface TableComponentProps {
   const { activos, loading, error } = useActivos();
   const { tomo, setTomo, exportToExcel } = useExportToExcel();  // Usamos el hook
 
+  React.useEffect(() => {
+    setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
+  }, [activos, selectedItems]);
+  
+
   const itemsPerPage = 33;
   const totalPages = Math.ceil(activos.length / itemsPerPage);
 
@@ -109,14 +114,15 @@ interface TableComponentProps {
   };
 
   const toggleSelectAll = () => {
-  if (isAllSelected) {
-    setSelectedItems([]); // Deselecciona todo
-  } else {
-    const allIds = paginatedData.map((activo) => activo.id?.toString() || '');
-    setSelectedItems(allIds); // Selecciona todos los visibles en la página actual
-  }
-  setIsAllSelected(!isAllSelected); // Cambia el estado del checkbox "Seleccionar todo"
-};
+    if (isAllSelected) {
+      setSelectedItems([]); // Deselecciona todo
+    } else {
+      const allIds = activos.map((activo) => activo.id?.toString() || ''); // Selecciona todos los activos
+      setSelectedItems(allIds);
+    }
+    setIsAllSelected(!isAllSelected); // Cambia el estado del checkbox "Seleccionar todo"
+  };
+  
 
   // Filtrar los activos seleccionados
   const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
@@ -198,11 +204,11 @@ interface TableComponentProps {
               {isSelectionMode && (
               <th className="px-2 py-2 text-gray-600 font-semibold">
               <div className="flex items-center space-x-2">
-              <input
-              type="checkbox"
-              checked={isAllSelected}
-              onChange={toggleSelectAll}
-              />
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={toggleSelectAll}
+                />
               <span>Seleccionar todo</span>
               </div>
               </th>
