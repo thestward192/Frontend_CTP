@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useActivos } from '../../hooks/useActivo'; // Hook de activos
+import { useQueryClient } from 'react-query';
+import { useActivos } from '../../hooks/useActivo';
 import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoInventario from './DetalleActivoInventario';
 
@@ -9,6 +10,7 @@ const TableInventarioDocente: React.FC = () => {
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
   const [selectedActivo, setSelectedActivo] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Usamos el hook `useActivosByUbicacion` para obtener activos basados en la ubicación seleccionada
   const { useActivosByUbicacion } = useActivos();
@@ -39,6 +41,11 @@ const TableInventarioDocente: React.FC = () => {
     setSelectedActivo(null);
   };
 
+  // Función para invalidar las queries después de actualizar un activo
+  const handleUpdate = () => {
+    queryClient.invalidateQueries(['activosByUbicacion', selectedUbicacion]);
+  };
+
   const itemsPerPage = 5;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
@@ -51,7 +58,7 @@ const TableInventarioDocente: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="text-[22px] font-semibold text-black mr-4">Seleccione una ubicación:</div>
+          <div className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</div>
             <select
               className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
               value={selectedUbicacion || ''}
@@ -90,7 +97,7 @@ const TableInventarioDocente: React.FC = () => {
                     <td className="px-4 py-2 text-sm">{row.serie}</td>
                     <td className="px-4 py-2 text-sm">
                       <span
-                        className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                        className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                       >
                         {row.estado}
                       </span>
@@ -134,11 +141,11 @@ const TableInventarioDocente: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal */}
       {isModalOpen && selectedActivo && (
         <DetalleActivoInventario
           activo={selectedActivo}
           onClose={closeModal}
+          onUpdate={handleUpdate} // Pasamos la función de actualización
         />
       )}
     </div>

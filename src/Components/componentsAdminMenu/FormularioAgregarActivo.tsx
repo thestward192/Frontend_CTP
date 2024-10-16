@@ -9,12 +9,12 @@ import { getLicitaciones } from '../../Services/licitacionService'; // Servicio 
 import { useActivos } from '../../hooks/useActivo';
 
 const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: string }> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<Omit<Activo, 'id'>>();
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<Omit<Activo, 'id' | 'numPlaca'>>(); // Removemos numPlaca del DTO
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { handleCreateActivo, loading, error } = useActivos();
+  const { handleCreateActivo, loading } = useActivos();
 
   // Obtenemos el valor de la licitación seleccionada usando `watch`
   const selectedLicitacionId = watch('licitacionId');
@@ -39,11 +39,11 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
     if (selectedLicitacion) {
       setValue('modoAdquisicion', 'Ley'); // Cambiamos a 'Ley' cuando se selecciona una licitación
     } else {
-      setValue('modoAdquisicion', ''); // Limpiamos el campo si no hay licitación seleccionada
+      setValue('modoAdquisicion', 'Donacion'); // Limpiamos el campo si no hay licitación seleccionada
     }
   }, [selectedLicitacionId, licitaciones, setValue]);
 
-  const onSubmit = async (data: Omit<Activo, 'id'>) => {
+  const onSubmit = async (data: Omit<Activo, 'id' | 'numPlaca'>) => {
     try {
       console.log('Datos enviados al servidor:', data); // Verificar los datos antes de enviarlos al servidor
       await handleCreateActivo(data); // Enviamos los datos al servidor
@@ -114,17 +114,6 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
                 className={`w-full border border-gray-300 p-2 rounded-lg ${errors.serie ? 'border-red-500' : ''}`}
               />
               {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
-            </div>
-
-            {/* Número de Placa */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
-              <input
-                type="number"
-                {...register('numPlaca', { required: 'Este campo es obligatorio', valueAsNumber: true })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.numPlaca ? 'border-red-500' : ''}`}
-              />
-              {errors.numPlaca && <span className="text-red-600 text-xs">{errors.numPlaca.message}</span>}
             </div>
 
             {/* Precio */}
