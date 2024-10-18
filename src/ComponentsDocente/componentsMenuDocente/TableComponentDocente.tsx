@@ -2,31 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useActivos } from '../../hooks/useActivo';
 import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoDocente from './DetalleActivoDocente';
-import SolicitarPrestamo from './SolicitarPrestamo'; // Importamos el nuevo componente
 import { Activo } from '../../types/activo'; // Asegúrate de tener un tipo definido para Activo
 
 const TableComponentDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { activos, loading, fetchActivosByUbicacion } = useActivos();
+  const { useActivosByUbicacion } = useActivos(); // Usamos el hook para obtener activos por ubicación
   const { ubicaciones } = useAuth();
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
   const [selectedActivo, setSelectedActivo] = useState<Activo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPrestamoModalOpen, setIsPrestamoModalOpen] = useState(false); // Para manejar el modal del préstamo
+
+  // Filtros
+  const [filterEstado, setFilterEstado] = useState('');
+  const [filterMarca, setFilterMarca] = useState('');
+  const [filterNombre, setFilterNombre] = useState('');
+
+  // Usamos el hook `useActivosByUbicacion` para obtener activos basados en la ubicación seleccionada
+  const { data: activos = [], isLoading: loading } = useActivosByUbicacion(selectedUbicacion || 0);
 
   useEffect(() => {
     if (ubicaciones.length > 0 && selectedUbicacion === null) {
       const defaultUbicacionId = ubicaciones[0].id;
       setSelectedUbicacion(defaultUbicacionId);
-      fetchActivosByUbicacion(defaultUbicacionId);
     }
   }, [ubicaciones]);
-
-  useEffect(() => {
-    if (selectedUbicacion !== null) {
-      fetchActivosByUbicacion(selectedUbicacion);
-    }
-  }, [selectedUbicacion]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -45,17 +44,17 @@ const TableComponentDocente: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const openPrestamoModal = () => {
-    setIsPrestamoModalOpen(true); // Abrir el modal para solicitar préstamo
-  };
-
-  const closePrestamoModal = () => {
-    setIsPrestamoModalOpen(false); // Cerrar el modal
-  };
-
   const itemsPerPage = 5;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
+
+  // Filtrado de los activos en base a los filtros aplicados
+  const filteredActivos = activos.filter((activo) =>
+    (filterEstado === '' || activo.estado === filterEstado) &&
+    (filterMarca === '' || activo.marca.toLowerCase().includes(filterMarca.toLowerCase())) &&
+    (filterNombre === '' || activo.nombre.toLowerCase().includes(filterNombre.toLowerCase()))
+  );
+
+  const paginatedData = filteredActivos.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full flex justify-center py-6">
@@ -79,13 +78,34 @@ const TableComponentDocente: React.FC = () => {
               ))}
             </select>
           </div>
-          {/* Botón para abrir el modal de Solicitar Préstamo */}
-          <button
-            onClick={openPrestamoModal}
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition"
-          >
-            Solicitar Préstamo
-          </button>
+
+          {/* Filtros adicionales */}
+          <div className="flex space-x-4">
+            <input
+              type="text"
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              placeholder="Filtrar por nombre"
+              value={filterNombre}
+              onChange={(e) => setFilterNombre(e.target.value)}
+            />
+            <input
+              type="text"
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              placeholder="Filtrar por marca"
+              value={filterMarca}
+              onChange={(e) => setFilterMarca(e.target.value)}
+            />
+            <select
+              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              value={filterEstado}
+              onChange={(e) => setFilterEstado(e.target.value)}
+            >
+              <option value="">Todos los Estados</option>
+              <option value="Bueno">Bueno</option>
+              <option value="Regular">Regular</option>
+              <option value="Malo">Malo</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex-grow overflow-y-auto">
@@ -115,7 +135,9 @@ const TableComponentDocente: React.FC = () => {
                     <td className="px-4 py-2 text-sm">{row.serie}</td>
                     <td className="px-4 py-2 text-sm">
                       <span
-                        className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}
                       >
                         {row.estado}
                       </span>
@@ -129,7 +151,7 @@ const TableComponentDocente: React.FC = () => {
 
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
+            <p className="text-sm text-gray-600">Total de Activos: {filteredActivos.length}</p>
           </div>
           <div className="flex space-x-1">
             <button
@@ -139,10 +161,12 @@ const TableComponentDocente: React.FC = () => {
             >
               &lt;
             </button>
-            {Array.from({ length: Math.ceil(activos.length / itemsPerPage) }, (_, index) => (
+            {Array.from({ length: Math.ceil(filteredActivos.length / itemsPerPage) }, (_, index) => (
               <button
                 key={index}
-                className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                }`}
                 onClick={() => handlePageChange(index + 1)}
               >
                 {index + 1}
@@ -151,7 +175,7 @@ const TableComponentDocente: React.FC = () => {
             <button
               className="px-3 py-1 bg-gray-200 rounded-md"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === Math.ceil(activos.length / itemsPerPage)}
+              disabled={currentPage === Math.ceil(filteredActivos.length / itemsPerPage)}
             >
               &gt;
             </button>
@@ -163,10 +187,6 @@ const TableComponentDocente: React.FC = () => {
             activo={selectedActivo}
             onClose={closeModal}
           />
-        )}
-
-        {isPrestamoModalOpen && (
-          <SolicitarPrestamo onClose={closePrestamoModal} ubicaciones={ubicaciones} />
         )}
       </div>
     </div>

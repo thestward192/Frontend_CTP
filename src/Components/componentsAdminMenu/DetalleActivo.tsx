@@ -5,6 +5,8 @@ import { FaArrowLeft, FaEdit, FaFileExport, FaTags, FaTrash } from 'react-icons/
 import HistorialPrestamos from './HistorialPrestamos';
 import { useState } from 'react';
 import useBarcode from '../../hooks/useBarcode';
+import { useExportToExcel } from '../../hooks/useExportToExcel';
+
 
 interface DetalleComponentProps {
   asset: Activo;
@@ -20,6 +22,8 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
   // Hook para generar el código de barras usando numPlaca
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString()); // Convertimos numPlaca a string
+  //Hook para exportar a excel
+  const { exportToExcel } = useExportToExcel();
 
   const handleEliminar = async (id: number) => {
     try {
@@ -45,8 +49,9 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   };
   
   const handleExportar = () => {
-    console.log('Exportar activo', asset.id);
+    exportToExcel([asset]); // Usará el valor predeterminado 1 para el tomo.
   };
+  
 
   const handleGenerarSticker = () => {
     setShowSticker(true); // Mostrar el sticker
