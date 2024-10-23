@@ -68,6 +68,8 @@ export const deleteActivo = async (id: number): Promise<void> => {
   }
 };
 
+
+
 // Obtener código de barras para un activo dado su número de placa
 export const getBarcode = async (numPlaca: string): Promise<Blob> => {
   try {

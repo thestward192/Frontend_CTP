@@ -31,13 +31,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const isDadoDeBaja = formData.disponibilidad === 'Dado de Baja'; // Verificamos si está "Dado de Baja"
 
-  // Usamos el hook useUbicacion para obtener las ubicaciones
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
-
-  // Usamos el hook useLicitaciones para obtener las licitaciones
   const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
 
-  // Actualizar `modoAdquisicion` cuando cambie la licitación seleccionada
   useEffect(() => {
     if (formData.licitacionId) {
       setFormData(prevState => ({
@@ -47,12 +43,11 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     } else {
       setFormData(prevState => ({
         ...prevState,
-        modoAdquisicion: 'Donación', // Otro valor predeterminado si no hay licitación seleccionada
+        modoAdquisicion: 'Donación',
       }));
     }
   }, [formData.licitacionId]);
 
-  // Controlar el cambio de estado basado en disponibilidad
   useEffect(() => {
     if (formData.disponibilidad === 'Dado de Baja') {
       setFormData(prevState => ({
@@ -160,9 +155,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
             <div>
               <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
               <input
-                type="number"
+                type="text"
                 name="numPlaca"
-                value={formData.numPlaca || 0}
+                value={formData.numPlaca || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 p-2 rounded-lg"
                 required
@@ -186,11 +181,11 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               <label className="block text-sm font-medium text-gray-700">Estado</label>
               <select
                 name="estado"
-                value={formData.estado || 'Bueno'} // Preseleccionamos "Bueno" como valor por defecto
+                value={formData.estado || 'Bueno'}
                 onChange={handleChange}
                 className="w-full border border-gray-300 p-2 rounded-lg"
                 required
-                disabled={isDadoDeBaja} // Deshabilitar si disponibilidad es "Dado de Baja"
+                disabled={isDadoDeBaja}
               >
                 <option value="Bueno">Bueno</option>
                 <option value="Regular">Regular</option>
@@ -203,7 +198,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               <label className="block text-sm font-medium text-gray-700">Disponibilidad</label>
               <select
                 name="disponibilidad"
-                value={formData.disponibilidad || 'Activo'} // Preseleccionamos "Activo" como valor por defecto
+                value={formData.disponibilidad || 'Activo'}
                 onChange={handleChange}
                 className="w-full border border-gray-300 p-2 rounded-lg"
                 required
@@ -221,7 +216,6 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 value={formData.descripcion || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-300 p-2 rounded-lg"
-                required
               />
             </div>
 
@@ -244,37 +238,36 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               </select>
             </div>
 
-            {/* Licitación (solo si es modo Ley) */}
+            {/* Licitación */}
             {formData.modoAdquisicion === 'Ley' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Licitación</label>
-                  <select
-                    name="licitacionId"
-                    value={formData.licitacionId || ''} // Preseleccionamos la licitación actual
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 p-2 rounded-lg"
-                  >
-                    <option value="">Seleccione una Licitación</option>
-                    {licitaciones.map((licitacion) => (
-                      <option key={licitacion.id} value={licitacion.id}>
-                        {licitacion.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Observaciones</label>
-                  <textarea
-                    name="observacion"
-                    value={formData.observacion || ''}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 p-2 rounded-lg"
-                  />
-                </div>
-              </>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Licitación</label>
+                <select
+                  name="licitacionId"
+                  value={formData.licitacionId || ''}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 p-2 rounded-lg"
+                >
+                  <option value="">Seleccione una Licitación</option>
+                  {licitaciones.map((licitacion) => (
+                    <option key={licitacion.id} value={licitacion.id}>
+                      {licitacion.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
+
+            {/* Observaciones */}
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+              <textarea
+                name="observacion"
+                value={formData.observacion || ''}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              />
+            </div>
           </div>
 
           {/* Botones de acción */}

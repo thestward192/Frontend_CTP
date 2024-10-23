@@ -24,41 +24,55 @@ export const useActivos = () => {
   // Crear un nuevo activo
   const { mutate: handleCreateActivo, isLoading: creating, error: createError } = useMutation<
     Activo,
-    Error,  // Asegúrate de que el error sea de tipo `Error`
+    Error,
     Omit<Activo, 'id'>
   >(
     (activoData: Omit<Activo, 'id'>) => createActivo(activoData),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['activos']);  // Invalida la cache para actualizar la lista
+        queryClient.invalidateQueries(['activos']);
+        queryClient.invalidateQueries(['activosByUbicacion']); // Invalida también los activos por ubicación
       },
     }
   );
+
+  // Hook para obtener activos por ubicación
+  const useActivosByUbicacion = (ubicacionId: number) => {
+    return useQuery<Activo[], Error>(
+      ['activosByUbicacion', ubicacionId],
+      () => getActivosByUbicacion(ubicacionId),
+      {
+        enabled: !!ubicacionId,
+      }
+    );
+  };
 
   // Actualizar un activo existente (usando PATCH)
   const { mutate: handleUpdateActivo, isLoading: updating, error: updateError } = useMutation<
     Activo,
     Error,
-    { id: number; data: Partial<Activo> }  // Recibe un objeto con id y data parcial para actualizar
+    { id: number; data: Partial<Activo> }
   >(
-    ({ id, data }) => updateActivo(id, data),  // Llamada al servicio de actualización
+    ({ id, data }) => updateActivo(id, data),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['activos']);  // Invalida la cache para actualizar la lista
+        queryClient.invalidateQueries(['activos']);  // Invalida la cache general de activos
+        queryClient.invalidateQueries(['activosByUbicacion']);  // Invalida la cache de activos por ubicación
       },
     }
   );
 
   // Eliminar un activo existente
   const { mutate: handleDeleteActivo, isLoading: deleting, error: deleteError } = useMutation<
-    void,  // No retorna un valor
+    void,
     Error,
-    number  // Eliminar recibe solo el ID del activo a eliminar
+    number
   >(
-    (id) => deleteActivo(id),  // Llamada al servicio de eliminación
+    (id) => deleteActivo(id),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['activos']);  // Invalida la cache para actualizar la lista
+        queryClient.invalidateQueries(['activos']);
+        queryClient.invalidateQueries(['activosByUbicacion']);  // Invalida la cache de activos por ubicación
       },
     }
   );
@@ -67,13 +81,13 @@ export const useActivos = () => {
     activos,
     activosFiltrados,
     loading,
-    error: error || createError || updateError || deleteError,  // Manejo de errores unificado
+    error: error || createError || updateError || deleteError,
     creating,
     updating,
     deleting,
-    handleCreateActivo,  // Función para crear activos
-    handleUpdateActivo,  // Función para actualizar activos
-    handleDeleteActivo,  // Función para eliminar activos
-    fetchActivosByUbicacion,
+    handleCreateActivo,
+    handleUpdateActivo,
+    handleDeleteActivo,
+    useActivosByUbicacion,
   };
 };
