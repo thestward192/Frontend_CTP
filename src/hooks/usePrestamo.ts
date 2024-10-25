@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Prestamo } from '../types/prestamo';
-import { createPrestamo, deletePrestamo, getPrestamosByActivo, getPrestamosByUbicacion, getPrestamosByUsuario, updatePrestamoEstado } from '../Services/prestamoService';
+import { createPrestamo, deletePrestamo, getAllPrestamos, getPrestamosByActivo, getPrestamosByUbicacion, getPrestamosByUsuario, updatePrestamoEstado } from '../Services/prestamoService';
 import { getUserById } from '../Services/userService';
 import { getUbicacionById } from '../Services/ubicacionService';
 
@@ -8,6 +8,30 @@ export const usePrestamo = () => {
   const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+   // Función para obtener todos los préstamos
+   const fetchAllPrestamos = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAllPrestamos();  // Llamada al servicio que obtiene los préstamos
+      const prestamosConPlaca = data.map((prestamo) => ({
+        ...prestamo,
+        numPlaca: prestamo.activo?.numPlaca || 'Sin placa',
+      }));
+      setPrestamos(prestamosConPlaca);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar los préstamos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect para cargar los préstamos cuando se monta el componente
+  useEffect(() => {
+    fetchAllPrestamos();
+  }, []);
 
   const fetchPrestamosByUbicacion = async (ubicacionId: number) => {
     setLoading(true);
@@ -151,6 +175,7 @@ export const usePrestamo = () => {
     prestamos,
     loading,
     error,
+    fetchAllPrestamos,
     fetchPrestamosByUbicacion,
     fetchPrestamosByUsuario,
     fetchPrestamosByActivo,

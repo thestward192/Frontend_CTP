@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 const Dashboard: React.FC = () => {
   const location = useLocation();
   const [isGestionOpen, setIsGestionOpen] = useState(true); // Inicia abierto si es necesario
+  const [isReportesOpen, setIsReportesOpen] = useState(false); // Para controlar el submenú de reportes
 
   // Función para detectar la ruta activa y aplicar el estilo azul
   const getActiveClass = (path: string) => {
@@ -19,6 +20,11 @@ const Dashboard: React.FC = () => {
   // Función para alternar la visibilidad de la sección de "Gestión"
   const toggleGestion = () => {
     setIsGestionOpen(!isGestionOpen);
+  };
+
+  // Función para alternar la visibilidad de la sección de "Reportes"
+  const toggleReportes = () => {
+    setIsReportesOpen(!isReportesOpen);
   };
 
   return (
@@ -80,10 +86,31 @@ const Dashboard: React.FC = () => {
             )}
           </li>
 
-          <li className="flex items-center text-base font-['DM Sans'] group">
-            <ChartBarIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/reportes')}`} />
-            <Link to="/reportes" className={`${getActiveClass('/reportes')} group-hover:text-[#2b3674]`}>Reportes</Link>
+          {/* Reportes con acordeón */}
+          <li>
+            <div
+              className="flex items-center text-base font-['DM Sans'] cursor-pointer group"
+              onClick={toggleReportes} // Cambia visibilidad de "Reportes"
+            >
+              <ChartBarIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/reportes')}`} />
+              <span className={`${getActiveClass('/reportes')} text-base font-['DM Sans'] group-hover:text-[#2b3674]`}>Reportes</span>
+              {isReportesOpen ? (
+                <ChevronUpIcon className="h-4 w-4 ml-auto group-hover:text-[#2b3674]" />
+              ) : (
+                <ChevronDownIcon className="h-4 w-4 ml-auto group-hover:text-[#2b3674]" />
+              )}
+            </div>
+
+            {/* Submenú para Reportes */}
+            {isReportesOpen && (
+              <ul className="ml-11 mt-2 space-y-3">
+                <li className="flex items-center text-sm font-['DM Sans'] group">
+                  <Link to="/ReportesPrestamos" className={`${getActiveClass('/ReportesPrestamos')} group-hover:text-[#2b3674]`}>Reportes Préstamos</Link>
+                </li>
+              </ul>
+            )}
           </li>
+
           <li className="flex items-center text-base font-['DM Sans'] group">
             <CogIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/configuracion')}`} />
             <Link to="/configuracion" className={`${getActiveClass('/configuracion')} group-hover:text-[#2b3674]`}>Configuración</Link>

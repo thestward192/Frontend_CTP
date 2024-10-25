@@ -74,3 +74,18 @@ export const getPrestamosByActivo = async (activoId: number) => {
   });
   return response.data;
 };
+
+export const getAllPrestamos = async (): Promise<Prestamo[]> => {
+  const token = getAuthToken();
+  try {
+    const response = await axios.get(`${API_URL}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener los préstamos:', error);
+    throw new Error('No se pudo obtener los préstamos');
+  }
+};
