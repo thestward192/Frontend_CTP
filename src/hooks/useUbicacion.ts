@@ -16,6 +16,8 @@
     // Fetch all ubicaciones
     const { data: ubicaciones = [], isLoading: loading, error } = useQuery('ubicaciones', getUbicaciones);
 
+  
+
     // Crear una nueva ubicación usando useMutation
     const {
       mutate: handleSubmitUbicacion,
@@ -85,5 +87,6 @@
       isDeleteError,
       editUbicacion,
       getUbicacionDetails,
+      
     };
   };

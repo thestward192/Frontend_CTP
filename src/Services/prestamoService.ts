@@ -64,3 +64,13 @@ export const getPrestamosByEstado = async (estado: string): Promise<any[]> => {
     throw error;
   }
 };
+
+export const getPrestamosByActivo = async (activoId: number) => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`${API_URL}/activo/${activoId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};

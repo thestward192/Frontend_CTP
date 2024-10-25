@@ -9,6 +9,8 @@ export const useUsers = () => {
   // Obtener todos los usuarios usando useQuery
   const { data: users, isLoading: loading, error } = useQuery<User[], Error>('users', getAllUsers);
 
+
+
   // Crear un nuevo usuario con useMutation
   const addUserMutation = useMutation((userData: CreateUserDTO) => createUser(userData), {
     onSuccess: () => {
