@@ -22,6 +22,8 @@ const LeyesComponent: React.FC = () => {
     setTimeout(() => setShowCompletedMessage(false), 4000);
   };
 
+
+  //Este es mi Boton de Editar
   const handleLeyEdited = () => {
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 4000);
