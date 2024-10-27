@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { getLeyes, createLey, getLeyById, deleteLey, updateLey } from '../Services/leyService';
+import { getLeyes, createLey, getLeyById, updateLey, updateDisponibilidadLey } from '../Services/leyService';
 import { Ley } from '../types/ley';
 import { useState } from 'react';
 
@@ -41,12 +41,12 @@ export const useLeyes = () => {
   );
 
   // Eliminar una ley
-  const deleteLeyMutation = useMutation((id: number) => deleteLey(id), {
+  const updateDisponibilidadLeyMutation = useMutation((id: number) => updateDisponibilidadLey(id), {
     onSuccess: () => {
       queryClient.invalidateQueries('leyes');
     },
   });
-
+  
   return {
     leyes,
     loading,
@@ -55,6 +55,6 @@ export const useLeyes = () => {
     getLeyDetails,
     createLey: createLeyMutation.mutateAsync,
     editLey: editLeyMutation.mutateAsync,
-    removeLey: deleteLeyMutation.mutateAsync,
+    updateDisponibilidadLeyMutation
   };
 };

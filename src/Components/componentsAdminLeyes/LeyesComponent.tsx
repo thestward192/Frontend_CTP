@@ -3,7 +3,7 @@ import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import FormularioLey from './FormularioLey';
 import { useLeyes } from '../../hooks/useLey';
 import DetailLey from './DetailLey';
-import EditLeyForm from './EditLey'; 
+import EditLeyForm from './EditLey';
 import { Ley } from '../../types/ley';
 
 const LeyesComponent: React.FC = () => {
@@ -11,37 +11,51 @@ const LeyesComponent: React.FC = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [showCompletedMessage, setShowCompletedMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-  const { leyes, loading, error, getLeyDetails, selectedLey, removeLey, editLey } = useLeyes();
+  const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
 
-  // Maneja la eliminación de una ley
-  const handleDelete = async (id: number) => {
-    await removeLey(id);
+  // Función para mostrar el mensaje de éxito al crear una ley
+  const handleLeyCreated = () => {
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 4000);
+  };
+
+  const handleLeyEdited = () => {
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 4000);
+  };
+  
+  const handleUpdateDisponibilidad = async (id: number) => {
+    const ley = leyes.find((ley) => ley.id === id);
+    if (ley && ley.disponibilidad === 'Fuera de Servicio') {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 4000);
+    } else {
+      await updateDisponibilidadLeyMutation.mutate(id);
+      setShowCompletedMessage(true);
+      setTimeout(() => setShowCompletedMessage(false), 4000);
+    }
     setDeleteModalOpen(null);
   };
 
-  // Maneja la visualización de detalles de una ley
   const handleViewDetails = async (id: number) => {
-    await getLeyDetails(id); // Selecciona la ley y abre el modal de detalles
+    await getLeyDetails(id);
     setIsEditing(false);
     setDetailModalOpen(true);
   };
 
-  const startEdit = () => {
-    setIsEditing(true);
-  };
-
+  const startEdit = () => setIsEditing(true);
   const closeDetails = () => {
     setIsEditing(false);
     setDetailModalOpen(false);
   };
-
-  const cancelEdit = () => {
-    setIsEditing(false);
-  };
+  const cancelEdit = () => setIsEditing(false);
 
   const handleEditSave = async (id: number, updatedData: Partial<Ley>) => {
     await editLey({ id, leyData: updatedData });
+    handleLeyEdited();
     setIsEditing(false);
     setDetailModalOpen(false);
   };
@@ -123,7 +137,9 @@ const LeyesComponent: React.FC = () => {
         </div>
       </div>
 
-      {isModalOpen && <FormularioLey onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <FormularioLey onClose={() => setIsModalOpen(false)} onLeyCreated={handleLeyCreated} />
+      )}
 
       {detailModalOpen && selectedLey && (
         isEditing ? (
@@ -144,8 +160,8 @@ const LeyesComponent: React.FC = () => {
       {deleteModalOpen !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-          <h2 className="text-lg font-bold mb-4">Eliminar Ley</h2>
-          <p>¿Estás seguro de que deseas eliminar esta Ley?</p>
+            <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ley</h2>
+            <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta Ley?</p>
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
@@ -155,12 +171,28 @@ const LeyesComponent: React.FC = () => {
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleDelete(deleteModalOpen!)}
+                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
               >
-                Eliminar
+                Confirmar
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showCompletedMessage && (
+        <div
+          className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse"
+        >
+          Acción Completada Correctamente!
+        </div>
+      )}
+
+      {showErrorMessage && (
+        <div
+          className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError"
+        >
+          Esta ley ya está Fuera de Servicio
         </div>
       )}
     </div>

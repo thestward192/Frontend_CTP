@@ -4,6 +4,7 @@ import { useLeyes } from '../../hooks/useLey';
 
 interface FormularioLeyProps {
   onClose: () => void;
+  onLeyCreated: () => void;
 }
 
 interface FormData {
@@ -12,7 +13,7 @@ interface FormData {
   detalle: string;
 }
 
-const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose }) => {
+const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) => {
   const { createLey } = useLeyes();
   const { handleSubmit, control, reset, formState: { errors } } = useForm<FormData>();
 
@@ -20,6 +21,7 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose }) => {
     try {
       await createLey(data); // Enviar la nueva ley
       reset(); // Resetear el formulario
+      onLeyCreated();
       onClose(); // Cerrar el modal al crear la ley
     } catch (error) {
       console.error('Error al crear la ley:', error);
