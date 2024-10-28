@@ -1,11 +1,12 @@
 import { Activo } from '../../types/activo';
 import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación y actualización de activos
 import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
-import { FaArrowLeft, FaEdit, FaFileExport, FaTags, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit, FaFileExport, FaTags, FaTrash, FaFilePdf } from 'react-icons/fa';
 import HistorialPrestamos from './HistorialPrestamos';
 import { useState } from 'react';
 import useBarcode from '../../hooks/useBarcode';
 import { useExportToExcel } from '../../hooks/useExportToExcel';
+import ActaBajaForm from './ActaBajaForm';
 
 
 interface DetalleComponentProps {
@@ -19,6 +20,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
   const [showSticker, setShowSticker] = useState(false); // Nuevo estado para mostrar el sticker
   const { handleDeleteActivo, handleUpdateActivo } = useActivos();
+  const [isActaFormOpen, setIsActaFormOpen] = useState(false);
 
   // Hook para generar el código de barras usando numPlaca
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString()); // Convertimos numPlaca a string
@@ -225,6 +227,12 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
               <FaFileExport className="mr-2" /> Exportar
             </button>
             <button
+              onClick={() => setIsActaFormOpen(true)}
+              className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300 flex items-center text-sm"
+            >
+              <FaFilePdf className="mr-2" /> Acta de Baja
+            </button>
+            <button
               onClick={handleGenerarSticker}
               className="bg-gray-300 text-white py-1 px-3 rounded-lg shadow hover:bg-gray-400 transition-all duration-300 flex items-center text-sm"
             >
@@ -243,9 +251,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
               <FaArrowLeft className="mr-2" /> Volver
             </button>
           </div>
+          {isActaFormOpen && <ActaBajaForm onClose={() => setIsActaFormOpen(false)} />}
         </>
       ) : (
         <HistorialPrestamos />
+        
       )}
 
       {/* Modal para editar el activo */}
