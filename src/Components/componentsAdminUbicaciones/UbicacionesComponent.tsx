@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// UbicacionesComponent.tsx
+import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import FormularioUbicacion from './FormularioUbicacion';
 import DetailUbicacion from './DetailUbicacion';
@@ -11,32 +12,38 @@ const UbicacionesComponent: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-
   const [selectedUbicacion, setSelectedUbicacion] = useState<Ubicacion | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);  // Estado para el mensaje de error
+  const [showCompletedMessage, setShowCompletedMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   const {
     ubicaciones,
     loading,
     error,
-    removeUbicacion,
     editUbicacion,
+    updateDisponibilidad,
     getUbicacionDetails,
   } = useUbicacion();
 
-  useEffect(() => {
-    if (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Error desconocido');
-    }
-  }, [error]);
-
-  const handleDelete = async (id: number) => {
-    await removeUbicacion(id);
-    setDeleteModalOpen(null);
+  // Función para mostrar el mensaje de éxito al crear una ubicación
+  const handleUbicacionCreated = () => {
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
+  const handleUpdateDisponibilidad = async (id: number) => {
+    const ubicacionToUpdate = ubicaciones?.find((ubicacion) => ubicacion.id === id);
+
+    if (ubicacionToUpdate?.disponibilidad === 'Fuera de Servicio') {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+      return;
+    }
+
+    await updateDisponibilidad(id);
+    setDeleteModalOpen(null);
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
   const closeDetails = () => {
@@ -46,10 +53,27 @@ const UbicacionesComponent: React.FC = () => {
   };
 
   const handleEditSave = async (id: number, updatedData: Partial<Ubicacion>) => {
-    await editUbicacion(id, updatedData);
-    setIsEditing(false);
-    setDetailModalOpen(null);
-    setSelectedUbicacion(null);
+    try {
+      await editUbicacion(id, updatedData);
+      handleUbicacionEdited(); // Llamada a handleUbicacionEdited para mostrar el mensaje de éxito
+    } catch (error) {
+      console.error('Error al editar la ubicación:', error);
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+    } finally {
+      setIsEditing(false);
+      setDetailModalOpen(null);
+      setSelectedUbicacion(null);
+    }
+  };
+  
+  const handleUbicacionEdited = () => {
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
   const handleSelectUbicacion = async (id: number) => {
@@ -76,7 +100,7 @@ const UbicacionesComponent: React.FC = () => {
           </button>
         </div>
 
-        {errorMessage && <p className="text-red-500">Error al cargar ubicaciones: {errorMessage}</p>}
+        {error && <p className="text-red-500">Error al cargar ubicaciones</p>}
 
         {loading ? (
           <p>Cargando ubicaciones...</p>
@@ -93,8 +117,8 @@ const UbicacionesComponent: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {ubicaciones.map((ubicacion, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-100">
+                {ubicaciones.map((ubicacion) => (
+                  <tr key={ubicacion.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ubicacion.id}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.nombre}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.pabellon}</td>
@@ -123,61 +147,51 @@ const UbicacionesComponent: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-between items-center mt-4">
-          <div>
-            <p className="text-sm text-gray-600">
-              Mostrando 1 a {ubicaciones.length} de {ubicaciones.length} entradas
-            </p>
+        {deleteModalOpen !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+              <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ubicación</h2>
+              <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta ubicación?</p>
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                  onClick={() => setDeleteModalOpen(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                  onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex space-x-1">
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
-            <button className="px-3 py-1 bg-blue-600 text-white rounded-md">1</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&gt;</button>
+        )}
+
+        {/* Mensajes de Estado */}
+        {showCompletedMessage && (
+          <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
+            Acción Completada Correctamente!
           </div>
-        </div>
+        )}
+        {showErrorMessage && (
+          <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
+            Esta ubicación ya está Fuera de Servicio
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
-        <FormularioUbicacion onClose={() => setIsModalOpen(false)} />
+        <FormularioUbicacion onClose={() => setIsModalOpen(false)} onUbicacionCreated={handleUbicacionCreated} />
       )}
-
       {detailModalOpen && selectedUbicacion && (
         isEditing ? (
-          <EditUbicacionForm
-            ubicacion={selectedUbicacion}
-            onSave={handleEditSave}
-            onCancel={closeDetails}
-          />
+          <EditUbicacionForm ubicacion={selectedUbicacion} onSave={handleEditSave} onCancel={closeDetails} />
         ) : (
-          <DetailUbicacion
-            ubicacion={selectedUbicacion}
-            onClose={closeDetails}
-            onEdit={handleEdit}
-          />
+          <DetailUbicacion ubicacion={selectedUbicacion} onClose={closeDetails} onEdit={handleEdit} />
         )
-      )}
-
-      {deleteModalOpen !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">Eliminar Ubicación</h2>
-            <p>¿Estás seguro de que deseas eliminar esta Ubicación?</p>
-            <div className="flex justify-end space-x-4 mt-6">
-              <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                onClick={() => setDeleteModalOpen(null)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleDelete(deleteModalOpen)}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

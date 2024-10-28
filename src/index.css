@@ -52,7 +52,7 @@
 
 /* Clase personalizada para el mensaje de éxito */
 .animate-slideInOutAndPulse {
-  animation: slideInOutAndPulse 6s ease-in-out forwards;
+  animation: slideInOutAndPulse 4s ease-in-out forwards;
 }
 
 /* Animación en rojo para el mensaje de error */
@@ -105,6 +105,6 @@
 
 /* Clase personalizada para el mensaje de error */
 .animate-slideInOutAndPulseError {
-  animation: slideInOutAndPulseError 6s ease-in-out forwards;
+  animation: slideInOutAndPulseError 4s ease-in-out forwards;
 }
  

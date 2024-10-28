@@ -16,30 +16,31 @@ const LeyesComponent: React.FC = () => {
 
   const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
 
-  // Función para mostrar el mensaje de éxito al crear una ley
   const handleLeyCreated = () => {
     setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 4000);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
-
-  //Este es mi Boton de Editar
   const handleLeyEdited = () => {
     setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 4000);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
   };
-  
+
   const handleUpdateDisponibilidad = async (id: number) => {
     const ley = leyes.find((ley) => ley.id === id);
+    
+    // Si la ley está fuera de servicio, mostrar el mensaje de error y no cerrar el modal
     if (ley && ley.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
-      setTimeout(() => setShowErrorMessage(false), 4000);
-    } else {
-      await updateDisponibilidadLeyMutation.mutate(id);
-      setShowCompletedMessage(true);
-      setTimeout(() => setShowCompletedMessage(false), 4000);
-    }
-    setDeleteModalOpen(null);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+      return; // Salimos de la función sin cerrar el modal
+    } 
+
+    // Si no está fuera de servicio, procedemos con la actualización
+    await updateDisponibilidadLeyMutation.mutate(id);
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
+    setDeleteModalOpen(null); // Cerramos el modal después de la actualización exitosa
   };
 
   const handleViewDetails = async (id: number) => {

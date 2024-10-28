@@ -4,6 +4,7 @@ import { useUbicacion } from '../../hooks/useUbicacion';
 
 interface FormularioUbicacionProps {
   onClose: () => void;
+  onUbicacionCreated: () => void;
 }
 
 interface FormData {
@@ -12,7 +13,7 @@ interface FormData {
   pabellon: string;
 }
 
-const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose }) => {
+const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose, onUbicacionCreated  }) => {
   const { handleSubmitUbicacion, isLoading, isError } = useUbicacion();
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
@@ -20,6 +21,7 @@ const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose }) =>
   const onSubmit: SubmitHandler<FormData> = (data) => {
     handleSubmitUbicacion(data, {
       onSuccess: () => {
+        onUbicacionCreated();
         onClose(); // Cerrar el formulario inmediatamente al crear una ubicación
       },
     });

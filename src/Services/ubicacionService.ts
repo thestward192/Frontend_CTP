@@ -45,12 +45,13 @@ export const getUbicacionById = async (id: number): Promise<Ubicacion> => {
   }
 };
 
-export const deleteUbicacion = async (id: number): Promise<void> => {
+export const updateDisponibilidadUbicacion = async (id: number): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/ubicacion/${id}`); // Asegúrate de que la ruta es correcta
+    await axios.patch(`${API_URL}/ubicacion/${id}`, { disponibilidad: 'Fuera de Servicio' }); // Actualizamos a "Fuera de Servicio"
   } catch (error) {
-    console.error(`Error al eliminar la ubicación con ID ${id}:`, error);
-    throw new Error(`Error al eliminar la ubicación con ID ${id}`);
+    console.error(`Error al actualizar la disponibilidad de la ubicación con ID ${id}:`, error);
+    throw new Error(`Error al actualizar la disponibilidad de la ubicación con ID ${id}`);
   }
 };
+
 

@@ -3,10 +3,12 @@ export interface Ubicacion {
     nombre : string;
     descripcion : string;
     pabellon: string;
+    disponibilidad? : string;
 }
 
 export interface CreateUbicacion {
     nombre: string;
     descripcion: string;
     pabellon: string;
+    disponibilidad? : string;
   }
