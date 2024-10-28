@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Licitacion, UpdateLicitacionDTO } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
@@ -13,32 +13,35 @@ interface EditLicitacionFormProps {
 const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave, onCancel }) => {
   const { leyes, loading: leyesLoading } = useLeyes();
   const { proveedores, loading: proveedoresLoading } = useProveedores();
+  
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<UpdateLicitacionDTO>();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<UpdateLicitacionDTO>({
-    defaultValues: {
+  // Uso de useEffect para inicializar los valores cuando licitacion está disponible
+  useEffect(() => {
+    reset({
       numActa: licitacion.numActa,
       numLicitacion: licitacion.numLicitacion,
       nombre: licitacion.nombre,
       monto: licitacion.monto,
       descripcion: licitacion.descripcion,
-      fecha: licitacion.fecha,
+      fecha: licitacion.fecha ? licitacion.fecha.split('T')[0] : '', 
       idProveedor: licitacion.idProveedor,
       idLey: licitacion.idLey,
-    },
-  });
+    });
+  }, [licitacion, reset]);
 
   const onSubmit: SubmitHandler<UpdateLicitacionDTO> = (data) => {
     onSave(licitacion.id, {
       ...data,
-      fecha: new Date(`${data.fecha}T00:00:00`),
+      fecha: new Date(`${data.fecha}T00:00:00`), // Esto asegura que la fecha se guarde correctamente
     });
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl"> {/* Cambié max-w a 4xl para un tamaño más amplio */}
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
         <h2 className="text-lg font-bold mb-4">Editar Licitación</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4"> {/* Aquí se define el grid de 2 columnas */}
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
           <div className="mb-4">
             <label className="block mb-1">Número de Acta</label>
             <input

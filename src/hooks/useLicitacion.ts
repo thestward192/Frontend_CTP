@@ -1,13 +1,21 @@
 // src/hooks/useLicitaciones.ts
 import { useState, useEffect } from 'react';
 import { Licitacion, UpdateLicitacionDTO } from '../types/licitacion';
-import { getLicitaciones, getLicitacionById, createLicitacion, updateLicitacion, deleteLicitacion } from '../Services/licitacionService';
+import { 
+  getLicitaciones, 
+  getLicitacionById, 
+  createLicitacion, 
+  updateLicitacion, 
+  updateDisponibilidadLicitacion // Nuevo servicio
+} from '../Services/licitacionService';
 
 export const useLicitaciones = () => {
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedLicitacion, setSelectedLicitacion] = useState<Licitacion | null>(null);
+  const [showCompletedMessage, setShowCompletedMessage] = useState(false); // Mensaje de éxito
+  const [showErrorMessage, setShowErrorMessage] = useState(false); // Mensaje de error
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,21 +52,28 @@ export const useLicitaciones = () => {
 
   const editLicitacion = async (id: number, licitacionData: UpdateLicitacionDTO) => {
     try {
-        const updatedLicitacion = await updateLicitacion(id, licitacionData);
-        setLicitaciones(licitaciones.map((l) => (l.id === id ? updatedLicitacion : l)));
-        setSelectedLicitacion(updatedLicitacion); // actualizar la licitación seleccionada
+      const updatedLicitacion = await updateLicitacion(id, licitacionData);
+      setLicitaciones(licitaciones.map((l) => (l.id === id ? updatedLicitacion : l)));
+      setSelectedLicitacion(updatedLicitacion); // actualizar la licitación seleccionada
     } catch (error) {
-        console.error('Error al actualizar la licitación:', error);
-        setError('Error al actualizar la licitación.');
+      console.error('Error al actualizar la licitación:', error);
+      setError('Error al actualizar la licitación.');
     }
-};
+  };
 
-  const removeLicitacion = async (id: number) => {
+  // Modificar la función de eliminación para cambiar a "Fuera de Servicio"
+  const updateDisponibilidad = async (id: number) => {
     try {
-      await deleteLicitacion(id);
-      setLicitaciones(licitaciones.filter((l) => l.id !== id));
+      await updateDisponibilidadLicitacion(id, "Fuera de Servicio");
+      setLicitaciones(
+        licitaciones.map((l) =>
+          l.id === id ? { ...l, disponibilidad: "Fuera de Servicio" } : l
+        )
+      );
+      setShowCompletedMessage(true); // Mostrar mensaje de éxito
     } catch (error) {
-      setError('Error al eliminar la licitación.');
+      setError('Error al actualizar la disponibilidad.');
+      setShowErrorMessage(true); // Mostrar mensaje de error
     }
   };
 
@@ -70,6 +85,8 @@ export const useLicitaciones = () => {
     fetchLicitacionById,
     addLicitacion,
     editLicitacion,
-    removeLicitacion,
+    updateDisponibilidad, // Cambiado de removeLicitacion a updateDisponibilidad
+    showCompletedMessage,
+    showErrorMessage,
   };
 };
