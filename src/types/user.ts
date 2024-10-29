@@ -5,6 +5,7 @@ export interface User {
     apellido_1: string;
     apellido_2: string;
     email: string;
+    disponibilidad?: string;
     descripcion?: string;
     rol: {
       id: number;
@@ -23,6 +24,7 @@ export interface User {
     email: string;
     contraseña: string;
     descripcion?: string;
+    disponibilidad?: string;
     rolId: number;
     ubicacionIds?: number[];
   }
