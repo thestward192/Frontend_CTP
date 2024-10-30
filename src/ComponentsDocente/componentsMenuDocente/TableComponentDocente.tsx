@@ -45,7 +45,7 @@ const TableComponentDocente: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 33;
   const startIndex = (currentPage - 1) * itemsPerPage;
 
   // Filtrado de los activos en base a los filtros aplicados

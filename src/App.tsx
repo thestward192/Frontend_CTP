@@ -15,6 +15,8 @@ import { AuthProvider } from './hooks/AuthContext';
 import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
 import MenuPrestamosDocente from './ComponentsDocente/componentsPrestamoDocente/MenuPrestamosDocente';
 import MenuInventarioDocente from './ComponentsDocente/componentsInventarioDocente/MenuInventarioDocente';
+import ForgotPassword from './Components/componentsPages/ForgotPassword';
+import ResetPassword from './Components/componentsPages/ResetPassword';
 
 const App: React.FC = () => {
   return (
@@ -22,6 +24,8 @@ const App: React.FC = () => {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/Register" element={<Register />} />
 
           <Route

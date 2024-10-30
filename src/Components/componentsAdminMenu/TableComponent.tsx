@@ -30,11 +30,6 @@ interface TableComponentProps {
   const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
 
-  const [filterNombre, setFilterNombre] = useState('');
-  const [filterUbicacion, setFilterUbicacion] = useState('');
-  const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
-  const [filterEstado, setFilterEstado] = useState('');
-
   const { activos, loading, error } = useActivos();
   const { tomo, setTomo, exportToExcel } = useExportToExcel();  // Usamos el hook
 
