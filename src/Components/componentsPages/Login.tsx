@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import logo from '../../assets/images-removebg-preview (1).png';
 import backgroundPattern from '../../assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -132,6 +132,12 @@ const Login: React.FC = () => {
           </button>
 
           {error && <div className="text-red-500 mt-4">{error}</div>}
+          
+          <div className="text-center mt-4">
+            <Link to="/forgot-password" className="text-blue-600 hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+            </div>
         </div>
       </div>
 
