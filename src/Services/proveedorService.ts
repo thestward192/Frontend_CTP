@@ -34,7 +34,6 @@ export const updateProveedor = async (id: number, proveedorData: Partial<Proveed
   }
 };
 
-
 export const getProveedorById = async (id: number): Promise<Proveedor> => {
   try {
     const response = await axios.get(`${API_URL}/proveedor/${id}`);
@@ -45,12 +44,12 @@ export const getProveedorById = async (id: number): Promise<Proveedor> => {
   }
 };
 
-// Eliminar proveedor por ID
-export const deleteProveedor = async (id: number): Promise<void> => {
+// src/Services/proveedorService.ts
+export const updateDisponibilidadProveedor = async (id: number): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/proveedor/${id}`);
+    await axios.patch(`${API_URL}/proveedor/${id}`, { disponibilidad: "Fuera de Servicio" });
   } catch (error) {
-    console.error(`Error al eliminar el proveedor con ID ${id}:`, error);
+    console.error(`Error al actualizar la disponibilidad del proveedor con ID ${id}:`, error);
     throw error;
   }
 };

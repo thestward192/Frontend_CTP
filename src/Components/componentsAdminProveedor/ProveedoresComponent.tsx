@@ -11,12 +11,30 @@ const ProveedoresComponent: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [showCompletedMessage, setShowCompletedMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-  const { proveedores, loading, error, getProveedorDetails, selectedProveedor, removeProveedor, editProveedor } = useProveedores();
+  const { proveedores, loading, error, getProveedorDetails, selectedProveedor, editProveedor, updateDisponibilidadProveedorMutation } = useProveedores();
 
-  const handleDelete = async (id: number) => {
-    await removeProveedor(id);
-    setDeleteModalOpen(null);
+  const handleUpdateDisponibilidad = async (id: number) => {
+    const proveedor = proveedores.find((prov) => prov.id === id);
+
+    // Verificar si el proveedor ya está "Fuera de Servicio"
+    if (proveedor && proveedor.disponibilidad === 'Fuera de Servicio') {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+      return; // No cerrar el modal si ya está "Fuera de Servicio"
+    }
+
+    try {
+      await updateDisponibilidadProveedorMutation.mutateAsync(id);
+      setShowCompletedMessage(true);
+      setTimeout(() => setShowCompletedMessage(false), 3000);
+      setDeleteModalOpen(null); // Cerrar el modal después de la actualización exitosa
+    } catch {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+    }
   };
 
   const handleViewDetails = async (id: number) => {
@@ -25,18 +43,12 @@ const ProveedoresComponent: React.FC = () => {
     setIsDetailOpen(true);
   };
 
-  const startEdit = () => {
-    setIsEditing(true);
-  };
-
+  const startEdit = () => setIsEditing(true);
   const closeDetails = () => {
     setIsEditing(false);
     setIsDetailOpen(false);
   };
-
-  const cancelEdit = () => {
-    setIsEditing(false);
-  };
+  const cancelEdit = () => setIsEditing(false);
 
   const handleEditSave = async (id: number, updatedData: Partial<Proveedor>) => {
     await editProveedor({ id, proveedorData: updatedData });
@@ -52,7 +64,6 @@ const ProveedoresComponent: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Proveedores</h2>
-
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
@@ -111,11 +122,6 @@ const ProveedoresComponent: React.FC = () => {
           <div>
             <p className="text-sm text-gray-600">Mostrando 1 a {proveedores?.length || 0} de {proveedores?.length || 0} entradas</p>
           </div>
-          <div className="flex space-x-1">
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
-            <button className="px-3 py-1 bg-blue-600 text-white rounded-md">1</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&gt;</button>
-          </div>
         </div>
       </div>
 
@@ -140,8 +146,8 @@ const ProveedoresComponent: React.FC = () => {
       {deleteModalOpen !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">Eliminar Proveedor</h2>
-            <p>¿Estás seguro de que deseas eliminar este Proveedor?</p>
+            <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Proveedor</h2>
+            <p>¿Estás seguro de que deseas marcar este proveedor como "Fuera de Servicio"?</p>
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
@@ -151,12 +157,24 @@ const ProveedoresComponent: React.FC = () => {
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleDelete(deleteModalOpen!)}
+                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
               >
-                Eliminar
+                Confirmar
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showCompletedMessage && (
+        <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
+          Proveedor marcado como Fuera de Servicio.
+        </div>
+      )}
+
+      {showErrorMessage && (
+        <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
+          El Proveedor ya está Fuera de Servicio.
         </div>
       )}
     </div>

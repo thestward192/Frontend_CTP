@@ -46,11 +46,12 @@ export const getLeyById = async (id: number): Promise<Ley> => {
 };
 
 // Eliminar una ley por ID
-export const deleteLey = async (id: number): Promise<void> => {
+export const updateDisponibilidadLey = async (id: number): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/ley/${id}`);
+    await axios.patch(`${API_URL}/ley/${id}/disponibilidad`);
   } catch (error) {
-    console.error(`Error al eliminar la ley con ID ${id}:`, error);
+    console.error(`Error al actualizar la disponibilidad de la ley con ID ${id}:`, error);
     throw error;
   }
 };
+

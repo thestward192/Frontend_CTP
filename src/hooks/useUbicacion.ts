@@ -1,6 +1,6 @@
   import { useMutation, useQuery, useQueryClient } from 'react-query';
   import { useState } from 'react';
-  import { createUbicacion, deleteUbicacion, getUbicaciones, updateUbicacion, getUbicacionById } from '../Services/ubicacionService';
+  import { createUbicacion, getUbicaciones, updateUbicacion, getUbicacionById, updateDisponibilidadUbicacion } from '../Services/ubicacionService';
   import { Ubicacion } from '../types/ubicacion';
 
   export const useUbicacion = () => {
@@ -15,6 +15,8 @@
 
     // Fetch all ubicaciones
     const { data: ubicaciones = [], isLoading: loading, error } = useQuery('ubicaciones', getUbicaciones);
+
+  
 
     // Crear una nueva ubicación usando useMutation
     const {
@@ -31,13 +33,12 @@
       },
     });
 
-    // Eliminar una ubicación usando useMutation
-    const { mutate: removeUbicacion, isLoading: isDeleting, isError: isDeleteError } = useMutation(deleteUbicacion, {
+    const updateDisponibilidadMutation = useMutation(updateDisponibilidadUbicacion, {
       onSuccess: () => {
-        queryClient.invalidateQueries('ubicaciones'); // Invalida la cache y refetch ubicaciones
+        queryClient.invalidateQueries('ubicaciones');
       },
       onError: (error) => {
-        console.error('Error al eliminar la ubicación:', error);
+        setError(error as Error);
       },
     });
 
@@ -80,10 +81,9 @@
       ubicaciones,
       loading,
       error,
-      removeUbicacion,
-      isDeleting,
-      isDeleteError,
+      updateDisponibilidad: updateDisponibilidadMutation.mutateAsync,
       editUbicacion,
       getUbicacionDetails,
+      
     };
   };

@@ -4,6 +4,7 @@ export interface Proveedor {
     nombreEmpresa: string;
     telefonoProveedor: string;
     telefonoEmpresa: string;
+    disponibilidad?: string;
     email: string;
 }
 
@@ -12,5 +13,6 @@ export interface CreateProveedor {
     nombreEmpresa: string;
     telefonoProveedor: string;
     telefonoEmpresa: string;
+    disponibilidad?: string;
     email: string;
   }

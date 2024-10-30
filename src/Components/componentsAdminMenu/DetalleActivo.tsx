@@ -24,7 +24,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
   // Hook para generar el código de barras usando numPlaca
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString()); // Convertimos numPlaca a string
-  //Hook para exportar a excel
+  // Hook para exportar a excel
   const { exportToExcel } = useExportToExcel();
 
   const handleEliminar = async (id: number) => {
@@ -53,7 +53,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const handleExportar = () => {
     exportToExcel([asset]); // Usará el valor predeterminado 1 para el tomo.
   };
-  
 
   const handleGenerarSticker = () => {
     setShowSticker(true); // Mostrar el sticker
@@ -151,6 +150,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                     <p className="text-gray-800">{asset.disponibilidad}</p>
                   </div>
                 </div>
+              </div>
+
+              <div className="border-t border-gray-200 py-2 w-full">
+                <p className="text-sm font-semibold text-gray-600">Precio</p>
+                <p className="text-gray-800">{asset.precio}</p>
               </div>
 
               <div className="border-t border-gray-200 py-2 w-full">
@@ -254,8 +258,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
           {isActaFormOpen && <ActaBajaForm onClose={() => setIsActaFormOpen(false)} />}
         </>
       ) : (
-        <HistorialPrestamos />
-        
+        <HistorialPrestamos activoId={asset.id!} />
       )}
 
       {/* Modal para editar el activo */}

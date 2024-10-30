@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { getProveedores, createProveedor, getProveedorById, deleteProveedor, updateProveedor } from '../Services/proveedorService';
+import { getProveedores, createProveedor, getProveedorById, updateProveedor, updateDisponibilidadProveedor } from '../Services/proveedorService';
 import { Proveedor } from '../types/proveedor';
 import { useState } from 'react';
 
@@ -40,8 +40,7 @@ export const useProveedores = () => {
     }
   );
 
-  // Eliminar un proveedor
-  const deleteProveedorMutation = useMutation((id: number) => deleteProveedor(id), {
+  const updateDisponibilidadProveedorMutation = useMutation((id: number) => updateDisponibilidadProveedor(id), {
     onSuccess: () => {
       queryClient.invalidateQueries('proveedores');
     },
@@ -55,6 +54,6 @@ export const useProveedores = () => {
     getProveedorDetails,
     handleSubmitProveedor: mutation.mutateAsync,
     editProveedor: editProveedorMutation.mutateAsync,
-    removeProveedor: deleteProveedorMutation.mutateAsync,
+    updateDisponibilidadProveedorMutation,
   };
 };
