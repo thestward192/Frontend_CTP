@@ -33,7 +33,8 @@ export const updateLicitacion = async (id: number, licitacionData: UpdateLicitac
     }
   };
 
-// Servicio para eliminar una licitación
-export const deleteLicitacion = async (id: number): Promise<void> => {
-    await axios.delete(`${API_URL}/${id}`);
+// Servicio para actualizar la disponibilidad de una licitación
+export const updateDisponibilidadLicitacion = async (id: number, disponibilidad: string): Promise<void> => {
+  await axios.patch(`${API_URL}/${id}`, { disponibilidad });
 };
+

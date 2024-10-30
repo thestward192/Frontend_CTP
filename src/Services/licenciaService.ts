@@ -18,7 +18,14 @@ export const updateLicencia = async (id: number, licencia: Partial<Licencia>): P
   return response.data;
 };
 
-// Eliminar una licencia por su código
-export const deleteLicencia = async (id: number): Promise<void> => {
-  await axios.delete(`${API_URL}/${id}`);
+export const updateDisponibilidadLicencia = async (id: number): Promise<void> => {
+  try {
+    await axios.patch(`${API_URL}/${id}`, { disponibilidad: "Fuera de Servicio" });
+  } catch (error) {
+    console.error(`Error al actualizar la disponibilidad de la licencia con ID ${id}:`, error);
+    throw error;
+  }
 };
+
+
+

@@ -5,6 +5,7 @@ export interface Licitacion {
     nombre: string;
     monto: number;
     descripcion: string;
+    disponibilidad?: string;
     fecha: Date;
     idProveedor: number;
     idLey: number;
@@ -16,6 +17,7 @@ export interface UpdateLicitacionDTO {
     nombre?: string;
     monto?: number;
     descripcion?: string;
+    disponibilidad?: string;
     fecha?: Date;
     idProveedor?: number;
     idLey?: number;

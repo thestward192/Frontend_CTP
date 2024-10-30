@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoDocente from './DetalleActivoDocente';
 import { Activo } from '../../types/activo'; // Asegúrate de tener un tipo definido para Activo
 
+
 const TableComponentDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { useActivosByUbicacion } = useActivos(); // Usamos el hook para obtener activos por ubicación
@@ -21,7 +22,7 @@ const TableComponentDocente: React.FC = () => {
   const { data: activos = [], isLoading: loading } = useActivosByUbicacion(selectedUbicacion || 0);
 
   useEffect(() => {
-    if (ubicaciones.length > 0 && selectedUbicacion === null) {
+    if (ubicaciones && ubicaciones.length > 0 && selectedUbicacion === null) {
       const defaultUbicacionId = ubicaciones[0].id;
       setSelectedUbicacion(defaultUbicacionId);
     }
@@ -44,7 +45,7 @@ const TableComponentDocente: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 33;
   const startIndex = (currentPage - 1) * itemsPerPage;
 
   // Filtrado de los activos en base a los filtros aplicados
@@ -66,7 +67,7 @@ const TableComponentDocente: React.FC = () => {
           <div className="flex items-center">
             <div className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</div>
             <select
-              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
+              className="bg-white w-[160px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-s"
               value={selectedUbicacion || ''}
               onChange={handleUbicacionSelect}
             >

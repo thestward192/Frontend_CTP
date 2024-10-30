@@ -167,7 +167,7 @@ interface TableComponentProps {
                   {/* Input para el número de tomo */}
                   <input
                     type="number"
-                    placeholder="Introduce el número de tomo"
+                    placeholder="Numero de tomo"
                     value={tomo !== null ? tomo : ''}
                     onChange={(e) => setTomo(Number(e.target.value) || 1)} // Tomo predeterminado a 1
                     className="border p-2"

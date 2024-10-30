@@ -52,17 +52,21 @@ export const createUser = async (userData: CreateUserDTO): Promise<User> => {
   }
 };
 
-export const deleteUser = async (id: number): Promise<void> => {
+export const updateDisponibilidadUser = async (id: number, disponibilidad: string): Promise<void> => {
   try {
     const token = getAuthToken();
-    await axios.delete(`${API_URL}/user/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await axios.patch(
+      `${API_URL}/user/${id}`,
+      { disponibilidad }, // Actualización parcial del campo de disponibilidad
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
   } catch (error) {
-    console.error(`Error al eliminar el usuario con ID ${id}:`, error);
-    throw new Error(`Error al eliminar el usuario con ID ${id}`);
+    console.error(`Error al actualizar la disponibilidad del usuario con ID ${id}:`, error);
+    throw new Error(`Error al actualizar la disponibilidad del usuario con ID ${id}`);
   }
 };
 

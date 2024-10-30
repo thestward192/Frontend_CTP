@@ -6,6 +6,7 @@ export interface Licencia {
     descripcion: string;
     codigoLicencia: string;
     modoAdquisicion: string;
+    disponibilidad?: string;
     leyId?: number;
     ley?: Ley;
 }
@@ -16,6 +17,7 @@ export interface CreateLicenciaDTO {
     descripcion: string;
     codigoLicencia: string;
     modoAdquisicion: string;
+    disponibilidad?: string;
     leyId?: number;
   }
   

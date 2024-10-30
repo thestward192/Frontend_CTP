@@ -1,13 +1,15 @@
 // src/hooks/useUsers.ts
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { User, CreateUserDTO } from '../types/user';
-import { createUser, getAllUsers, deleteUser, updateUser } from '../Services/userService';
+import { createUser, getAllUsers, updateUser, updateDisponibilidadUser } from '../Services/userService';
 
 export const useUsers = () => {
   const queryClient = useQueryClient();
 
   // Obtener todos los usuarios usando useQuery
   const { data: users, isLoading: loading, error } = useQuery<User[], Error>('users', getAllUsers);
+
+
 
   // Crear un nuevo usuario con useMutation
   const addUserMutation = useMutation((userData: CreateUserDTO) => createUser(userData), {
@@ -28,12 +30,12 @@ export const useUsers = () => {
   );
 
   // Eliminar un usuario
-  const removeUserMutation = useMutation((userId: number) => deleteUser(userId), {
+  const updateDisponibilidadMutation = useMutation((userId: number) => updateDisponibilidadUser(userId, "Fuera de Servicio"), {
     onSuccess: () => {
       queryClient.invalidateQueries('users');
     },
   });
 
   
-  return { users, loading, error, addUserMutation, editUserMutation, removeUserMutation };
+  return { users, loading, error, addUserMutation, editUserMutation, updateDisponibilidadMutation };
 };

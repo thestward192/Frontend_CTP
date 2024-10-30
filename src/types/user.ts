@@ -1,10 +1,11 @@
-// src/types/user.ts
+
 export interface User {
     id: number;
     nombre: string;
     apellido_1: string;
     apellido_2: string;
     email: string;
+    disponibilidad?: string;
     descripcion?: string;
     rol: {
       id: number;
@@ -23,7 +24,18 @@ export interface User {
     email: string;
     contraseña: string;
     descripcion?: string;
+    disponibilidad?: string;
     rolId: number;
     ubicacionIds?: number[];
   }
   
+  export interface UpdateUserDTO {
+    nombre?: string;
+    apellido_1: string;
+    apellido_2: string;
+    email?: string;
+    contraseña?: string;
+    descripcion?: string;
+    rolId?: number;
+    ubicacionIds?: number[];
+  }

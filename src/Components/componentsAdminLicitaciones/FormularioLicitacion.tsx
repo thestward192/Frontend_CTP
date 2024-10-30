@@ -6,10 +6,11 @@ import { useProveedores } from '../../hooks/useProveedor';
 
 interface FormularioLicitacionProps {
   onClose: () => void;
+  onLicitacionCreated: () => void;
   onSubmit: (licitacion: Omit<Licitacion, 'id'>) => void;
 }
 
-const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, onSubmit }) => {
+const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, onSubmit, onLicitacionCreated }) => {
   const { leyes, loading: leyesLoading } = useLeyes();
   const { proveedores, loading: proveedoresLoading } = useProveedores();
 
@@ -29,8 +30,10 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
   const onSubmitForm: SubmitHandler<Omit<Licitacion, 'id'>> = (data) => {
     onSubmit({
       ...data,
-      fecha: new Date(`${data.fecha}T00:00:00`), // Asegura que la fecha se maneje con la hora correcta
+      fecha: new Date(`${data.fecha}T00:00:00`),
     });
+    onLicitacionCreated(); // Llamamos a `onLicitacionCreated` después de la creación exitosa
+    onClose(); // Cerramos el modal
   };
 
   return (
@@ -38,6 +41,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
         <h2 className="text-xl font-bold mb-4">Agregar Licitación</h2>
         <form onSubmit={handleSubmit(onSubmitForm)} className="grid grid-cols-2 gap-4">
+          {/* Número de Acta */}
           <div className="form-group">
             <label htmlFor="numActa" className="block text-sm font-medium text-gray-700">Número de Acta</label>
             <input
@@ -50,6 +54,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.numActa && <span className="text-red-500">{errors.numActa.message}</span>}
           </div>
 
+          {/* Número de Licitación */}
           <div className="form-group">
             <label htmlFor="numLicitacion" className="block text-sm font-medium text-gray-700">Número de Licitación</label>
             <input
@@ -62,6 +67,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.numLicitacion && <span className="text-red-500">{errors.numLicitacion.message}</span>}
           </div>
 
+          {/* Nombre */}
           <div className="form-group">
             <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre</label>
             <input
@@ -74,6 +80,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.nombre && <span className="text-red-500">{errors.nombre.message}</span>}
           </div>
 
+          {/* Monto */}
           <div className="form-group">
             <label htmlFor="monto" className="block text-sm font-medium text-gray-700">Monto</label>
             <input
@@ -86,6 +93,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.monto && <span className="text-red-500">{errors.monto.message}</span>}
           </div>
 
+          {/* Descripción */}
           <div className="form-group col-span-2">
             <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">Descripción</label>
             <textarea
@@ -97,6 +105,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.descripcion && <span className="text-red-500">{errors.descripcion.message}</span>}
           </div>
 
+          {/* Fecha */}
           <div className="form-group">
             <label htmlFor="fecha" className="block text-sm font-medium text-gray-700">Fecha</label>
             <input
@@ -108,6 +117,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.fecha && <span className="text-red-500">{errors.fecha.message}</span>}
           </div>
 
+          {/* Selección de Ley */}
           <div className="form-group">
             <label htmlFor="ley" className="block text-sm font-medium text-gray-700">Ley</label>
             <select
@@ -126,6 +136,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.idLey && <span className="text-red-500">{errors.idLey.message}</span>}
           </div>
 
+          {/* Selección de Proveedor */}
           <div className="form-group">
             <label htmlFor="proveedor" className="block text-sm font-medium text-gray-700">Proveedor</label>
             <select
@@ -144,6 +155,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             {errors.idProveedor && <span className="text-red-500">{errors.idProveedor.message}</span>}
           </div>
 
+          {/* Botones de Acción */}
           <div className="flex justify-end col-span-2 mt-4 space-x-4">
             <button
               type="button"
