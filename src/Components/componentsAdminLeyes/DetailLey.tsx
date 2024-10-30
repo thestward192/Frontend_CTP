@@ -17,9 +17,10 @@ const DetailLey: React.FC<DetailLeyProps> = ({ ley, onClose, onEdit }) => {
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Detalles de la Ley</h2>
         <p><strong>ID:</strong> {ley.id}</p>
-        <p><strong>Número de Ley:</strong> {ley.numLey}</p>
-        <p><strong>Nombre:</strong> {ley.nombre}</p>
-        <p><strong>Detalle:</strong> {ley.detalle}</p>
+        <p><strong>Número de Ley: </strong> {ley.numLey}</p>
+        <p><strong>Nombre: </strong> {ley.nombre}</p>
+        <p><strong>Detalle: </strong> {ley.detalle}</p>
+        <p><strong>Disponibilidad: </strong>{ley.disponibilidad}</p>
 
         <div className="flex justify-end space-x-4 mt-6">
           {/* Botón de cerrar */}

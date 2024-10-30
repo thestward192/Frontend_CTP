@@ -19,14 +19,15 @@ const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose
       <div className="fixed inset-0 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
           <h2 className="text-2xl font-bold mb-4">Detalles de la Licitación</h2>
-          <p className="mb-2"><strong>Fecha:</strong> {new Date(licitacion.fecha).toLocaleDateString()}</p>
-          <p className="mb-2"><strong>Nº Acta:</strong> {licitacion.numActa}</p>
-          <p className="mb-2"><strong>Nº Licitación:</strong> {licitacion.numLicitacion}</p>
-          <p className="mb-2"><strong>Nombre de la Licitación:</strong> {licitacion.nombre}</p>
-          <p className="mb-2"><strong>Monto:</strong> ${licitacion.monto}</p>
-          <p className="mb-4"><strong>Descripción:</strong> {licitacion.descripcion}</p>
-          <p className="mb-2"><strong>Proveedor:</strong> {licitacion.proveedor?.nombreProveedor}</p>
-          <p className="mb-4"><strong>Ley:</strong> {licitacion.ley?.nombre}</p>
+          <p className="mb-2"><strong>Fecha: </strong> {new Date(licitacion.fecha).toLocaleDateString()}</p>
+          <p className="mb-2"><strong>Nº Acta: </strong> {licitacion.numActa}</p>
+          <p className="mb-2"><strong>Nº Licitación: </strong> {licitacion.numLicitacion}</p>
+          <p className="mb-2"><strong>Nombre de la Licitación: </strong> {licitacion.nombre}</p>
+          <p className="mb-2"><strong>Monto: </strong> ${licitacion.monto}</p>
+          <p className="mb-4"><strong>Descripción: </strong> {licitacion.descripcion}</p>
+          <p className="mb-2"><strong>Proveedor: </strong> {licitacion.proveedor?.nombreProveedor}</p>
+          <p className="mb-4"><strong>Ley: </strong> {licitacion.ley?.nombre}</p>
+          <p><strong>Disponibilidad: </strong>{licitacion.disponibilidad}</p>
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
