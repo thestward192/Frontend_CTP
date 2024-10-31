@@ -22,6 +22,7 @@ const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, o
         <p><strong>Teléfono del Proveedor:</strong> {proveedor.telefonoProveedor}</p>
         <p><strong>Teléfono de la Empresa:</strong> {proveedor.telefonoEmpresa}</p>
         <p><strong>Email:</strong> {proveedor.email}</p>
+        <p><strong>Disponibilidad:</strong> {proveedor.disponibilidad}</p>
 
         <div className="flex justify-end space-x-4 mt-6">
           <button
