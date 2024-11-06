@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import ChangePassword from './ChangePassword';
 
 const ProfileComponent: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [initial, setInitial] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -28,7 +30,10 @@ const ProfileComponent: React.FC = () => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-
+ 
+    const handlePasswordChangeSuccess = () => {
+      setShowChangePasswordForm(false);
+    };
   // Cerrar el dropdown al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,6 +48,8 @@ const ProfileComponent: React.FC = () => {
       window.removeEventListener('click', handleClickOutside);
     };
   }, []);
+  
+  
 
   return (
     <div className="relative z-50">
@@ -78,6 +85,18 @@ const ProfileComponent: React.FC = () => {
               ))}
             </ul>
           </div>
+          <button
+            className="w-full px-4 py-2 text-sm text-left text-blue-600 hover:underline"
+            onClick={() => setShowChangePasswordForm(!showChangePasswordForm)}
+          >
+            Cambiar Contraseña
+          </button>
+        </div>
+      )}
+  
+      {showChangePasswordForm && (
+        <div className="absolute top-20 right-0 bg-white p-8 border border-gray-200 rounded-md shadow-md w-80">
+          <ChangePassword onPasswordChangeSuccess={handlePasswordChangeSuccess} />
         </div>
       )}
     </div>

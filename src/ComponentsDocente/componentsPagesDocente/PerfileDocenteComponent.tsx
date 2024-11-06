@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/AuthContext';
+import ChangePassword from '../../Components/componentsPages/ChangePassword';
+
 
 const ProfileDocenteComponent: React.FC = () => {
   const { nombre, email, ubicaciones, role } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [initial, setInitial] = useState<string>('');
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
 
   useEffect(() => {
     // Obtener la inicial del nombre
@@ -20,6 +23,9 @@ const ProfileDocenteComponent: React.FC = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+ const handlePasswordChangeSuccess = () => {
+      setShowChangePasswordForm(false);
+    };
   // Cerrar el dropdown al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,7 +74,19 @@ const ProfileDocenteComponent: React.FC = () => {
                 <li key={ubicacion.id}>{ubicacion.nombre}</li>
               ))}
             </ul>
-          </div>
+            </div>
+          <button
+            className="w-full px-4 py-2 text-sm text-left text-blue-600 hover:underline"
+            onClick={() => setShowChangePasswordForm(!showChangePasswordForm)}
+          >
+            Cambiar Contraseña
+          </button>
+        </div>
+      )}
+      
+     {showChangePasswordForm && (
+        <div className="absolute top-20 right-0 bg-white p-8 border border-gray-200 rounded-md shadow-md w-80">
+          <ChangePassword onPasswordChangeSuccess={handlePasswordChangeSuccess} />
         </div>
       )}
     </div>
