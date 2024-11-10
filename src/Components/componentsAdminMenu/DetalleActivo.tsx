@@ -1,13 +1,12 @@
 import { Activo } from '../../types/activo';
-import { useActivos } from '../../hooks/useActivo'; // Importamos el hook que gestiona la eliminación y actualización de activos
-import FormularioEditarActivo from './FormularioEditarActivo'; // Componente para editar el activo
+import { useActivos } from '../../hooks/useActivo';
+import FormularioEditarActivo from './FormularioEditarActivo';
 import { FaArrowLeft, FaEdit, FaFileExport, FaTags, FaTrash, FaFilePdf } from 'react-icons/fa';
 import HistorialPrestamos from './HistorialPrestamos';
 import { useState } from 'react';
 import useBarcode from '../../hooks/useBarcode';
 import { useExportToExcel } from '../../hooks/useExportToExcel';
 import ActaBajaForm from './ActaBajaForm';
-
 
 interface DetalleComponentProps {
   asset: Activo;
@@ -17,45 +16,44 @@ interface DetalleComponentProps {
 const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) => {
   const [activeTab, setActiveTab] = useState('detalle');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Estado para manejar el modal de edición
-  const [showSticker, setShowSticker] = useState(false); // Nuevo estado para mostrar el sticker
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showSticker, setShowSticker] = useState(false);
   const { handleDeleteActivo, handleUpdateActivo } = useActivos();
   const [isActaFormOpen, setIsActaFormOpen] = useState(false);
 
   // Hook para generar el código de barras usando numPlaca
-  const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString()); // Convertimos numPlaca a string
-  // Hook para exportar a excel
+  const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString());
   const { exportToExcel } = useExportToExcel();
 
   const handleEliminar = async (id: number) => {
     try {
-      await handleDeleteActivo(id); // Llamada para eliminar el activo
-      onBack(); // Volvemos después de la eliminación
+      await handleDeleteActivo(id);
+      onBack();
     } catch (error) {
       console.error('Error al eliminar el activo:', error);
     }
   };
 
   const handleEditar = () => {
-    setIsEditModalOpen(true); // Abrir el modal de edición
+    setIsEditModalOpen(true);
   };
 
   const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     try {
-      await handleUpdateActivo({ id: asset.id!, data: updatedData }); // Actualizar el activo con los nuevos datos
-      setIsEditModalOpen(false); // Cerrar el modal de edición
+      await handleUpdateActivo({ id: asset.id!, data: updatedData });
+      setIsEditModalOpen(false);
       onBack();
     } catch (error) {
       console.error('Error al guardar los cambios del activo:', error);
     }
   };
-  
+
   const handleExportar = () => {
-    exportToExcel([asset]); // Usará el valor predeterminado 1 para el tomo.
+    exportToExcel([asset]);
   };
 
   const handleGenerarSticker = () => {
-    setShowSticker(true); // Mostrar el sticker
+    setShowSticker(true);
   };
 
   return (
@@ -84,11 +82,12 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
           <div className="flex justify-between">
             <div className="flex-grow">
+              {/* Reemplazamos id por numPlaca en el campo de No. Identificador */}
               <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">No. Identificador</p>
-                    <p className="text-gray-800">{asset.id}</p>
+                    <p className="text-gray-800">{asset.numPlaca}</p>
                   </div>
                   <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Marca</p>
@@ -113,17 +112,12 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
               <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Número de Placa</p>
-                    <p className="text-gray-800">{asset.numPlaca}</p>
-                  </div>
-                  <div className="col-span-1">
                     <p className="text-sm font-semibold text-gray-600">Ubicación</p>
                     <p className="text-gray-800">{asset.ubicacion?.nombre || 'Desconocida'}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Mostrar licitación y ley solo si el modo de adquisición es Ley */}
               {asset.modoAdquisicion === 'Ley' && asset.licitacion && (
                 <div className="border-t border-gray-200 py-2 w-full">
                   <div className="grid grid-cols-2 gap-4">
@@ -154,7 +148,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
 
               <div className="border-t border-gray-200 py-2 w-full">
                 <p className="text-sm font-semibold text-gray-600">Precio</p>
-                <p className="text-gray-800">{asset.precio}</p>
+                <p className="text-gray-800">{asset.precio ? `$${asset.precio.toFixed(2)}` : 'No disponible'}</p>
               </div>
 
               <div className="border-t border-gray-200 py-2 w-full">
@@ -167,7 +161,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 <p className="text-gray-800">{asset.observacion}</p>
               </div>
 
-              {/* Sticker (Código de barras) */}
               {showSticker && (
                 <div className="border-t border-gray-200 py-2 w-3/4">
                   <h3 className="text-sm font-semibold text-gray-600">Sticker del Activo</h3>
@@ -194,7 +187,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
             </div>
           </div>
 
-          {/* Confirmación de eliminación */}
           {showDeleteConfirmation && (
             <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
               <div className="bg-white p-6 rounded-lg shadow-lg z-20">
@@ -261,7 +253,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
         <HistorialPrestamos activoId={asset.id!} />
       )}
 
-      {/* Modal para editar el activo */}
       {isEditModalOpen && (
         <FormularioEditarActivo
           asset={asset}
