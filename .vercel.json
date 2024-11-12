@@ -1,7 +1,8 @@
 {
   "rewrites": [
     {
-      "destination": "https://backendcontrolactivos-1.onrender.com/"
+      "source": "/:path*",
+      "destination": "https://backendcontrolactivos-2.onrender.com/:path*"
     }
   ],
   "build": {
