@@ -5,7 +5,7 @@ import { getUserById } from '../../Services/userService';
 interface DetailUsuariosProps {
   userId: number;
   onClose: () => void;
-  onEdit: (userId: number) => void; // Agregamos el ID del usuario para la edición
+  onEdit: (userId: number) => void;
 }
 
 const DetailUsuarios: React.FC<DetailUsuariosProps> = ({ userId, onClose, onEdit }) => {
