@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { Rol } from '../types/rol';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://backendcontrolactivos-1.onrender.com';
 
 export const getRoles = async (): Promise<Rol[]> => {
   try {
