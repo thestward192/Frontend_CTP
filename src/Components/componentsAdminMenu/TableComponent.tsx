@@ -13,7 +13,7 @@ interface TableComponentProps {
   onAddAsset: (isAdding: boolean) => void;
 }
 
-  const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -36,7 +36,7 @@ interface TableComponentProps {
   React.useEffect(() => {
     setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
   }, [activos, selectedItems]);
-  
+
 
   const itemsPerPage = 33;
   const totalPages = Math.ceil(activos.length / itemsPerPage);
@@ -50,7 +50,7 @@ interface TableComponentProps {
       setFilterNombre(value);
     } else if (filterName === 'ubicacion') {
       setFilterUbicacion(value);
-    }else if (filterName === 'modoAdquisicion') {
+    } else if (filterName === 'modoAdquisicion') {
       setFilterModoAdquisicion(value);
     } else if (filterName === 'estado') {
       setFilterEstado(value);
@@ -58,7 +58,7 @@ interface TableComponentProps {
 
   };
 
-    const filteredData = activos.filter((activo) => {
+  const filteredData = activos.filter((activo) => {
     const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
     const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
     const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
@@ -122,7 +122,7 @@ interface TableComponentProps {
     }
     setIsAllSelected(!isAllSelected); // Cambia el estado del checkbox "Seleccionar todo"
   };
-  
+
 
   // Filtrar los activos seleccionados
   const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
@@ -174,12 +174,11 @@ interface TableComponentProps {
                   />
                   <button
                     onClick={() => {
-                    exportToExcel(selectedActivos); // Exportar los activos seleccionados
-                    setTomo(null); // Limpiar el valor del tomo después de exportar
+                      exportToExcel(selectedActivos); // Exportar los activos seleccionados
+                      setTomo(null); // Limpiar el valor del tomo después de exportar
                     }}
-                    className={`${
-                    selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
-                    } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    className={`${selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                      } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
                     disabled={selectedItems.length === 0}
                   >
                     Exportar
@@ -199,28 +198,28 @@ interface TableComponentProps {
 
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
-            <thead>
-             <tr className="bg-gray-50">
-              {isSelectionMode && (
-              <th className="px-2 py-2 text-gray-600 font-semibold">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={toggleSelectAll}
-                />
-              <span>Seleccionar todo</span>
-              </div>
-              </th>
-              )}
-              <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisición</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
-              </tr>
-            </thead>
+              <thead>
+                <tr className="bg-gray-50">
+                  {isSelectionMode && (
+                    <th className="px-2 py-2 text-gray-600 font-semibold">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={isAllSelected}
+                          onChange={toggleSelectAll}
+                        />
+                        <span>Seleccionar todo</span>
+                      </div>
+                    </th>
+                  )}
+                  <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisición</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
+                </tr>
+              </thead>
 
               <tbody>
                 {paginatedData.map((row) => (
@@ -238,7 +237,7 @@ interface TableComponentProps {
                         />
                       </td>
                     )}
-                    <td className="px-4 py-2 text-sm">{row.id ?? 'Sin ID'}</td> {/* Mostrar 'Sin ID' si no hay ID */}
+                    <td className="px-4 py-2 text-sm">{row.numPlaca || 'Sin Número de Placa'}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
@@ -269,9 +268,8 @@ interface TableComponentProps {
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                  }`}
+                  className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                    }`}
                   onClick={() => handlePageChange(index + 1)}
                 >
                   {index + 1}

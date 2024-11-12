@@ -81,7 +81,7 @@ const ProveedoresComponent: React.FC = () => {
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre del Proveedor</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre del Vendedor</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nombre de la Empresa</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Teléfono</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Correo</th>
@@ -91,7 +91,7 @@ const ProveedoresComponent: React.FC = () => {
               <tbody>
                 {proveedores?.map((proveedor, index) => (
                   <tr key={index} className="border-b hover:bg-gray-100">
-                    <td className="px-4 py-2 text-sm">{proveedor.nombreProveedor}</td>
+                    <td className="px-4 py-2 text-sm">{proveedor.vendedor}</td>
                     <td className="px-4 py-2 text-sm">{proveedor.nombreEmpresa}</td>
                     <td className="px-4 py-2 text-sm">{proveedor.telefonoProveedor}</td>
                     <td className="px-4 py-2 text-sm">{proveedor.email}</td>

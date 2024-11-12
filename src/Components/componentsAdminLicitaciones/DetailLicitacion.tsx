@@ -25,7 +25,7 @@ const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose
           <p className="mb-2"><strong>Nombre de la Licitación: </strong> {licitacion.nombre}</p>
           <p className="mb-2"><strong>Monto: </strong> ${licitacion.monto}</p>
           <p className="mb-4"><strong>Descripción: </strong> {licitacion.descripcion}</p>
-          <p className="mb-2"><strong>Proveedor: </strong> {licitacion.proveedor?.nombreProveedor}</p>
+          <p className="mb-2"><strong>Proveedor: </strong> {licitacion.proveedor?.vendedor}</p>
           <p className="mb-4"><strong>Ley: </strong> {licitacion.ley?.nombre}</p>
           <p><strong>Disponibilidad: </strong>{licitacion.disponibilidad}</p>
 

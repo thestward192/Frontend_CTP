@@ -17,7 +17,7 @@ const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, o
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Detalles del Proveedor</h2>
         <p><strong>ID:</strong> {proveedor.id}</p>
-        <p><strong>Nombre del Proveedor:</strong> {proveedor.nombreProveedor}</p>
+        <p><strong>Nombre del Vendedor:</strong> {proveedor.vendedor}</p>
         <p><strong>Nombre de la Empresa:</strong> {proveedor.nombreEmpresa}</p>
         <p><strong>Teléfono del Proveedor:</strong> {proveedor.telefonoProveedor}</p>
         <p><strong>Teléfono de la Empresa:</strong> {proveedor.telefonoEmpresa}</p>

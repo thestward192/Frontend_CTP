@@ -151,19 +151,6 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               />
             </div>
 
-            {/* Número de Placa */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Número de Placa</label>
-              <input
-                type="text"
-                name="numPlaca"
-                value={formData.numPlaca || ''}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
-              />
-            </div>
-
             {/* Precio */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Precio</label>

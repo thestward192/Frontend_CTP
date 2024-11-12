@@ -11,7 +11,7 @@ interface EditProveedorFormProps {
 const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave, onCancel }) => {
   const { register, handleSubmit, formState: { errors } } = useForm<Proveedor>({
     defaultValues: {
-      nombreProveedor: proveedor.nombreProveedor,
+      vendedor: proveedor.vendedor,
       nombreEmpresa: proveedor.nombreEmpresa,
       telefonoProveedor: proveedor.telefonoProveedor,
       telefonoEmpresa: proveedor.telefonoEmpresa,
@@ -33,11 +33,11 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
             <label className="block mb-1">Nombre del Proveedor</label>
             <input
               type="text"
-              {...register('nombreProveedor', { required: 'Este campo es obligatorio' })}
-              className={`w-full border p-2 rounded-md ${errors.nombreProveedor ? 'border-red-500' : ''}`}
+              {...register('vendedor', { required: 'Este campo es obligatorio' })}
+              className={`w-full border p-2 rounded-md ${errors.vendedor ? 'border-red-500' : ''}`}
             />
-            {errors.nombreProveedor && (
-              <p className="text-red-500 text-sm">{errors.nombreProveedor.message}</p>
+            {errors.vendedor && (
+              <p className="text-red-500 text-sm">{errors.vendedor.message}</p>
             )}
           </div>
           <div className="mb-4">
