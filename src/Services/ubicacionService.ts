@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { CreateUbicacion, Ubicacion } from '../types/ubicacion';
 
-const API_URL = 'https://backendcontrolactivos-1.onrender.com';
+const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
 
 export const createUbicacion = async (ubicacionData: CreateUbicacion): Promise<Ubicacion> => {

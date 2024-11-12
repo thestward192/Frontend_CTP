@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { CreateProveedor, Proveedor } from '../types/proveedor'; // Asegúrate de que la ruta sea correcta
 
-const API_URL = 'https://backendcontrolactivos-1.onrender.com'; // Cambia esto según la URL de tu API
+const API_URL = 'https://backendcontrolactivos-2.onrender.com'; // Cambia esto según la URL de tu API
 
 export const getProveedores = async (): Promise<Proveedor[]> => {
   try {
