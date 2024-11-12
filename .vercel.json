@@ -1,13 +1,8 @@
 {
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "https://backendcontrolactivos-2.onrender.com/:path*"
-    }
-  ],
-  "build": {
-    "env": {
-      "NODE_VERSION": "18.x"
+    "build": {
+      "env": {
+        "NODE_VERSION": "18.x"
+      }
     }
   }
-}
+  
