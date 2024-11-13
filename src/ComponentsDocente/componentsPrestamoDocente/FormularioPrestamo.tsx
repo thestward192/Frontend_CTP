@@ -29,7 +29,7 @@ const FormularioPrestamo: React.FC<FormularioPrestamoProps> = ({ activo, onSubmi
     }
 
     // Obtener la lista de docentes desde la API
-    fetch('http://localhost:3000/user/docentes', {
+    fetch('https://backendcontrolactivos-2.onrender.com/user/docentes', {
       headers: {
         Authorization: `Bearer ${token}`,  // Agregar el token en el header
         'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ const FormularioPrestamo: React.FC<FormularioPrestamoProps> = ({ activo, onSubmi
   useEffect(() => {
     if (selectedDocente) {
       const token = localStorage.getItem('token');
-      fetch(`http://localhost:3000/user/${selectedDocente}/ubicaciones`, {
+      fetch(`https://backendcontrolactivos-2.onrender.com/user/${selectedDocente}/ubicaciones`, {
         headers: {
           Authorization: `Bearer ${token}`,  // Token necesario para la autenticación
         },
@@ -99,7 +99,7 @@ const FormularioPrestamo: React.FC<FormularioPrestamoProps> = ({ activo, onSubmi
     };
 
     try {
-      const response = await fetch('http://localhost:3000/prestamos', {
+      const response = await fetch('https://backendcontrolactivos-2.onrender.com/prestamos', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,  // Asegurarse de enviar el token
