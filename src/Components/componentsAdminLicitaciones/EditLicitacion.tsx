@@ -121,7 +121,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
               <option value="" disabled>Seleccionar Proveedor</option>
               {(proveedores || []).map((proveedor) => (
                 <option key={proveedor.id} value={proveedor.id}>
-                  {proveedor.nombreProveedor}
+                  {proveedor.vendedor}
                 </option>
               ))}
             </select>
