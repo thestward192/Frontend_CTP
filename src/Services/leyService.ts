@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { Ley } from '../types/ley';
 
-const API_URL = 'http://localhost:3000'; // Ajusta la URL según tu backend
+const API_URL = 'https://backendcontrolactivos-2.onrender.com'; // Ajusta la URL según tu backend
 
 // Obtener todas las leyes
 export const getLeyes = async (): Promise<Ley[]> => {
