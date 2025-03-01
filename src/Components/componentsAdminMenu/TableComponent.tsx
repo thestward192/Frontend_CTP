@@ -13,7 +13,7 @@ interface TableComponentProps {
   onAddAsset: (isAdding: boolean) => void;
 }
 
-  const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -23,7 +23,6 @@ interface TableComponentProps {
   const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
   const [isAllSelected, setIsAllSelected] = useState(false);
-
 
   const [filterNombre, setFilterNombre] = useState('');
   const [filterUbicacion, setFilterUbicacion] = useState('');
@@ -36,7 +35,6 @@ interface TableComponentProps {
   React.useEffect(() => {
     setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
   }, [activos, selectedItems]);
-  
 
   const itemsPerPage = 33;
   const totalPages = Math.ceil(activos.length / itemsPerPage);
@@ -50,15 +48,14 @@ interface TableComponentProps {
       setFilterNombre(value);
     } else if (filterName === 'ubicacion') {
       setFilterUbicacion(value);
-    }else if (filterName === 'modoAdquisicion') {
+    } else if (filterName === 'modoAdquisicion') {
       setFilterModoAdquisicion(value);
     } else if (filterName === 'estado') {
       setFilterEstado(value);
     }
-
   };
 
-    const filteredData = activos.filter((activo) => {
+  const filteredData = activos.filter((activo) => {
     const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
     const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
     const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
@@ -122,7 +119,6 @@ interface TableComponentProps {
     }
     setIsAllSelected(!isAllSelected); // Cambia el estado del checkbox "Seleccionar todo"
   };
-  
 
   // Filtrar los activos seleccionados
   const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
@@ -169,17 +165,16 @@ interface TableComponentProps {
                     type="number"
                     placeholder="Numero de tomo"
                     value={tomo !== null ? tomo : ''}
-                    onChange={(e) => setTomo(Number(e.target.value) || 1)} // Tomo predeterminado a 1
+                    onChange={(e) => setTomo(Number(e.target.value) || 1)}
                     className="border p-2"
                   />
                   <button
                     onClick={() => {
-                    exportToExcel(selectedActivos); // Exportar los activos seleccionados
-                    setTomo(null); // Limpiar el valor del tomo después de exportar
+                      exportToExcel(selectedActivos);
+                      setTomo(null);
                     }}
-                    className={`${
-                    selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
-                    } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    className={`${selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                      } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
                     disabled={selectedItems.length === 0}
                   >
                     Exportar
@@ -199,46 +194,62 @@ interface TableComponentProps {
 
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
-            <thead>
-             <tr className="bg-gray-50">
-              {isSelectionMode && (
-              <th className="px-2 py-2 text-gray-600 font-semibold">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={toggleSelectAll}
-                />
-              <span>Seleccionar todo</span>
-              </div>
-              </th>
-              )}
-              <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisición</th>
-              <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
-              </tr>
-            </thead>
+              <thead>
+                <tr className="bg-gray-50">
+                  {isSelectionMode && (
+                    <th className="px-2 py-2 text-gray-600 font-semibold">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={isAllSelected}
+                          onChange={toggleSelectAll}
+                        />
+                        <span>Seleccionar todo</span>
+                      </div>
+                    </th>
+                  )}
+                  {/* Columna para la imagen */}
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Modelo</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisición</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
+                </tr>
+              </thead>
 
               <tbody>
                 {paginatedData.map((row) => (
                   <tr
-                    key={row.id ? row.id : `row-${Math.random()}`} // Proveer una clave única si `id` no está definido
+                    key={row.id ? row.id : `row-${Math.random()}`}
                     className="border-b hover:bg-gray-100 cursor-pointer"
-                    onClick={() => !isSelectionMode && row.id && handleSelectAsset(row)} // Evitar si `id` es undefined
+                    onClick={() => !isSelectionMode && row.id && handleSelectAsset(row)}
                   >
                     {isSelectionMode && (
                       <td className="px-2 py-2 text-sm">
                         <input
                           type="checkbox"
-                          checked={row.id ? selectedItems.includes(row.id.toString()) : false} // Verificamos si `id` es válido
-                          onChange={() => row.id && toggleSelectItem(row.id.toString())} // Solo cambiar si `id` es válido
+                          checked={row.id ? selectedItems.includes(row.id.toString()) : false}
+                          onChange={() => row.id && toggleSelectItem(row.id.toString())}
                         />
                       </td>
                     )}
-                    <td className="px-4 py-2 text-sm">{row.id ?? 'Sin ID'}</td> {/* Mostrar 'Sin ID' si no hay ID */}
+                    {/* Columna de imagen */}
+                    <td className="px-4 py-2 text-sm">
+                      {row.foto ? (
+                        <img
+                          src={row.foto}
+                          alt={row.nombre}
+                          className="w-12 h-12 object-cover rounded-md border"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                          Sin imagen
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-sm">{row.numPlaca || 'Sin Número de Placa'}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.modelo}</td>
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
@@ -269,9 +280,7 @@ interface TableComponentProps {
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                  }`}
+                  className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                   onClick={() => handlePageChange(index + 1)}
                 >
                   {index + 1}

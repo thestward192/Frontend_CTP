@@ -1,6 +1,6 @@
 export interface Proveedor {
     id: number;
-    nombreProveedor: string;
+    vendedor: string;
     nombreEmpresa: string;
     telefonoProveedor: string;
     telefonoEmpresa: string;
@@ -9,7 +9,7 @@ export interface Proveedor {
 }
 
 export interface CreateProveedor {
-    nombreProveedor: string;
+    vendedor: string;
     nombreEmpresa: string;
     telefonoProveedor: string;
     telefonoEmpresa: string;

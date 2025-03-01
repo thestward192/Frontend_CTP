@@ -21,6 +21,7 @@ const DetailUbicacion: React.FC<DetailUbicacionProps> = ({ ubicacion, onClose, o
         <p><strong>Nombre:</strong> {ubicacion.nombre}</p>
         <p><strong>Pabellón:</strong> {ubicacion.pabellon}</p>
         <p><strong>Descripción:</strong> {ubicacion.descripcion}</p>
+        <p><strong>Disponibilidad:</strong> {ubicacion.disponibilidad}</p>
 
         <div className="flex justify-end space-x-4 mt-6">
           <button

@@ -12,6 +12,17 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
   const { handleSubmit, register, formState: { errors } } = useForm<CreateProveedor>();
   const [alertaVisible, setAlertaVisible] = useState(false); // Estado para controlar la visibilidad de la alerta
 
+  // Función para formatear el teléfono automáticamente
+  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.replace(/\D/g, ''); // Elimina cualquier carácter que no sea un número
+    if (input.length <= 4) {
+      e.target.value = input; // Muestra solo los primeros 4 dígitos
+    } else {
+      e.target.value = `${input.slice(0, 4)}-${input.slice(4, 8)}`; // Inserta el guion automáticamente
+    }
+  };
+
+  // Manejar el envío del formulario
   const onSubmit = async (data: CreateProveedor) => {
     const success = await handleSubmitProveedor(data); // Usamos CreateProveedor sin id
     if (success) {
@@ -37,11 +48,11 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
             <label className="block mb-1">Nombre del Proveedor</label>
             <input
               type="text"
-              {...register('nombreProveedor', { required: 'Este campo es obligatorio' })}
+              {...register('vendedor', { required: 'Este campo es obligatorio' })}
               className="w-full border p-2 rounded-md"
               placeholder="Nombre del Proveedor"
             />
-            {errors.nombreProveedor && <p className="text-red-500">{errors.nombreProveedor.message}</p>}
+            {errors.vendedor && <p className="text-red-500">{errors.vendedor.message}</p>}
           </div>
 
           <div className="mb-4">
@@ -68,6 +79,7 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
               })}
               className="w-full border p-2 rounded-md"
               placeholder="####-####"
+              onChange={handlePhoneInput} // Manejador para formateo automático
             />
             {errors.telefonoProveedor && <p className="text-red-500">{errors.telefonoProveedor.message}</p>}
           </div>
@@ -85,6 +97,7 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
               })}
               className="w-full border p-2 rounded-md"
               placeholder="####-####"
+              onChange={handlePhoneInput} // Manejador para formateo automático
             />
             {errors.telefonoEmpresa && <p className="text-red-500">{errors.telefonoEmpresa.message}</p>}
           </div>
