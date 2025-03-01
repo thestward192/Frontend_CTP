@@ -7,8 +7,14 @@ import { Ubicacion } from '../../types/ubicacion';
 import { getUbicaciones } from '../../Services/ubicacionService';
 import { getLicitaciones } from '../../Services/licitacionService';
 import { useActivos } from '../../hooks/useActivo';
+import ImageUploader from './ImageUploader';
 
-const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: string }> = ({ onClose, modoAdquisicion }) => {
+interface FormularioAgregarActivoProps {
+  onClose: () => void;
+  modoAdquisicion: string;
+}
+
+const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Omit<Activo, 'id'>>();
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
@@ -30,21 +36,25 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
 
   useEffect(() => {
     if (modoAdquisicion === 'Donación') {
-      setValue('precio', 0); // Establecemos el precio a 0 si es Donación
+      setValue('precio', 0); // Si es donación, el precio se establece en 0
     }
-    setValue('modoAdquisicion', modoAdquisicion); // Actualizamos el modoAdquisicion según lo seleccionado
+    setValue('modoAdquisicion', modoAdquisicion);
   }, [modoAdquisicion, setValue]);
+
+  // Guarda la URL de la foto en el campo 'foto'
+  const onUpload = (url: string) => {
+    setValue('foto', url);
+  };
 
   const onSubmit = async (data: Omit<Activo, 'id'>) => {
     try {
-      console.log('Datos enviados al servidor:', data); // Verificar los datos antes de enviarlos al servidor
-      await handleCreateActivo(data); // Enviamos los datos al servidor
-
+      console.log('Datos enviados al servidor:', data);
+      await handleCreateActivo(data);
       setSuccessMessage('Activo creado exitosamente');
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
-        reset();  // Reseteamos el formulario
+        reset();
       }, 1000);
     } catch (error) {
       console.error('Error al crear el activo:', error);
@@ -52,8 +62,8 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-xl">
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
             <FaCheckCircle className="mr-2" />
@@ -63,7 +73,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
 
         <h2 className="text-lg font-bold mb-4">Agregar Activo</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
@@ -108,7 +118,7 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
             </div>
 
-            {/* Precio (Solo se muestra si NO es Donación) */}
+            {/* Precio (solo se muestra si no es Donación) */}
             {modoAdquisicion !== 'Donación' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700">Precio</label>
@@ -120,8 +130,8 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               </div>
             )}
 
-            {/* Descripción (No obligatoria) */}
-            <div className="col-span-2">
+            {/* Descripción */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea
                 {...register('descripcion')}
@@ -165,18 +175,23 @@ const FormularioAgregarActivo: React.FC<{ onClose: () => void; modoAdquisicion: 
               </div>
             )}
 
-            {/* Observaciones (Disponible tanto para Ley como Donación) */}
-            <div className="col-span-2">
+            {/* Observaciones */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700">Observaciones</label>
               <textarea
                 {...register('observacion')}
                 className="w-full border border-gray-300 p-2 rounded-lg"
               />
             </div>
+
+            {/* Componente para subir imagen */}
+            <div className="md:col-span-2">
+              <ImageUploader onUpload={onUpload} />
+            </div>
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end space-x-4 mt-4">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
             <button
               type="button"
               className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
