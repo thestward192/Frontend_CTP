@@ -31,12 +31,8 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     const element = document.getElementById('barcode-container');
     if (!element) return;
 
-    // "Fotografiamos" ese contenedor
     const canvas = await html2canvas(element);
-    // Convertimos a dataURL en formato JPEG
     const dataUrl = canvas.toDataURL('image/jpeg');
-
-    // Creamos un enlace y forzamos la descarga
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = `barcode_${asset.numPlaca}.jpg`;
