@@ -3,7 +3,7 @@ import { useActivos } from '../../hooks/useActivo';
 import FormularioEditarActivo from './FormularioEditarActivo';
 import { FaArrowLeft, FaEdit, FaFileExport, FaTags, FaTrash, FaFilePdf } from 'react-icons/fa';
 import HistorialPrestamos from './HistorialPrestamos';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import useBarcode from '../../hooks/useBarcode';
 import { useExportToExcel } from '../../hooks/useExportToExcel';
 import ActaBajaForm from './ActaBajaForm';
@@ -22,19 +22,12 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const { handleDeleteActivo, handleUpdateActivo } = useActivos();
   const [isActaFormOpen, setIsActaFormOpen] = useState(false);
   const [showProveedorModal, setShowProveedorModal] = useState(false);
-
-  // Hook para generar el código de barras usando numPlaca
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString());
   const { exportToExcel } = useExportToExcel();
 
 
-  useEffect(() => {
-    console.log("Estado de showProveedorModal cambió:", showProveedorModal);
-  }, [showProveedorModal]);
-
 
   const handleDownloadBarcode = async () => {
-    // Capturamos el contenedor por ID
     const element = document.getElementById('barcode-container');
     if (!element) return;
 
@@ -46,25 +39,6 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     link.click();
   };
 
-  const handleShowProveedor = async () => {
-    console.log("Clic en Ver Proveedor");
-
-    if (!asset.licitacion?.proveedor) {
-      console.log("No hay proveedor asociado.");
-      return;
-    }
-
-    console.log("Datos del proveedor:", asset.licitacion.proveedor);
-
-    setTimeout(() => {
-      setShowProveedorModal(true);
-      console.log("Estado actualizado a true después del timeout.");
-    }, 0);
-  };
-
-
-
-
   const handleEliminar = async (id: number) => {
     try {
       await handleDeleteActivo(id);
@@ -74,11 +48,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     }
   };
 
-  const handleEditar = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveEdit = async (updatedData: Partial<Activo>) => {
+const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     try {
       await handleUpdateActivo({ id: asset.id!, data: updatedData });
       setIsEditModalOpen(false);
@@ -86,6 +56,13 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     } catch (error) {
       console.error('Error al guardar los cambios del activo:', error);
     }
+  };
+
+  const handleShowProveedor = () => {
+    setShowProveedorModal(true);
+  };
+  const handleEditar = () => {
+    setIsEditModalOpen(true);
   };
 
   const handleExportar = () => {
