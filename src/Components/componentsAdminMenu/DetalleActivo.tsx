@@ -21,13 +21,13 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const [showSticker, setShowSticker] = useState(false);
   const { handleDeleteActivo, handleUpdateActivo } = useActivos();
   const [isActaFormOpen, setIsActaFormOpen] = useState(false);
-
-  // Hook para generar el código de barras usando numPlaca
+  const [showProveedorModal, setShowProveedorModal] = useState(false);
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString());
   const { exportToExcel } = useExportToExcel();
 
+
+
   const handleDownloadBarcode = async () => {
-    // Capturamos el contenedor por ID
     const element = document.getElementById('barcode-container');
     if (!element) return;
 
@@ -48,11 +48,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     }
   };
 
-  const handleEditar = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveEdit = async (updatedData: Partial<Activo>) => {
+const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     try {
       await handleUpdateActivo({ id: asset.id!, data: updatedData });
       setIsEditModalOpen(false);
@@ -60,6 +56,13 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     } catch (error) {
       console.error('Error al guardar los cambios del activo:', error);
     }
+  };
+
+  const handleShowProveedor = () => {
+    setShowProveedorModal(true);
+  };
+  const handleEditar = () => {
+    setIsEditModalOpen(true);
   };
 
   const handleExportar = () => {
@@ -132,20 +135,46 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                 </div>
               </div>
 
-              {asset.modoAdquisicion === 'Ley' && asset.licitacion && (
+              {asset.licitacion && (
                 <div className="border-t border-gray-200 py-2 w-full">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-1">
-                      <p className="text-sm font-semibold text-gray-600">Licitación</p>
-                      <p className="text-gray-800">{asset.licitacion.nombre}</p>
+                  <p className="text-sm font-semibold text-gray-600">Licitación</p>
+                  <p className="text-gray-800 cursor-pointer text-blue-600" onClick={handleShowProveedor}>
+                    {asset.licitacion.nombre}
+                  </p>
+                </div>
+              )}
+
+              {showProveedorModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="bg-white p-8 rounded-lg shadow-xl w-96">
+                    {/* Encabezado */}
+                    <h2 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
+                      Detalles del Proveedor
+                    </h2>
+
+                    {/* Contenido con Espaciado */}
+                    <div className="space-y-4 text-gray-800">
+                      <p><strong>📌 Nombre de Empresa:</strong> {asset.licitacion?.proveedor?.nombreEmpresa || "No disponible"}</p>
+                      <p><strong>👤 Nombre de Vendedor:</strong> {asset.licitacion?.proveedor?.vendedor || "No disponible"}</p>
+                      <p><strong>📞 Teléfono de Empresa:</strong> {asset.licitacion?.proveedor?.telefonoEmpresa || "No disponible"}</p>
+                      <p><strong>📱 Teléfono del Proveedor:</strong> {asset.licitacion?.proveedor?.telefonoProveedor || "No disponible"}</p>
+                      <p><strong>✉️ Email:</strong> {asset.licitacion?.proveedor?.email || "No disponible"}</p>
                     </div>
-                    <div className="col-span-1">
-                      <p className="text-sm font-semibold text-gray-600">Ley Asociada</p>
-                      <p className="text-gray-800">{asset.licitacion.ley?.nombre || 'No disponible'}</p>
+
+                    {/* Botón de Cerrar */}
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={() => setShowProveedorModal(false)}
+                        className="bg-red-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-red-600 transition-all duration-300"
+                      >
+                        Cerrar
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
+
+
 
               <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
@@ -282,16 +311,19 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
         </>
       ) : (
         <HistorialPrestamos activoId={asset.id!} />
-      )}
+      )
+      }
 
-      {isEditModalOpen && (
-        <FormularioEditarActivo
-          asset={asset}
-          onClose={() => setIsEditModalOpen(false)}
-          onSave={handleSaveEdit}
-        />
-      )}
-    </div>
+      {
+        isEditModalOpen && (
+          <FormularioEditarActivo
+            asset={asset}
+            onClose={() => setIsEditModalOpen(false)}
+            onSave={handleSaveEdit}
+          />
+        )
+      }
+    </div >
   );
 };
 
