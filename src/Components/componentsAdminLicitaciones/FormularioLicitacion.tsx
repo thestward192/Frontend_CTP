@@ -148,7 +148,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
               <option value="" disabled>Seleccione un Proveedor</option>
               {(proveedores || []).map((proveedor) => (
                 <option key={proveedor.id} value={proveedor.id}>
-                  {proveedor.nombreProveedor}
+                  {proveedor.vendedor}
                 </option>
               ))}
             </select>

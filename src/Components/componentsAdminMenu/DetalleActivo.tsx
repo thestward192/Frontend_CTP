@@ -7,6 +7,7 @@ import { useState } from 'react';
 import useBarcode from '../../hooks/useBarcode';
 import { useExportToExcel } from '../../hooks/useExportToExcel';
 import ActaBajaForm from './ActaBajaForm';
+import html2canvas from 'html2canvas';
 
 interface DetalleComponentProps {
   asset: Activo;
@@ -24,6 +25,19 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   // Hook para generar el código de barras usando numPlaca
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString());
   const { exportToExcel } = useExportToExcel();
+
+  const handleDownloadBarcode = async () => {
+    // Capturamos el contenedor por ID
+    const element = document.getElementById('barcode-container');
+    if (!element) return;
+
+    const canvas = await html2canvas(element);
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `barcode_${asset.numPlaca}.jpg`;
+    link.click();
+  };
 
   const handleEliminar = async (id: number) => {
     try {
@@ -170,8 +184,25 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                     <p>Error al generar el sticker: {error}</p>
                   ) : barcodeUrl ? (
                     <div>
-                      <img src={barcodeUrl} alt={`Código de barras para ${asset.numPlaca}`} className="w-60 h-20 object-contain mt-2" />
-                      <p className="text-sm font-semibold text-gray-800 mt-2">Número de Placa: {asset.numPlaca}</p>
+                      {/* 3) Envuelve el código de barras en un div con ID */}
+                      <div id="barcode-container" className="mt-2 inline-block bg-white p-2">
+                        <img
+                          src={barcodeUrl}
+                          alt={`Código de barras para ${asset.numPlaca}`}
+                          className="w-60 h-20 object-contain"
+                        />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800 mt-2">
+                        Número de Placa: {asset.numPlaca}
+                      </p>
+
+                      {/* Botón para descargar en JPG */}
+                      <button
+                        onClick={handleDownloadBarcode}
+                        className="bg-blue-500 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-600 transition-all duration-300 mt-2"
+                      >
+                        Descargar Código de Barras (JPG)
+                      </button>
                     </div>
                   ) : null}
                 </div>
