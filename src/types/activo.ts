@@ -14,9 +14,9 @@ export interface Activo {
     foto: string;
     precio: number;
     observacion: string;
-    modoAdquisicion: string; // Ley o Donación
+    modoAdquisicion: string;
     ubicacionId: number;
-    ubicacion?: Ubicacion; // Relación con la ubicación
-    licitacionId?: number; // Nueva relación con Licitacion
-    licitacion?: Licitacion; // Relación opcional con la licitación
+    ubicacion?: Ubicacion;
+    licitacionId?: number;
+    licitacion?: Licitacion;
 }

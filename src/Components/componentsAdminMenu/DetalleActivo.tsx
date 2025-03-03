@@ -175,7 +175,6 @@ const handleSaveEdit = async (updatedData: Partial<Activo>) => {
               )}
 
 
-
               <div className="border-t border-gray-200 py-2 w-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-1">

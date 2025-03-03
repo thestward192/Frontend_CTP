@@ -31,7 +31,7 @@ const Login: React.FC = () => {
       }
 
       // Enviar la solicitud de login al backend junto con el token de reCAPTCHA
-      const response = await fetch('https://backendcontrolactivos-1.onrender.com/auth/login', {
+      const response = await fetch('http://localhost:3000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
