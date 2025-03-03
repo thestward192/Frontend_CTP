@@ -15,22 +15,20 @@ interface DetalleComponentProps {
 }
 
 const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) => {
-  const [activeTab, setActiveTab] = useState('detalle');
+  const [activeTab, setActiveTab] = useState<'detalle' | 'historial'>('detalle');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showSticker, setShowSticker] = useState(false);
-  const { handleDeleteActivo, handleUpdateActivo } = useActivos();
   const [isActaFormOpen, setIsActaFormOpen] = useState(false);
   const [showProveedorModal, setShowProveedorModal] = useState(false);
+
+  // Eliminado showSticker y su función para generarlo.
+  const { handleDeleteActivo, handleUpdateActivo } = useActivos();
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString());
   const { exportToExcel } = useExportToExcel();
-
-
 
   const handleDownloadBarcode = async () => {
     const element = document.getElementById('barcode-container');
     if (!element) return;
-
     const canvas = await html2canvas(element);
     const dataUrl = canvas.toDataURL('image/jpeg');
     const link = document.createElement('a');
@@ -48,7 +46,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     }
   };
 
-const handleSaveEdit = async (updatedData: Partial<Activo>) => {
+  const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     try {
       await handleUpdateActivo({ id: asset.id!, data: updatedData });
       setIsEditModalOpen(false);
@@ -61,6 +59,7 @@ const handleSaveEdit = async (updatedData: Partial<Activo>) => {
   const handleShowProveedor = () => {
     setShowProveedorModal(true);
   };
+
   const handleEditar = () => {
     setIsEditModalOpen(true);
   };
@@ -69,260 +68,271 @@ const handleSaveEdit = async (updatedData: Partial<Activo>) => {
     exportToExcel([asset]);
   };
 
-  const handleGenerarSticker = () => {
-    setShowSticker(true);
-  };
-
   return (
-    <div className="w-full h-full bg-white shadow-lg rounded-lg p-6 overflow-hidden relative" style={{ height: 'calc(100vh - 180px)' }}>
-      <div className="flex justify-center mb-6">
+    <div
+      className="w-full h-full bg-white shadow-lg rounded-lg p-6 relative overflow-auto"
+      style={{ height: 'calc(100vh - 180px)' }}
+    >
+      {/* Encabezado */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Detalle del Activo</h1>
         <button
-          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${activeTab === 'detalle' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
-          onClick={() => setActiveTab('detalle')}
+          onClick={onBack}
+          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center text-base transition-all duration-300"
         >
-          Detalle de Activo
+          <FaArrowLeft className="mr-2" /> Volver
         </button>
-        <button
-          className={`px-6 py-2 font-bold text-sm transition-colors duration-300 ${activeTab === 'historial' ? 'text-blue-600 border-b-4 border-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
-          onClick={() => setActiveTab('historial')}
-        >
-          Historial de Préstamos
-        </button>
+      </div>
+
+      {/* Pestañas */}
+      <div className="border-b pb-2 mb-2">
+        <nav className="flex space-x-4">
+          <button
+            className={`px-3 py-1 font-bold text-sm transition-colors duration-300 ${
+              activeTab === 'detalle'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-blue-600'
+            }`}
+            onClick={() => setActiveTab('detalle')}
+          >
+            Detalle
+          </button>
+          <button
+            className={`px-3 py-1 font-bold text-sm transition-colors duration-300 ${
+              activeTab === 'historial'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-blue-600'
+            }`}
+            onClick={() => setActiveTab('historial')}
+          >
+            Historial de Préstamos
+          </button>
+        </nav>
       </div>
 
       {activeTab === 'detalle' ? (
         <>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-700">Información del Activo</h2>
-            <p className="text-sm text-gray-500">Detalles generales y estado del activo.</p>
+          {/* Botones de Acción, alineados a la derecha */}
+          <div className="flex justify-end gap-2 mb-4">
+            <button
+              onClick={handleEditar}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-md flex items-center text-sm transition-all duration-300"
+            >
+              <FaEdit className="mr-1" /> Editar
+            </button>
+            <button
+              onClick={handleExportar}
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded-md flex items-center text-sm transition-all duration-300"
+            >
+              <FaFileExport className="mr-1" /> Exportar
+            </button>
+            <button
+              onClick={() => setIsActaFormOpen(true)}
+              className="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-md flex items-center text-sm transition-all duration-300"
+            >
+              <FaFilePdf className="mr-1" /> Acta
+            </button>
+            {/* Eliminado el botón de Generar Sticker */}
+            <button
+              onClick={() => setShowDeleteConfirmation(true)}
+              className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-md flex items-center text-sm transition-all duration-300"
+            >
+              <FaTrash className="mr-1" /> Eliminar
+            </button>
           </div>
 
-          <div className="flex justify-between">
-            <div className="flex-grow">
-              {/* Reemplazamos id por numPlaca en el campo de No. Identificador */}
-              <div className="border-t border-gray-200 py-2 w-full">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">No. Identificador</p>
-                    <p className="text-gray-800">{asset.numPlaca}</p>
+          {/* Distribución en 2 columnas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Columna Izquierda */}
+            <div className="space-y-4">
+              {/* Imagen */}
+              <img
+                src={asset.foto}
+                alt="Foto del Activo"
+                className="mx-auto w-3/4 h-auto object-contain rounded-md shadow-sm border border-gray-200"
+              />
+
+              {/* Ubicación / Licitación */}
+              <div className="bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200">
+                <h2 className="text-base font-semibold text-gray-700 mb-3">Ubicación / Licitación</h2>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Ubicación</p>
+                    <p className="text-gray-800">{asset.ubicacion?.nombre || 'Desconocida'}</p>
                   </div>
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Marca</p>
-                    <p className="text-gray-800">{asset.marca}</p>
-                  </div>
+                  {asset.licitacion && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-600">Licitación</p>
+                      <p className="text-blue-600 cursor-pointer" onClick={handleShowProveedor}>
+                        {asset.licitacion.nombre}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-full">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Modelo</p>
+              {/* Estado / Precio */}
+              <div className="bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200">
+                <h2 className="text-base font-semibold text-gray-700 mb-3">Estado y Precio</h2>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Estado</p>
+                    <p className="text-gray-800">{asset.estado}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Disponibilidad</p>
+                    <p className="text-gray-800">{asset.disponibilidad}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Precio</p>
+                    <p className="text-gray-800">
+                      {asset.precio ? `$${asset.precio.toFixed(2)}` : 'No disponible'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Columna Derecha */}
+            <div className="space-y-4">
+              {/* Datos Básicos */}
+              <div className="bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200">
+                <h2 className="text-base font-semibold text-gray-700 mb-3">Datos Básicos</h2>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Identificador</p>
+                    <p className="text-gray-800">{asset.numPlaca}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Marca</p>
+                    <p className="text-gray-800">{asset.marca}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Modelo</p>
                     <p className="text-gray-800">{asset.modelo}</p>
                   </div>
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Serie</p>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Serie</p>
                     <p className="text-gray-800">{asset.serie}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 py-2 w-full">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Ubicación</p>
-                    <p className="text-gray-800">{asset.ubicacion?.nombre || 'Desconocida'}</p>
+              {/* Descripción / Observación (vertical) */}
+              <div className="bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200">
+                <h2 className="text-base font-semibold text-gray-700 mb-3">Descripción / Observación</h2>
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Descripción</p>
+                    <p className="text-gray-800">{asset.descripcion}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Observación</p>
+                    <p className="text-gray-800">{asset.observacion}</p>
                   </div>
                 </div>
               </div>
 
-              {asset.licitacion && (
-                <div className="border-t border-gray-200 py-2 w-full">
-                  <p className="text-sm font-semibold text-gray-600">Licitación</p>
-                  <p className="text-gray-800 cursor-pointer text-blue-600" onClick={handleShowProveedor}>
-                    {asset.licitacion.nombre}
-                  </p>
-                </div>
-              )}
-
-              {showProveedorModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="bg-white p-8 rounded-lg shadow-xl w-96">
-                    {/* Encabezado */}
-                    <h2 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
-                      Detalles del Proveedor
-                    </h2>
-
-                    {/* Contenido con Espaciado */}
-                    <div className="space-y-4 text-gray-800">
-                      <p><strong>📌 Nombre de Empresa:</strong> {asset.licitacion?.proveedor?.nombreEmpresa || "No disponible"}</p>
-                      <p><strong>👤 Nombre de Vendedor:</strong> {asset.licitacion?.proveedor?.vendedor || "No disponible"}</p>
-                      <p><strong>📞 Teléfono de Empresa:</strong> {asset.licitacion?.proveedor?.telefonoEmpresa || "No disponible"}</p>
-                      <p><strong>📱 Teléfono del Proveedor:</strong> {asset.licitacion?.proveedor?.telefonoProveedor || "No disponible"}</p>
-                      <p><strong>✉️ Email:</strong> {asset.licitacion?.proveedor?.email || "No disponible"}</p>
+              {/* Código de Barras (siempre visible) */}
+              <div className="bg-gray-50 p-4 rounded-md shadow-sm border border-gray-200">
+                <h2 className="text-base font-semibold text-gray-700 mb-3">Código de Barras</h2>
+                {loading ? (
+                  <p className="text-sm">Cargando código de barras...</p>
+                ) : error ? (
+                  <p className="text-sm text-red-500">Error: {error}</p>
+                ) : barcodeUrl ? (
+                  <div className="flex flex-col items-start">
+                    <div id="barcode-container" className="bg-white p-2 mb-2">
+                      <img
+                        src={barcodeUrl}
+                        alt={`Código de barras para ${asset.numPlaca}`}
+                        className="w-56 h-16 object-contain"
+                      />
                     </div>
-
-                    {/* Botón de Cerrar */}
-                    <div className="mt-6 flex justify-end">
-                      <button
-                        onClick={() => setShowProveedorModal(false)}
-                        className="bg-red-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-red-600 transition-all duration-300"
-                      >
-                        Cerrar
-                      </button>
-                    </div>
+                    <p className="text-xs font-medium text-gray-800 mb-2">Placa: {asset.numPlaca}</p>
+                    <button
+                      onClick={handleDownloadBarcode}
+                      className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded-md text-xs transition-all duration-300"
+                    >
+                      Descargar (JPG)
+                    </button>
                   </div>
-                </div>
-              )}
-
-
-              <div className="border-t border-gray-200 py-2 w-full">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Estado</p>
-                    <p className="text-gray-800">{asset.estado}</p>
-                  </div>
-                  <div className="col-span-1">
-                    <p className="text-sm font-semibold text-gray-600">Disponibilidad</p>
-                    <p className="text-gray-800">{asset.disponibilidad}</p>
-                  </div>
-                </div>
+                ) : null}
               </div>
-
-              <div className="border-t border-gray-200 py-2 w-full">
-                <p className="text-sm font-semibold text-gray-600">Precio</p>
-                <p className="text-gray-800">{asset.precio ? `$${asset.precio.toFixed(2)}` : 'No disponible'}</p>
-              </div>
-
-              <div className="border-t border-gray-200 py-2 w-full">
-                <p className="text-sm font-semibold text-gray-600">Descripción</p>
-                <p className="text-gray-800">{asset.descripcion}</p>
-              </div>
-
-              <div className="border-t border-gray-200 py-2 w-full">
-                <p className="text-sm font-semibold text-gray-600">Observación</p>
-                <p className="text-gray-800">{asset.observacion}</p>
-              </div>
-
-              {showSticker && (
-                <div className="border-t border-gray-200 py-2 w-3/4">
-                  <h3 className="text-sm font-semibold text-gray-600">Sticker del Activo</h3>
-                  {loading ? (
-                    <p>Cargando código de barras...</p>
-                  ) : error ? (
-                    <p>Error al generar el sticker: {error}</p>
-                  ) : barcodeUrl ? (
-                    <div>
-                      {/* 3) Envuelve el código de barras en un div con ID */}
-                      <div id="barcode-container" className="mt-2 inline-block bg-white p-2">
-                        <img
-                          src={barcodeUrl}
-                          alt={`Código de barras para ${asset.numPlaca}`}
-                          className="w-60 h-20 object-contain"
-                        />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-800 mt-2">
-                        Número de Placa: {asset.numPlaca}
-                      </p>
-
-                      {/* Botón para descargar en JPG */}
-                      <button
-                        onClick={handleDownloadBarcode}
-                        className="bg-blue-500 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-600 transition-all duration-300 mt-2"
-                      >
-                        Descargar Código de Barras (JPG)
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-            </div>
-
-            <div className="flex-shrink-0 ml-4">
-              <img
-                src={asset.foto}
-                alt="Foto del Activo"
-                className="w-60 h-60 object-cover rounded-lg shadow-md border border-gray-200"
-              />
             </div>
           </div>
-
-          {showDeleteConfirmation && (
-            <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
-              <div className="bg-white p-6 rounded-lg shadow-lg z-20">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">¿Deseas eliminar este activo?</h2>
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => setShowDeleteConfirmation(false)}
-                    className="bg-gray-500 text-white py-1 px-3 rounded-lg shadow hover:bg-gray-600 transition-all duration-300"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={() => handleEliminar(asset.id!)}
-                    className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300"
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="absolute bottom-4 right-4 flex justify-end space-x-4">
-            <button
-              onClick={handleEditar}
-              className="bg-blue-300 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-400 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaEdit className="mr-2" /> Editar
-            </button>
-            <button
-              onClick={handleExportar}
-              className="bg-green-300 text-white py-1 px-3 rounded-lg shadow hover:bg-green-400 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaFileExport className="mr-2" /> Exportar
-            </button>
-            <button
-              onClick={() => setIsActaFormOpen(true)}
-              className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaFilePdf className="mr-2" /> Acta de Baja
-            </button>
-            <button
-              onClick={handleGenerarSticker}
-              className="bg-gray-300 text-white py-1 px-3 rounded-lg shadow hover:bg-gray-400 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaTags className="mr-2" /> Generar Sticker
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirmation(true)}
-              className="bg-red-500 text-white py-1 px-3 rounded-lg shadow hover:bg-red-600 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaTrash className="mr-2" /> Eliminar
-            </button>
-            <button
-              onClick={onBack}
-              className="bg-blue-500 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-600 transition-all duration-300 flex items-center text-sm"
-            >
-              <FaArrowLeft className="mr-2" /> Volver
-            </button>
-          </div>
-          {isActaFormOpen && <ActaBajaForm onClose={() => setIsActaFormOpen(false)} />}
         </>
       ) : (
         <HistorialPrestamos activoId={asset.id!} />
-      )
-      }
+      )}
 
-      {
-        isEditModalOpen && (
-          <FormularioEditarActivo
-            asset={asset}
-            onClose={() => setIsEditModalOpen(false)}
-            onSave={handleSaveEdit}
-          />
-        )
-      }
-    </div >
+      {/* Modal de Proveedor */}
+      {showProveedorModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
+          <div className="bg-white p-6 rounded-md shadow-lg w-80">
+            <h2 className="text-base font-semibold text-gray-700 border-b pb-2 mb-3">
+              Detalles del Proveedor
+            </h2>
+            <div className="space-y-2 text-gray-800 text-xs">
+              <p>
+                <strong>Empresa:</strong> {asset.licitacion?.proveedor?.nombreEmpresa || 'No disponible'}
+              </p>
+              <p>
+                <strong>Vendedor:</strong> {asset.licitacion?.proveedor?.vendedor || 'No disponible'}
+              </p>
+              <p>
+                <strong>Teléfono Empresa:</strong> {asset.licitacion?.proveedor?.telefonoEmpresa || 'No disponible'}
+              </p>
+              <p>
+                <strong>Teléfono Proveedor:</strong> {asset.licitacion?.proveedor?.telefonoProveedor || 'No disponible'}
+              </p>
+              <p>
+                <strong>Email:</strong> {asset.licitacion?.proveedor?.email || 'No disponible'}
+              </p>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowProveedorModal(false)}
+                className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md transition-all duration-300 text-xs"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmación de Eliminación */}
+      {showDeleteConfirmation && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-30">
+          <div className="bg-white p-6 rounded-md shadow-lg z-40 w-80">
+            <h2 className="text-sm font-semibold text-gray-800 mb-4">
+              ¿Deseas eliminar este activo?
+            </h2>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowDeleteConfirmation(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-1 px-3 rounded-md transition-all duration-300 text-xs"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleEliminar(asset.id!)}
+                className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md transition-all duration-300 text-xs"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Acta de Baja y Edición */}
+      {isActaFormOpen && <ActaBajaForm onClose={() => setIsActaFormOpen(false)} />}
+      {isEditModalOpen && (
+        <FormularioEditarActivo asset={asset} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveEdit} />
+      )}
+    </div>
   );
 };
 
