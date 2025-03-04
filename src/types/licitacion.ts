@@ -1,3 +1,6 @@
+import { Ley } from "./ley";
+import { Proveedor } from "./proveedor";
+
 export interface Licitacion {
     id:number
     numActa: number;
@@ -9,6 +12,8 @@ export interface Licitacion {
     fecha: Date;
     idProveedor: number;
     idLey: number;
+    ley?: Ley;
+    proveedor?: Proveedor;
 }
 
 export interface UpdateLicitacionDTO {

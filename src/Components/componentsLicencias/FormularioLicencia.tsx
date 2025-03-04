@@ -1,7 +1,8 @@
 import React from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
-import { useLeyes } from '../../hooks/useLey';
 import { CreateLicenciaDTO } from '../../types/licencia';
+import { useLicitaciones } from '../../hooks/useLicitacion';
+
 
 interface FormularioLicenciaProps {
   onClose: () => void;
@@ -9,14 +10,14 @@ interface FormularioLicenciaProps {
 }
 
 const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
-  const { leyes, loading: loadingLeyes, error: errorLeyes } = useLeyes();
+  const {licitaciones, error, loading } = useLicitaciones();
   const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
     defaultValues: {
       nombre: '',
       descripcion: '',
       codigoLicencia: '',
       modoAdquisicion: 'Ley',
-      leyId: undefined, // Inicializar como undefined
+      licitacionId: undefined,
     },
   });
 
@@ -108,31 +109,31 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
 
           {modoAdquisicion === 'Ley' && (
             <div className="mb-4">
-              <label className="block mb-1">Ley</label>
+              <label className="block mb-1">Licitación</label>
               <Controller
-                name="leyId"
+                name="licitacionId"
                 control={control}
-                rules={{ required: 'Debe Seleccionar una Ley' }}
+                rules={{ required: 'Debe seleccionar una licitación' }}
                 render={({ field }) => (
                   <select
                     {...field}
                     className="w-full border p-2 rounded-md"
-                    disabled={loadingLeyes || errorLeyes !== null}
-                    defaultValue="" // Esto asegura que "Seleccione una ley" sea el valor por defecto
+                    disabled={loading || error !== null}
+                    defaultValue=""
                   >
                     <option value="" disabled hidden>
-                      Seleccione una Ley
+                      Seleccione una Licitación
                     </option>
-                    {leyes?.map((ley) => (
-                      <option key={ley.id} value={ley.id.toString()}>
-                        {ley.nombre}
+                    {licitaciones?.map((licitacion) => (
+                      <option key={licitacion.id} value={licitacion.id.toString()}>
+                        {licitacion.nombre}
                       </option>
                     ))}
                   </select>
                 )}
               />
-              {errors.leyId && <p className="text-red-500 text-sm">{errors.leyId.message}</p>}
-              {errorLeyes && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
+              {errors.licitacionId && <p className="text-red-500 text-sm">{errors.licitacionId.message}</p>}
+              {error && <p className="text-red-500 text-sm mt-1">Error al cargar las Licitaciones.</p>}
             </div>
           )}
 
