@@ -1,203 +1,169 @@
-import React from 'react';
-import { useForm, Controller, useWatch } from 'react-hook-form';
-import { CreateLicenciaDTO } from '../../types/licencia';
-import { useLicitaciones } from '../../hooks/useLicitacion';
+import React, { useState } from 'react';
+import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { useLicencias } from '../../hooks/useLicencia';
+import FormularioLicencia from './FormularioLicencia';
+import DetailLicencia from './DetailLicencia';
+import { CreateLicenciaDTO, Licencia } from '../../types/licencia';
 
+const LicenciasComponent: React.FC = () => {
+  const { licencias, loading, error, addLicencia, updateDisponibilidadLicenciaMutation } = useLicencias();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLicencia, setSelectedLicencia] = useState<Licencia | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [showCompletedMessage, setShowCompletedMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-interface FormularioLicenciaProps {
-  onClose: () => void;
-  onSave: (licencia: CreateLicenciaDTO) => Promise<void>;
-}
-
-const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
-  const {licitaciones, error, loading } = useLicitaciones();
-  const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
-    defaultValues: {
-      nombre: '',
-      descripcion: '',
-      codigoLicencia: '',
-      modoAdquisicion: 'Ley',
-      licitacionId: undefined,
-      vigenciaInicio: undefined,
-      vigenciaFin: undefined,
-    },
-  });
-
-  const modoAdquisicion = useWatch({
-    control,
-    name: 'modoAdquisicion',
-    defaultValue: 'Ley',
-  });
-
-  const onSubmit = async (data: CreateLicenciaDTO) => {
-    await onSave(data);
-    onClose();
+  const handleViewDetails = (licencia: Licencia) => {
+    setSelectedLicencia(licencia);
   };
 
+  const handleUpdateDisponibilidad = async (id: number) => {
+    const licencia = licencias?.find((lic) => lic.id === id);
+    
+    // Verificamos si la licencia ya está "Fuera de Servicio"
+    if (licencia && licencia.disponibilidad === 'Fuera de Servicio') {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+      return; // No cerramos el modal si ya está "Fuera de Servicio"
+    }
+
+    // Procedemos a actualizar la disponibilidad
+    try {
+      await updateDisponibilidadLicenciaMutation.mutateAsync(id);
+      setShowCompletedMessage(true);
+      setTimeout(() => setShowCompletedMessage(false), 3000);
+      setDeleteModalOpen(null); // Cerramos el modal solo si la actualización fue exitosa
+    } catch {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+    }
+  };
+
+  const handleAddLicencia = async (licencia: CreateLicenciaDTO) => {
+    await addLicencia(licencia);
+    setIsModalOpen(false);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedLicencia(null);
+  };
+
+  if (loading) return <p>Cargando licencias...</p>;
+  if (error) return <p>{error.message}</p>;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-        <h2 className="text-lg font-bold mb-4">Agregar Licencia</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-4">
-            <label className="block mb-1">Nombre de la Licencia</label>
-            <Controller
-              name="nombre"
-              control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
-                  placeholder="Nombre de la Licencia"
-                />
-              )}
-            />
-            {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
+    <div className="w-full flex justify-center py-10">
+      <div className="table-container w-full bg-white shadow-lg rounded-lg p-8 relative">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold">Gestión de Licencias</h2>
+          <button
+            className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <FaPlus />
+            <span>Agregar Licencia</span>
+          </button>
+        </div>
+
+        <div className="flex-grow overflow-y-auto">
+          <table className="min-w-full table-auto border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Descripción</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Código de Licencia</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Modo Adquisición</th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {licencias?.map((row) => (
+                <tr key={row.id} className="border-b hover:bg-gray-100">
+                  <td className="px-4 py-2 text-sm">{row.numeroIdentificador}</td>
+                  <td className="px-4 py-2 text-sm">{row.nombre}</td>
+                  <td className="px-4 py-2 text-sm">{row.descripcion}</td>
+                  <td className="px-4 py-2 text-sm">{row.codigoLicencia}</td>
+                  <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
+                  <td className="px-4 py-2 text-sm">
+                    <div className="flex space-x-2">
+                      <button
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
+                        onClick={() => handleViewDetails(row)}
+                      >
+                        <FaEye className="mr-1" />
+                      </button>
+                      <button
+                        className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
+                        onClick={() => setDeleteModalOpen(row.id)}
+                      >
+                        <FaTrash className="mr-1" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex justify-between items-center mt-4">
+          <div>
+            <p className="text-sm text-gray-600">Mostrando {licencias?.length || 0} entradas</p>
           </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Descripción</label>
-            <Controller
-              name="descripcion"
-              control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
-                  placeholder="Descripción"
-                />
-              )}
-            />
-            {errors.descripcion && <p className="text-red-500 text-sm">{errors.descripcion.message}</p>}
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Código de la Licencia</label>
-            <Controller
-              name="codigoLicencia"
-              control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
-                  placeholder="Código de la Licencia"
-                />
-              )}
-            />
-            {errors.codigoLicencia && <p className="text-red-500 text-sm">{errors.codigoLicencia.message}</p>}
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Modo de Adquisición</label>
-            <Controller
-              name="modoAdquisicion"
-              control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
-              render={({ field }) => (
-                <select
-                  {...field}
-                  className={`w-full border p-2 rounded-md ${errors.modoAdquisicion ? 'border-red-500' : ''}`}
-                >
-                  <option value="Ley">Ley</option>
-                  <option value="Donación">Donación</option>
-                </select>
-              )}
-            />
-            {errors.modoAdquisicion && <p className="text-red-500 text-sm">{errors.modoAdquisicion.message}</p>}
-          </div>
-
-          {modoAdquisicion === 'Ley' && (
-            <div className="mb-4">
-              <label className="block mb-1">Licitación</label>
-              <Controller
-                name="licitacionId"
-                control={control}
-                rules={{ required: 'Debe seleccionar una licitación' }}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="w-full border p-2 rounded-md"
-                    disabled={loading || error !== null}
-                    defaultValue=""
-                  >
-                    <option value="" disabled hidden>
-                      Seleccione una Licitación
-                    </option>
-                    {licitaciones?.map((licitacion) => (
-                      <option key={licitacion.id} value={licitacion.id.toString()}>
-                        {licitacion.nombre}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.licitacionId && <p className="text-red-500 text-sm">{errors.licitacionId.message}</p>}
-              {error && <p className="text-red-500 text-sm mt-1">Error al cargar las Licitaciones.</p>}
-            </div>
-          )}
-
-          <div className="mb-4">
-            <label className="block mb-1">Vigencia Inicio</label>
-            <Controller
-              name="vigenciaInicio"
-              control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="date"
-                  value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                  className={`w-full border p-2 rounded-md ${errors.vigenciaInicio ? 'border-red-500' : ''}`}
-                />
-              )}
-            />
-            {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
-
-            <label className="block mb-1 mt-4">Vigencia Fin</label>
-            <Controller
-
-              name="vigenciaFin"
-              control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="date"
-                  value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                  className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
-                />
-              )}
-
-            />
-
-            {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
-
-          </div>
-
-
-
-          <div className="flex justify-end space-x-4 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
+
+      {isModalOpen && (
+        <FormularioLicencia 
+          onClose={() => setIsModalOpen(false)} 
+          onSave={handleAddLicencia} 
+        />
+      )}
+
+      {selectedLicencia && (
+        <DetailLicencia
+          licencia={selectedLicencia}
+          onClose={handleCloseDetail}
+        />
+      )}
+
+      {deleteModalOpen !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Licencia</h2>
+            <p>¿Estás seguro de que deseas marcar esta licencia como "Fuera de Servicio"?</p>
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={() => setDeleteModalOpen(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCompletedMessage && (
+        <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
+          Licencia marcada como Fuera de Servicio.
+        </div>
+      )}
+
+      {showErrorMessage && (
+        <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
+          La Licencia ya está Fuera de Servicio
+        </div>
+      )}
     </div>
   );
 };
 
-export default FormularioLicencia;
+export default LicenciasComponent;
