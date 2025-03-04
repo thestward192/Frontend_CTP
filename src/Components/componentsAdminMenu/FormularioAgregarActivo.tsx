@@ -70,8 +70,8 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
             <FaCheckCircle className="mr-2" />
@@ -79,52 +79,58 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
           </div>
         )}
 
-        <h2 className="text-lg font-bold mb-4">Agregar Activo</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nombre */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nombre</label>
-              <input
-                type="text"
-                {...register('nombre', { required: 'El campo Nombre es obligatorio' })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.nombre ? 'border-red-500' : ''}`}
-              />
-              {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
-            </div>
+        <h2 className="text-xl font-bold mb-4">Agregar Activo</h2>
+        {/* Contenedor interno con scroll para formularios extensos */}
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Nombre */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                <input
+                  type="text"
+                  placeholder="Ingrese nombre"
+                  {...register('nombre', { required: 'El campo Nombre es obligatorio' })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.nombre ? 'border-red-500' : ''}`}
+                />
+                {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
+              </div>
 
-            {/* Marca */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Marca</label>
-              <input
-                type="text"
-                {...register('marca', { required: 'Este campo es obligatorio' })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.marca ? 'border-red-500' : ''}`}
-              />
-              {errors.marca && <span className="text-red-600 text-xs">{errors.marca.message}</span>}
-            </div>
+              {/* Marca */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Marca</label>
+                <input
+                  type="text"
+                  placeholder="Ingrese marca"
+                  {...register('marca', { required: 'Este campo es obligatorio' })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.marca ? 'border-red-500' : ''}`}
+                />
+                {errors.marca && <span className="text-red-600 text-xs">{errors.marca.message}</span>}
+              </div>
 
-            {/* Modelo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Modelo</label>
-              <input
-                type="text"
-                {...register('modelo', { required: 'Este campo es obligatorio' })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.modelo ? 'border-red-500' : ''}`}
-              />
-              {errors.modelo && <span className="text-red-600 text-xs">{errors.modelo.message}</span>}
-            </div>
+              {/* Modelo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Modelo</label>
+                <input
+                  type="text"
+                  placeholder="Ingrese modelo"
+                  {...register('modelo', { required: 'Este campo es obligatorio' })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.modelo ? 'border-red-500' : ''}`}
+                />
+                {errors.modelo && <span className="text-red-600 text-xs">{errors.modelo.message}</span>}
+              </div>
 
-            {/* Serie */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Serie</label>
-              <input
-                type="text"
-                {...register('serie', { required: 'Este campo es obligatorio' })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.serie ? 'border-red-500' : ''}`}
-              />
-              {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
-            </div>
+              {/* Serie */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Serie</label>
+                <input
+                  type="text"
+                  placeholder="Ingrese serie"
+                  {...register('serie', { required: 'Este campo es obligatorio' })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.serie ? 'border-red-500' : ''}`}
+                />
+                {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
+              </div>
 
             {/* Precio (solo se muestra si no es Donación) */}
             {modoAdquisicion !== 'Donación' && (
@@ -146,84 +152,87 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
               </div>
             )}
 
-            {/* Descripción */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Descripción</label>
-              <textarea
-                {...register('descripcion')}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
-            </div>
+              {/* Descripción */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                <textarea
+                  placeholder="Ingrese descripción"
+                  {...register('descripcion')}
+                  className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                />
+              </div>
 
-            {/* Ubicación */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Ubicación</label>
-              <select
-                {...register('ubicacionId', { required: 'Este campo es obligatorio' })}
-                className={`w-full border border-gray-300 p-2 rounded-lg ${errors.ubicacionId ? 'border-red-500' : ''}`}
-              >
-                <option value="">Seleccione una Ubicación</option>
-                {ubicaciones.map((ubicacion) => (
-                  <option key={ubicacion.id} value={ubicacion.id}>
-                    {ubicacion.nombre}
-                  </option>
-                ))}
-              </select>
-              {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
-            </div>
-
-            {/* Licitación (solo si es modo Ley) */}
-            {modoAdquisicion === 'Ley' && (
+              {/* Ubicación */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Licitación</label>
+                <label className="block text-sm font-medium text-gray-700">Ubicación</label>
                 <select
-                  {...register('licitacionId', { required: 'Este campo es obligatorio' })}
-                  className={`w-full border border-gray-300 p-2 rounded-lg ${errors.licitacionId ? 'border-red-500' : ''}`}
+                  {...register('ubicacionId', { required: 'Este campo es obligatorio' })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.ubicacionId ? 'border-red-500' : ''}`}
                 >
-                  <option value="">Seleccione una Licitación</option>
-                  {licitaciones.map((licitacion) => (
-                    <option key={licitacion.id} value={licitacion.id}>
-                      {licitacion.nombre}
+                  <option value="" disabled>Seleccione una Ubicación</option>
+                  {ubicaciones.map((ubicacion) => (
+                    <option key={ubicacion.id} value={ubicacion.id}>
+                      {ubicacion.nombre}
                     </option>
                   ))}
                 </select>
-                {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
+                {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
               </div>
-            )}
 
-            {/* Observaciones */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Observaciones</label>
-              <textarea
-                {...register('observacion')}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
+              {/* Licitación (solo si el modo es "Ley") */}
+              {modoAdquisicion === 'Ley' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Licitación</label>
+                  <select
+                    {...register('licitacionId', { required: 'Este campo es obligatorio' })}
+                    className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.licitacionId ? 'border-red-500' : ''}`}
+                  >
+                    <option value="" disabled>Seleccione una Licitación</option>
+                    {licitaciones.map((licitacion) => (
+                      <option key={licitacion.id} value={licitacion.id}>
+                        {licitacion.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
+                </div>
+              )}
+
+              {/* Observaciones */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+                <textarea
+                  placeholder="Ingrese observaciones"
+                  {...register('observacion')}
+                  className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                />
+              </div>
+
+              {/* Subida de imagen */}
+              <div className="md:col-span-2">
+                <ImageUploader onUpload={onUpload} />
+              </div>
             </div>
 
-            {/* Componente para subir imagen */}
-            <div className="md:col-span-2">
-              <ImageUploader onUpload={onUpload} />
+            {/* Botones de acción */}
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                {loading ? 'Creando...' : 'Crear Activo'}
+              </button>
             </div>
-          </div>
-
-          {/* Botones */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
-            <button
-              type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-              onClick={onClose}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              disabled={loading}
-            >
-              {loading ? 'Creando...' : 'Crear Activo'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
