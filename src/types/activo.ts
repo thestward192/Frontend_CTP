@@ -1,5 +1,6 @@
 import { Ubicacion } from "./ubicacion";
 import { Licitacion } from "./licitacion"; // Importamos el tipo Licitacion
+import { Moneda } from "./moneda";
 
 export interface Activo {
     id?: number; // ID opcional
@@ -13,6 +14,7 @@ export interface Activo {
     numPlaca?: string;
     foto: string;
     precio: number;
+    moneda: Moneda;
     observacion: string;
     modoAdquisicion: string;
     ubicacionId: number;

@@ -186,8 +186,12 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                   <div>
                     <p className="text-xs font-medium text-gray-600">Precio</p>
                     <p className="text-gray-800">
-                      {asset.precio ? `$${asset.precio.toFixed(2)}` : 'No disponible'}
-                    </p>
+                  {asset?.precio == 0 
+                    ? 'Donación' 
+                    : (asset.moneda === "CRC" ? "₡" : "$") + asset.precio.toLocaleString("es-CR", { 
+                      style: "currency", 
+                      currency: asset.moneda === "CRC" ? "CRC" : "USD" })}
+                </p>
                   </div>
                 </div>
               </div>
