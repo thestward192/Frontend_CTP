@@ -9,13 +9,14 @@ interface DetailLicenciaProps {
 
 const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [showProveedorModal, setShowProveedorModal] = useState(false);
 
   if (!licencia) return null; // No mostrar nada si no hay licencia seleccionada
 
   // Maneja el cierre del modal de edición y cierra el detalle también
   const handleCloseEdit = () => {
     setIsEditing(false);
-    onClose(); // Asegúrate de que también se cierra DetailLicencia después de guardar
+    onClose(); // Asegurar que también se cierre DetailLicencia después de guardar
   };
 
   console.log("Fechas: ", licencia.vigenciaInicio, licencia.vigenciaFin);
@@ -28,13 +29,21 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) =>
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
             <h2 className="text-lg font-bold mb-4">Detalles de la Licencia</h2>
+            <p><strong>No Identificador:</strong> {licencia.numeroIdentificador}</p>
             <p><strong>Nombre:</strong> {licencia.nombre}</p>
             <p><strong>Descripción:</strong> {licencia.descripcion}</p>
             <p><strong>Código de Licencia:</strong> {licencia.codigoLicencia}</p>
             <p><strong>Modo Adquisición:</strong> {licencia.modoAdquisicion}</p>
             <p>
-              <strong>Nombre de la Ley:</strong>{' '}
-              {licencia.modoAdquisicion === 'Ley' && licencia.ley ? licencia.ley.nombre : 'No aplica'}
+              <strong>Licitación:</strong>{' '}
+              {licencia.modoAdquisicion === 'Ley' && licencia.licitacion ? (
+                <span
+                  className="text-blue-600 cursor-pointer hover:underline focus:outline-none"
+                  onClick={() => setShowProveedorModal(true)}
+                >
+                  {licencia.licitacion.nombre}
+                </span>
+              ) : 'No aplica'}
             </p>
             <p><strong>Disponibilidad:</strong> {licencia.disponibilidad}</p>
             <p><strong>Vigencia de la Licencia:</strong> {new Date(licencia.vigenciaInicio + "T00:00:00").toLocaleDateString()} - {new Date(licencia.vigenciaFin + "T00:00:00").toLocaleDateString()}</p>
@@ -47,9 +56,32 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) =>
               </button>
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                onClick={() => setIsEditing(true)} // Activar modo de edición
+                onClick={() => setIsEditing(true)}
               >
                 Editar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal del proveedor */}
+      {showProveedorModal && licencia.licitacion?.proveedor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Detalles del Proveedor</h2>
+            <p><strong>Empresa:</strong> {licencia.licitacion.proveedor.nombreEmpresa}</p>
+            <p><strong>Vendedor:</strong> {licencia.licitacion.proveedor.vendedor}</p>
+            <p><strong>Teléfono Empresa:</strong> {licencia.licitacion.proveedor.telefonoEmpresa}</p>
+            <p><strong>Teléfono Vendedor:</strong> {licencia.licitacion.proveedor.telefonoProveedor}</p>
+            <p><strong>Email:</strong> {licencia.licitacion.proveedor.email}</p>
+
+            <div className="flex justify-end mt-4">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                onClick={() => setShowProveedorModal(false)}
+              >
+                Cerrar
               </button>
             </div>
           </div>

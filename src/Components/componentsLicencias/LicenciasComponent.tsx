@@ -18,7 +18,7 @@ const LicenciasComponent: React.FC = () => {
   };
 
   const handleUpdateDisponibilidad = async (id: number) => {
-    const licencia = licencias.find((lic) => lic.id === id);
+    const licencia = licencias?.find((lic) => lic.id === id);
     
     // Verificamos si la licencia ya está "Fuera de Servicio"
     if (licencia && licencia.disponibilidad === 'Fuera de Servicio') {
@@ -69,6 +69,7 @@ const LicenciasComponent: React.FC = () => {
           <table className="min-w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-50">
+                <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Descripción</th>
                 <th className="px-4 py-2 text-gray-600 font-semibold">Código de Licencia</th>
@@ -79,6 +80,7 @@ const LicenciasComponent: React.FC = () => {
             <tbody>
               {licencias?.map((row) => (
                 <tr key={row.id} className="border-b hover:bg-gray-100">
+                  <td className="px-4 py-2 text-sm">{row.numeroIdentificador}</td>
                   <td className="px-4 py-2 text-sm">{row.nombre}</td>
                   <td className="px-4 py-2 text-sm">{row.descripcion}</td>
                   <td className="px-4 py-2 text-sm">{row.codigoLicencia}</td>

@@ -25,7 +25,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     observacion: asset.observacion,
     ubicacionId: asset.ubicacion?.id || 0,
     modoAdquisicion: asset.modoAdquisicion,
-    licitacionId: asset.licitacion?.id || '', // Aseguramos que el licitacionId sea el valor del ID de la licitación
+    licitacionId: asset.licitacion?.id || '',
   });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);

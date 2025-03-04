@@ -1,8 +1,8 @@
 import React from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { Licencia } from '../../types/licencia';
-import { useLeyes } from '../../hooks/useLey';
 import { useLicencias } from '../../hooks/useLicencia';
+import { useLicitaciones } from '../../hooks/useLicitacion';
 
 interface EditLicenciaProps {
   licencia: Licencia;
@@ -11,7 +11,7 @@ interface EditLicenciaProps {
 
 const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
   const { updateLicencia } = useLicencias();
-  const { leyes, loading: leyesLoading, error: leyesError } = useLeyes();
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones()
 
   const { handleSubmit, control, formState: { errors } } = useForm<Licencia>({
     defaultValues: {
@@ -20,7 +20,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
       descripcion: licencia.descripcion,
       codigoLicencia: licencia.codigoLicencia,
       modoAdquisicion: licencia.modoAdquisicion,
-      leyId: licencia.leyId || undefined,
+      licitacionId: licencia.licitacion ? licencia.licitacion.id.toString() : '',
       vigenciaFin: licencia.vigenciaFin,
       vigenciaInicio: licencia.vigenciaInicio,
     },
@@ -117,30 +117,30 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           {modoAdquisicion === 'Ley' && (
             <div className="mb-4">
-              <label className="block mb-1">Ley</label>
+              <label className="block mb-1">Licitación</label>
               <Controller
-                name="leyId"
+                name="licitacionId"
                 control={control}
                 render={({ field }) => (
                   <select
                     {...field}
                     className="w-full border p-2 rounded-md"
-                    disabled={leyesLoading || leyesError !== null}
-                    defaultValue="" // Esto asegura que "Seleccione una ley" sea el valor por defecto
+                    disabled={licitacionesLoading || licitacionesError !== null}
+                    defaultValue="" // Esto asegura que "Seleccione una licitación" sea el valor por defecto
                   >
                     <option value="" disabled hidden>
-                      Seleccione una ley
+                      Seleccione una licitación
                     </option>
-                    {leyes?.map((ley) => (
-                      <option key={ley.id} value={ley.id.toString()}>
-                        {ley.nombre}
+                    {licitaciones?.map((licitacion) => (
+                      <option key={licitacion.id} value={licitacion.id.toString()}>
+                        {licitacion.nombre}
                       </option>
                     ))}
                   </select>
                 )}
               />
-              {errors.leyId && <p className="text-red-500 text-sm">{errors.leyId.message}</p>}
-              {leyesError && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
+              {errors.licitacionId && <p className="text-red-500 text-sm">{errors.licitacionId.message}</p>}
+              {licitacionesError && <p className="text-red-500 text-sm mt-1">Error al cargar las licitaciones.</p>}
             </div>
           )}
 
