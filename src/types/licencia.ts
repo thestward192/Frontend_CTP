@@ -10,6 +10,8 @@ export interface Licencia {
     disponibilidad?: string;
     licitacionId?: number;
     licitacion?: Licitacion;
+    vigenciaInicio: Date;
+    vigenciaFin: Date;
 }
 
 // types/dtos.ts
@@ -21,5 +23,6 @@ export interface CreateLicenciaDTO {
     modoAdquisicion: string;
     disponibilidad?: string;
     licitacionId?: number;
+    vigenciaInicio: Date;
+    vigenciaFin: Date;
   }
-  
