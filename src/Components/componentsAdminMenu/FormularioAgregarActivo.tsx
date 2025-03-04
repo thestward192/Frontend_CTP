@@ -4,6 +4,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
 import { Licitacion } from '../../types/licitacion';
 import { Ubicacion } from '../../types/ubicacion';
+import { Moneda } from '../../types/moneda';  // <--- Importamos el enum de moneda
 import { getUbicaciones } from '../../Services/ubicacionService';
 import { getLicitaciones } from '../../Services/licitacionService';
 import { useActivos } from '../../hooks/useActivo';
@@ -14,17 +15,32 @@ interface FormularioAgregarActivoProps {
   modoAdquisicion: string;
 }
 
-const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Omit<Activo, 'id'>>();
+const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({
+  onClose,
+  modoAdquisicion,
+}) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+  } = useForm<Omit<Activo, 'id'>>();
+
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+  const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON); // Estado para la moneda
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { handleCreateActivo, loading } = useActivos();
 
+  // Cargar ubicaciones y licitaciones
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ubicacionesData, licitacionesData] = await Promise.all([getUbicaciones(), getLicitaciones()]);
+        const [ubicacionesData, licitacionesData] = await Promise.all([
+          getUbicaciones(),
+          getLicitaciones(),
+        ]);
         setUbicaciones(ubicacionesData);
         setLicitaciones(licitacionesData);
       } catch (error) {
@@ -34,18 +50,29 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     fetchData();
   }, []);
 
+  // Configurar modoAdquisicion y precio (si es Donación = 0)
   useEffect(() => {
     if (modoAdquisicion === 'Donación') {
-      setValue('precio', 0); // Si es donación, el precio se establece en 0
+      setValue('precio', 0);
     }
     setValue('modoAdquisicion', modoAdquisicion);
-  }, [modoAdquisicion, setValue]);
+    // Establecemos la moneda inicial en el formulario
+    setValue('moneda', moneda);
+  }, [modoAdquisicion, moneda, setValue]);
 
-  // Guarda la URL de la imagen en el campo 'foto'
+  // Función para alternar la moneda
+  const handleButtonMonedaSwitch = () => {
+    const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+    setMoneda(nuevaMoneda);
+    setValue('moneda', nuevaMoneda); // Actualizamos en el formulario
+  };
+
+  // Subir imagen y guardar URL
   const onUpload = (url: string) => {
     setValue('foto', url);
   };
 
+  // Enviar datos
   const onSubmit = async (data: Omit<Activo, 'id'>) => {
     try {
       console.log('Datos enviados al servidor:', data);
@@ -78,68 +105,122 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nombre */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Nombre
+                </label>
                 <input
                   type="text"
                   placeholder="Ingrese nombre"
-                  {...register('nombre', { required: 'El campo Nombre es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.nombre ? 'border-red-500' : ''}`}
+                  {...register('nombre', {
+                    required: 'El campo Nombre es obligatorio',
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.nombre ? 'border-red-500' : ''
+                  }`}
                 />
-                {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
+                {errors.nombre && (
+                  <span className="text-red-600 text-xs">
+                    {errors.nombre.message}
+                  </span>
+                )}
               </div>
 
               {/* Marca */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Marca</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Marca
+                </label>
                 <input
                   type="text"
                   placeholder="Ingrese marca"
-                  {...register('marca', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.marca ? 'border-red-500' : ''}`}
+                  {...register('marca', {
+                    required: 'Este campo es obligatorio',
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.marca ? 'border-red-500' : ''
+                  }`}
                 />
-                {errors.marca && <span className="text-red-600 text-xs">{errors.marca.message}</span>}
+                {errors.marca && (
+                  <span className="text-red-600 text-xs">
+                    {errors.marca.message}
+                  </span>
+                )}
               </div>
 
               {/* Modelo */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Modelo</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Modelo
+                </label>
                 <input
                   type="text"
                   placeholder="Ingrese modelo"
-                  {...register('modelo', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.modelo ? 'border-red-500' : ''}`}
+                  {...register('modelo', {
+                    required: 'Este campo es obligatorio',
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.modelo ? 'border-red-500' : ''
+                  }`}
                 />
-                {errors.modelo && <span className="text-red-600 text-xs">{errors.modelo.message}</span>}
+                {errors.modelo && (
+                  <span className="text-red-600 text-xs">
+                    {errors.modelo.message}
+                  </span>
+                )}
               </div>
 
               {/* Serie */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Serie</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Serie
+                </label>
                 <input
                   type="text"
                   placeholder="Ingrese serie"
-                  {...register('serie', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.serie ? 'border-red-500' : ''}`}
+                  {...register('serie', {
+                    required: 'Este campo es obligatorio',
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.serie ? 'border-red-500' : ''
+                  }`}
                 />
-                {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
+                {errors.serie && (
+                  <span className="text-red-600 text-xs">
+                    {errors.serie.message}
+                  </span>
+                )}
               </div>
 
-              {/* Precio (solo se muestra si no es Donación) */}
+              {/* Precio + moneda (solo se muestra si no es Donación) */}
               {modoAdquisicion !== 'Donación' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Precio</label>
-                  <input
-                    type="number"
-                    placeholder="Ingrese precio"
-                    {...register('precio', { valueAsNumber: true })}
-                    className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
-                  />
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Precio ({moneda === Moneda.COLON ? '₡' : '$'})
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      step={0.01}
+                      placeholder="Ingrese precio"
+                      {...register('precio', { valueAsNumber: true })}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    />
+                    <button
+                      type="button"
+                      className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                      onClick={handleButtonMonedaSwitch}
+                    >
+                      {moneda === Moneda.COLON ? '₡' : '$'}
+                    </button>
+                  </div>
                 </div>
               )}
 
               {/* Descripción */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Descripción
+                </label>
                 <textarea
                   placeholder="Ingrese descripción"
                   {...register('descripcion')}
@@ -147,45 +228,67 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 />
               </div>
 
-              {/* Ubicación */}
+              {/* Ubicación (sin opción por defecto seleccionada) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700">Ubicación</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Ubicación
+                </label>
                 <select
-                  {...register('ubicacionId', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.ubicacionId ? 'border-red-500' : ''}`}
+                  {...register('ubicacionId', {
+                    required: 'Este campo es obligatorio',
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.ubicacionId ? 'border-red-500' : ''
+                  }`}
                 >
-                  <option value="" disabled>Seleccione una Ubicación</option>
+                  <option value="">Seleccione una Ubicación</option>
                   {ubicaciones.map((ubicacion) => (
                     <option key={ubicacion.id} value={ubicacion.id}>
                       {ubicacion.nombre}
                     </option>
                   ))}
                 </select>
-                {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
+                {errors.ubicacionId && (
+                  <span className="text-red-600 text-xs">
+                    {errors.ubicacionId.message}
+                  </span>
+                )}
               </div>
 
-              {/* Licitación (solo si el modo es "Ley") */}
+              {/* Licitación (solo si es "Ley", sin opción por defecto) */}
               {modoAdquisicion === 'Ley' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Licitación</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Licitación
+                  </label>
                   <select
-                    {...register('licitacionId', { required: 'Este campo es obligatorio' })}
-                    className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.licitacionId ? 'border-red-500' : ''}`}
+                    {...register('licitacionId', {
+                      required: 'Este campo es obligatorio',
+                    })}
+                    className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                      errors.licitacionId ? 'border-red-500' : ''
+                    }`}
                   >
-                    <option value="" disabled>Seleccione una Licitación</option>
+                    <option value="">Seleccione una Licitación</option>
                     {licitaciones.map((licitacion) => (
                       <option key={licitacion.id} value={licitacion.id}>
                         {licitacion.nombre}
                       </option>
                     ))}
                   </select>
-                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
+                  {errors.licitacionId && (
+                    <span className="text-red-600 text-xs">
+                      {errors.licitacionId.message}
+                    </span>
+                  )}
                 </div>
               )}
 
               {/* Observaciones */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Observaciones
+                </label>
                 <textarea
                   placeholder="Ingrese observaciones"
                   {...register('observacion')}
