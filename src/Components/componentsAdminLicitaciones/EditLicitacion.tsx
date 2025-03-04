@@ -3,6 +3,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { Licitacion, UpdateLicitacionDTO } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
 import { useProveedores } from '../../hooks/useProveedor';
+import { Moneda } from '../../types/moneda';
 
 interface EditLicitacionFormProps {
   licitacion: Licitacion;
@@ -14,7 +15,9 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
   const { leyes, loading: leyesLoading } = useLeyes();
   const { proveedores, loading: proveedoresLoading } = useProveedores();
   
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<UpdateLicitacionDTO>();
+  const [moneda, setMoneda] = React.useState(licitacion.moneda);
+
+  const { register, handleSubmit, setValue ,formState: { errors }, reset } = useForm<UpdateLicitacionDTO>();
 
   // Uso de useEffect para inicializar los valores cuando licitacion está disponible
   useEffect(() => {
@@ -23,6 +26,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
       numLicitacion: licitacion.numLicitacion,
       nombre: licitacion.nombre,
       monto: licitacion.monto,
+      moneda: licitacion.moneda,
       descripcion: licitacion.descripcion,
       fecha: licitacion.fecha ? licitacion.fecha.split('T')[0] : '', 
       idProveedor: licitacion.idProveedor,
@@ -37,6 +41,12 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
     });
   };
 
+  const handleButtonMonedaSwitch = () => {
+    const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+    setMoneda(nuevaMoneda);
+    setValue("moneda", nuevaMoneda);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
@@ -45,7 +55,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
           <div className="mb-4">
             <label className="block mb-1">Número de Acta</label>
             <input
-              type="number"
+              type="text"
               {...register('numActa', { required: 'El número de acta es requerido' })}
               className="w-full border p-2 rounded-md"
             />
@@ -71,12 +81,24 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
           </div>
           <div className="mb-4">
             <label className="block mb-1">Monto</label>
-            <input
-              type="number"
-              {...register('monto', { required: 'El monto es requerido' })}
-              className="w-full border p-2 rounded-md"
-            />
-            {errors.monto && <span className="text-red-500">{errors.monto.message}</span>}
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        step={0.01} 
+                        id="monto"
+                        {...register("monto", { required: "El monto es requerido" })}
+                        className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                        placeholder="Ingrese monto"
+                      />
+                      <button
+                        type="button"
+                        className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
+                        onClick={handleButtonMonedaSwitch}
+                      >
+                        {moneda === Moneda.COLON ? "CRC" : "USD"}
+                      </button>
+                    </div>
+                    {errors.monto && <span className="text-red-500">{errors.monto.message}</span>}
           </div>
           <div className="col-span-2 mb-4">
             <label className="block mb-1">Descripción</label>
@@ -121,7 +143,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
               <option value="" disabled>Seleccionar Proveedor</option>
               {(proveedores || []).map((proveedor) => (
                 <option key={proveedor.id} value={proveedor.id}>
-                  {proveedor.nombreProveedor}
+                  {proveedor.vendedor}
                 </option>
               ))}
             </select>

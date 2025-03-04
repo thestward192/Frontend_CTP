@@ -17,6 +17,8 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
       codigoLicencia: '',
       modoAdquisicion: 'Ley',
       leyId: undefined, // Inicializar como undefined
+      vigenciaInicio: undefined,
+      vigenciaFin: undefined,
     },
   });
 
@@ -135,6 +137,46 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               {errorLeyes && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
             </div>
           )}
+
+          <div className="mb-4">
+            <label className="block mb-1">Vigencia Inicio</label>
+            <Controller
+              name="vigenciaInicio"
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="date"
+                  value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                  className={`w-full border p-2 rounded-md ${errors.vigenciaInicio ? 'border-red-500' : ''}`}
+                />
+              )}
+            />
+            {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
+
+            <label className="block mb-1 mt-4">Vigencia Fin</label>
+            <Controller
+
+              name="vigenciaFin"
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="date"
+                  value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                  className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
+                />
+              )}
+
+            />
+
+            {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
+
+          </div>
+
+
 
           <div className="flex justify-end space-x-4 mt-6">
             <button

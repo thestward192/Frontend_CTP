@@ -63,7 +63,7 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     try {
       const dataToSubmit = { ...formData };
       dataToSubmit.precio = Number(dataToSubmit.precio);
-      dataToSubmit.numPlaca = Number(dataToSubmit.numPlaca);
+      dataToSubmit.numPlaca = String(dataToSubmit.numPlaca);
 
       await createActivo(dataToSubmit);
       onClose();

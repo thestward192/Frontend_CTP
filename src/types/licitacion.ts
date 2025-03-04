@@ -1,12 +1,14 @@
 import { Ley } from "./ley";
+import { Moneda } from "./moneda";
 import { Proveedor } from "./proveedor";
 
 export interface Licitacion {
     id:number
-    numActa: number;
+    numActa: string;
     numLicitacion: number;
     nombre: string;
     monto: number;
+    moneda: Moneda;
     descripcion: string;
     disponibilidad?: string;
     fecha: Date;
@@ -17,10 +19,11 @@ export interface Licitacion {
 }
 
 export interface UpdateLicitacionDTO {
-    numActa?: number;
+    numActa?: string;
     numLicitacion?: number;
     nombre?: string;
     monto?: number;
+    moneda?: Moneda;
     descripcion?: string;
     disponibilidad?: string;
     fecha?: Date;

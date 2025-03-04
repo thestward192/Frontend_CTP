@@ -8,6 +8,7 @@ import { getUbicaciones } from '../../Services/ubicacionService';
 import { getLicitaciones } from '../../Services/licitacionService';
 import { useActivos } from '../../hooks/useActivo';
 import ImageUploader from './ImageUploader';
+import { Moneda } from '../../types/moneda';
 
 interface FormularioAgregarActivoProps {
   onClose: () => void;
@@ -15,9 +16,10 @@ interface FormularioAgregarActivoProps {
 }
 
 const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Omit<Activo, 'id'>>();
+  const { register, handleSubmit ,formState: { errors }, reset, setValue } = useForm<Omit<Activo, 'id'>>();
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+  const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { handleCreateActivo, loading } = useActivos();
 
@@ -40,6 +42,12 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     }
     setValue('modoAdquisicion', modoAdquisicion);
   }, [modoAdquisicion, setValue]);
+
+    const handleButtonMonedaSwitch = () => {
+      const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+      setMoneda(nuevaMoneda);
+      setValue("moneda", nuevaMoneda);
+    };
 
   // Guarda la URL de la foto en el campo 'foto'
   const onUpload = (url: string) => {
@@ -120,13 +128,21 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
 
             {/* Precio (solo se muestra si no es Donación) */}
             {modoAdquisicion !== 'Donación' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Precio</label>
+              <div className="flex items-center space-x-2">
+                <label className="block text-sm font-medium text-gray-700">Precio ({moneda === Moneda.COLON ? "₡" : "$"})</label>
                 <input
                   type="number"
+                  step={0.01}
                   {...register('precio', { valueAsNumber: true })}
                   className="w-full border border-gray-300 p-2 rounded-lg"
                 />
+                <button
+                  type="button"
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
+                  onClick={handleButtonMonedaSwitch}
+                >
+                  {moneda === Moneda.COLON ? "₡" : "$"}
+                </button>
               </div>
             )}
 

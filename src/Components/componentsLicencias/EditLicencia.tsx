@@ -21,6 +21,8 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
       codigoLicencia: licencia.codigoLicencia,
       modoAdquisicion: licencia.modoAdquisicion,
       leyId: licencia.leyId || undefined,
+      vigenciaFin: licencia.vigenciaFin,
+      vigenciaInicio: licencia.vigenciaInicio,
     },
   });
 
@@ -141,6 +143,42 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
               {leyesError && <p className="text-red-500 text-sm mt-1">Error al cargar las leyes.</p>}
             </div>
           )}
+
+          <div className="mb-4">
+            <label className="block mb-1">Vigencia de Inicio</label>
+              <Controller
+                name="vigenciaInicio"
+                control={control}
+                rules={{ required: 'Este campo es obligatorio' }}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="date"
+                    value={field.value ?  new Date(field.value).toISOString().split('T')[0] : ''}
+                    className={`w-full border p-2 rounded-md ${errors.vigenciaInicio ? 'border-red-500' : ''}`}
+                  />
+                )}
+              />
+              {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
+          </div>
+
+          <div className="mb-4">
+              <label className="block mb-1">Vigencia de Fin</label>
+              <Controller
+                name="vigenciaFin"
+                control={control}
+                rules={{ required: 'Este campo es obligatorio' }}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="date"
+                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                    className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
+                  />
+                )}
+              />
+              {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
+          </div>
 
           <div className="flex justify-end space-x-4 mt-6">
             <button

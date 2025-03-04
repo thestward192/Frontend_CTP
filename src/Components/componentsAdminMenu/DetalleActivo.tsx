@@ -191,7 +191,13 @@ const handleSaveEdit = async (updatedData: Partial<Activo>) => {
 
               <div className="border-t border-gray-200 py-2 w-full">
                 <p className="text-sm font-semibold text-gray-600">Precio</p>
-                <p className="text-gray-800">{asset.precio ? `$${asset.precio.toFixed(2)}` : 'No disponible'}</p>
+                <p className="text-gray-800">
+                  {asset?.precio == 0 
+                    ? 'Donación' 
+                    : (asset.moneda === "CRC" ? "₡" : "$") + asset.precio.toLocaleString("es-CR", { 
+                      style: "currency", 
+                      currency: asset.moneda === "CRC" ? "CRC" : "USD" })}
+                </p>
               </div>
 
               <div className="border-t border-gray-200 py-2 w-full">

@@ -63,6 +63,10 @@ const LicitacionesComponent: React.FC = () => {
     setDetailModalOpen(true);
   };
 
+  const formatMonto = (monto: number) => {
+    return new Intl.NumberFormat("es-CR").format(monto);
+  };
+
   const startEdit = () => setIsEditing(true);
   const closeDetails = () => {
     setIsEditing(false);
@@ -119,7 +123,10 @@ const LicitacionesComponent: React.FC = () => {
                     <td className="px-4 py-2 text-sm">{licitacion.id}</td>
                     <td className="px-4 py-2 text-sm">{licitacion.numActa}</td>
                     <td className="px-4 py-2 text-sm">{licitacion.numLicitacion}</td>
-                    <td className="px-4 py-2 text-sm">${licitacion.monto}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {licitacion.moneda === "CRC" ? "₡" : "$"}
+                      {licitacion.monto.toLocaleString("es-CR", { minimumFractionDigits: 2 })}
+                      </td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex space-x-2">
                         <button

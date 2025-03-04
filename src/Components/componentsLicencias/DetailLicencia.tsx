@@ -18,6 +18,8 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) =>
     onClose(); // Asegúrate de que también se cierra DetailLicencia después de guardar
   };
 
+  console.log("Fechas: ", licencia.vigenciaInicio, licencia.vigenciaFin);
+
   return (
     <>
       {isEditing ? (
@@ -35,6 +37,7 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) =>
               {licencia.modoAdquisicion === 'Ley' && licencia.ley ? licencia.ley.nombre : 'No aplica'}
             </p>
             <p><strong>Disponibilidad:</strong> {licencia.disponibilidad}</p>
+            <p><strong>Vigencia de la Licencia:</strong> {new Date(licencia.vigenciaInicio + "T00:00:00").toLocaleDateString()} - {new Date(licencia.vigenciaFin + "T00:00:00").toLocaleDateString()}</p>
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"

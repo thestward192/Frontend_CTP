@@ -7,6 +7,7 @@ export interface User {
     email: string;
     disponibilidad?: string;
     descripcion?: string;
+    contraseña?: string;
     rol: {
       id: number;
       nombre: string;

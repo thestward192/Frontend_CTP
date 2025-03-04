@@ -11,7 +11,7 @@ interface FormularioEditarUsuarioProps {
 }
 
 const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userId, onClose, onSave }) => {
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Partial<User>>(); 
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<Partial<User>>(); 
   const [user, setUser] = useState<User | null>(null);
 
   // Usamos el hook de ubicaciones para traer las ubicaciones y manejar el loading y error.
@@ -33,6 +33,8 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
 
     fetchUserDetails();
   }, [userId, setValue]);
+
+  const contraseña = watch('contraseña');
 
   const handleUbicacionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
     const newUbicacionIds = [...(user?.ubicaciones || [])];
@@ -105,6 +107,32 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               {errors.email && <p className="text-red-500">{errors.email.message}</p>}
             </div>
           </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700">Contraseña</label>
+            <input
+              type="password"
+              autoComplete='off'
+              {...register('contraseña')}
+              className="w-full border border-gray-300 p-2 rounded-lg"
+            />
+            {errors.contraseña && <p className="text-red-500">{errors.contraseña.message}</p>}
+          </div> 
+
+          <div className="mb-4">
+              <label className="block text-gray-700">Confirmar Contraseña</label>
+              <input
+                type="password"
+                {...register('confirmarContraseña', {
+                  required: 'Confirma la contraseña',
+                  validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
+                })}
+                placeholder="Confirma tu contraseña"
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              />
+              {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
+            </div>
+
 
           {/* Manejo de ubicaciones */}
           {user.ubicaciones && user.ubicaciones.map((ubicacion, index) => (
