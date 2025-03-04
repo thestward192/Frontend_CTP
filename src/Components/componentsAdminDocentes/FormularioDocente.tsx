@@ -14,17 +14,20 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion(); // Usamos el hook de ubicaciones
   const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
 
-  const { register, handleSubmit, control, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit,watch, control, formState: { errors }, reset } = useForm({
     defaultValues: {
       nombre: '',
       apellido_1: '',
       apellido_2: '',
       email: '',
       contraseña: '',
+      confirmarContraseña: '',
       rolId: 0,
       ubicacionIds: [] as number[],
     },
   });
+
+  const contraseña =watch('contraseña');
 
   const onSubmit = async (data: any) => {
     try {
@@ -111,7 +114,20 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.contraseña && <p className="text-red-500">{errors.contraseña.message}</p>}
             </div>
-
+            
+            <div className="mb-4">
+              <label className="block text-gray-700">Confirmar Contraseña</label>
+              <input
+                type="password"
+                {...register('confirmarContraseña', {
+                  required: 'Confirma la contraseña',
+                  validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
+                })}
+                placeholder="Confirma tu contraseña"
+                className="w-full border border-gray-300 p-2 rounded-lg"
+              />
+              {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
+            </div>
             <div className="mb-4">
               <label className="block text-gray-700">Rol</label>
               <select
