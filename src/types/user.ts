@@ -8,6 +8,7 @@ export interface User {
     disponibilidad?: string;
     descripcion?: string;
     contraseña?: string;
+    confirmarContraseña?: string;
     rol: {
       id: number;
       nombre: string;
@@ -36,6 +37,7 @@ export interface User {
     apellido_2: string;
     email?: string;
     contraseña?: string;
+    confirmarContraseña?: string;
     descripcion?: string;
     rolId?: number;
     ubicacionIds?: number[];

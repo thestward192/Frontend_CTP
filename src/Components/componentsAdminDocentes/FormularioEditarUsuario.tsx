@@ -55,8 +55,16 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   };
 
   const onSubmit = (data: Partial<User>) => {
+    const updatePasswordData = { ...data };
+    if (!contraseña) {
+      delete updatePasswordData.contraseña;
+      onSave(userId, { ...updatePasswordData, ubicaciones: user?.ubicaciones || [] });
+      onClose();
+    }
+    else {
     onSave(userId, { ...data, ubicaciones: user?.ubicaciones || [] });
     onClose();
+    }
   };
 
   if (!user) return null;
@@ -124,7 +132,6 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               <input
                 type="password"
                 {...register('confirmarContraseña', {
-                  required: 'Confirma la contraseña',
                   validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
                 })}
                 placeholder="Confirma tu contraseña"
