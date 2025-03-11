@@ -44,16 +44,17 @@ const DetailUsuarios: React.FC<DetailUsuariosProps> = ({ userId, onClose, onEdit
         <p><strong>Disponibilidad:</strong> {user.disponibilidad}</p>
 
         <div className="flex justify-end space-x-2 mt-4">
-          <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
-            Cerrar
-          </button>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            onClick={() => onEdit(userId)} // Llamar la función onEdit con el ID del usuario
+            onClick={() => onEdit(userId)}
           >
             Editar
           </button>
+          <button className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
+            Cerrar
+          </button>
         </div>
+
       </div>
     </div>
   );

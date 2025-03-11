@@ -83,8 +83,13 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             />
           </div>
 
-          {/* Botones de Crear y Cancelar */}
           <div className="flex justify-end space-x-2">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              Guardar
+            </button>
             <button
               type="button"
               onClick={onClose}
@@ -92,13 +97,8 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            >
-              Guardar
-            </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -258,19 +258,20 @@ const FormularioActivo: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {/* Botones */}
           <div className="sticky bottom-0 bg-white pt-4 flex justify-end space-x-4">
             <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+            >
+              Crear
+            </button>
+            <button
               type="button"
               onClick={onClose}
               className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600"
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-            >
-              Crear
-            </button>
           </div>
+          
         </form>
       </div>
     </div>

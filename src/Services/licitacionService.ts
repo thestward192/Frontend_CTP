@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { Licitacion, UpdateLicitacionDTO } from '../types/licitacion';
 
-// URL base para las peticiones
-const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion'; // Cambia la URL según tu backend
+
+// const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
+
+const API_URL = 'http://localhost:3000/licitacion';
 
 // Servicio para obtener todas las licitaciones
 export const getLicitaciones = async (): Promise<Licitacion[]> => {

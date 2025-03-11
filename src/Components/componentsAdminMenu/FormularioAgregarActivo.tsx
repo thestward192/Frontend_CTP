@@ -217,20 +217,21 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
             {/* Botones de acción */}
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
               <button
-                type="button"
-                onClick={onClose}
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-              >
-                Cancelar
-              </button>
-              <button
                 type="submit"
                 disabled={loading}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 {loading ? 'Creando...' : 'Crear Activo'}
               </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              >
+                Cancelar
+              </button>
             </div>
+            
           </form>
         </div>
       </div>

@@ -91,7 +91,7 @@ const TableInventarioDocente: React.FC = () => {
               <tbody>
                 {paginatedData.map((row) => (
                   <tr key={row.id} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => handleRowClick(row)}>
-                    <td className="px-4 py-2 text-sm">{row.id}</td>
+                    <td className="px-4 py-2 text-sm">{row.numPlaca}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.marca}</td>
                     <td className="px-4 py-2 text-sm">{row.serie}</td>

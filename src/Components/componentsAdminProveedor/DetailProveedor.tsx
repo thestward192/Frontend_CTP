@@ -26,6 +26,12 @@ const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, o
 
         <div className="flex justify-end space-x-4 mt-6">
           <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            onClick={onEdit}
+          >
+            Editar
+          </button>
+          <button
             className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             onClick={() => {
               onClose();
@@ -33,13 +39,8 @@ const DetailProveedor: React.FC<DetailProveedorProps> = ({ proveedor, onClose, o
           >
             Cerrar
           </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            onClick={onEdit}
-          >
-            Editar
-          </button>
         </div>
+        
       </div>
     </div>
   );

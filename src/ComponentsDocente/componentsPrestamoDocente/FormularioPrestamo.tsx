@@ -167,14 +167,15 @@ const FormularioPrestamo: React.FC<FormularioPrestamoProps> = ({ activo, onSubmi
           onChange={(e) => setFechaDevolucion(e.target.value)}
         />
 
-        <div className="flex justify-between">
-          <button className="bg-red-500 text-white px-4 py-2 rounded-md" onClick={onCancel}>
-            Cancelar
-          </button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded-md" onClick={handleSubmit}>
+        <div className="flex justify-around">
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={handleSubmit}>
             Confirmar
           </button>
+          <button className="bg-gray-500 text-white px-4 py-2 rounded-md" onClick={onCancel}>
+            Cancelar
+          </button>
         </div>
+
       </div>
     </div>
   );
