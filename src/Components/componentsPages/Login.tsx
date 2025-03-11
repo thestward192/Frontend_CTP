@@ -29,10 +29,10 @@ const Login: React.FC = () => {
         return;
       }
 
-      // https://backendcontrolactivos-2.onrender.com/auth/login'
+      // https://backendcontrolactivos-2.onrender.com/auth/login' 
       //'http://localhost:3000/auth/login';
 
-      // Enviar la solicitud de login al backend junto con el token de reCAPTCHA
+      // Enviar la solicitud de login al backend junto con el token de reCAPTCHa
       const response = await fetch('https://backendcontrolactivos-2.onrender.com/auth/login', {
         method: 'POST',
         headers: {
