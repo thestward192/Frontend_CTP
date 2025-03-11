@@ -2,9 +2,9 @@
 import axios from 'axios';
 import { User, CreateUserDTO } from '../types/user';
 
-//const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
+const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
 
-const API_URL = 'http://localhost:3000';
+//const API_URL = 'http://localhost:3000';
 
 // Obtener el token del localStorage
 const getAuthToken = () => localStorage.getItem('token');

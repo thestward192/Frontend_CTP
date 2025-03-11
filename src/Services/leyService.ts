@@ -4,7 +4,7 @@ import { Ley } from '../types/ley';
 
 //const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
-const API_URL = 'http://localhost:3000';
+//const API_URL = 'http://localhost:3000';
 
 // Obtener todas las leyes
 export const getLeyes = async (): Promise<Ley[]> => {
