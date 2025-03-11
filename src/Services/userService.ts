@@ -48,8 +48,10 @@ export const createUser = async (userData: CreateUserDTO): Promise<User> => {
       },
     });
     return response.data;
-  } catch (error) {
-    console.error('Error al crear el usuario:', error);
+  } catch (error: any) {
+    if (error.response && error.response.status === 400) {
+      throw new Error(error.response.data.message || 'El email ya está en uso');
+    }
     throw new Error('Error al crear el usuario');
   }
 };

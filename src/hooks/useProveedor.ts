@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { getProveedores, createProveedor, getProveedorById, updateProveedor, updateDisponibilidadProveedor } from '../Services/proveedorService';
-import { Proveedor } from '../types/proveedor';
+import { CreateProveedor, Proveedor } from '../types/proveedor';
 import { useState } from 'react';
 
 export const useProveedores = () => {
@@ -13,12 +13,18 @@ export const useProveedores = () => {
     getProveedores
   );
 
-  // Crear un nuevo proveedor
-  const mutation = useMutation(createProveedor, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('proveedores');
-    },
-  });
+const handleSubmitProveedor = useMutation(
+    async (proveedorData: CreateProveedor) => await createProveedor(proveedorData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('proveedores');
+      },
+      onError: (error: any) => {
+        throw error; // Dejamos que el error sea manejado en el componente
+      },
+    }
+  );
+
 
   // Obtener detalles de un proveedor específico y seleccionarlo
   const getProveedorDetails = async (id: number) => {
@@ -52,7 +58,7 @@ export const useProveedores = () => {
     error,
     selectedProveedor,
     getProveedorDetails,
-    handleSubmitProveedor: mutation.mutateAsync,
+    handleSubmitProveedor,
     editProveedor: editProveedorMutation.mutateAsync,
     updateDisponibilidadProveedorMutation,
   };
