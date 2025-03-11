@@ -1,19 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Dashboard from '../componentsPages/Dashboard';
 import Arriba from '../../assets/Arriba.png';
-import SearchBarComponent from '../componentsAdminMenu/SearchBarComponent';
 import LeyesComponent from './LeyesComponent';
+import SearchBarComponent from '../componentsAdminMenu/SearchBarComponent';
+import { Menu, X } from 'lucide-react';
 
 const MenuLeyes: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   return (
-    <div className="relative w-full h-screen flex">
-      {/* Sidebar */}
-      <div className="z-10 w-[270px]"> {/* Aumentamos un poco el ancho del sidebar para eliminar el espacio */}
+    <div className="relative w-full h-screen flex overflow-hidden">
+      {/* Botón toggle, siempre visible, posicionado un poco más abajo */}
+      <button
+        className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Sidebar*/}
+      <div
+        className={`
+          fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
         <Dashboard />
       </div>
 
-      {/* Contenido principal */}
-      <div className="flex-1 relative z-10 overflow-hidden">
+      {/* Overlay para móviles */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
+      {/* Contenido principal: aplica margen izquierdo solo en desktop cuando el sidebar está abierto */}
+      <div
+        className="flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300"
+        style={{ marginLeft: isSidebarOpen ? '16rem' : '0' }}
+      >
         {/* Imagen de fondo */}
         <img
           src={Arriba}
@@ -22,14 +49,13 @@ const MenuLeyes: React.FC = () => {
         />
 
         <div className="relative z-10">
-          {/* Espaciado superior para buscadores */}
-          <div className="pt-[40px] px-10"> {/* Reducimos el padding-top para subir los buscadores */}
-            {/* Elementos de búsqueda */}
+          {/* Sección de búsqueda */}
+          <div className="pt-[40px] px-10">
             <SearchBarComponent />
           </div>
 
-          {/* Tabla con márgenes laterales */}
-          <div className="relative z-20 -mt-6 ml-10 mr-10"> {/* Reducimos el margen superior de la tabla */}
+          {/* Contenedor de LeyesComponent (sin modificar su posición) */}
+          <div className="relative z-20 -mt-6 ml-10 mr-10">
             <LeyesComponent />
           </div>
         </div>

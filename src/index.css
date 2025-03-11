@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Animación en verde */
 @keyframes slideInOutAndPulse {
   0% {
@@ -95,7 +101,7 @@
   95% {
     transform: translateX(0) scale(1);
     opacity: 1;
-    background-color:  #dc2626;
+    background-color: #dc2626;
   }
   100% {
     transform: translateX(100%) scale(1.2);
@@ -107,4 +113,3 @@
 .animate-slideInOutAndPulseError {
   animation: slideInOutAndPulseError 4s ease-in-out forwards;
 }
- 

@@ -36,32 +36,32 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   };
 
   return (
-    <div className="mb-4 flex justify-between items-center">
-      
-      <div className="flex space-x-6">
-        <div className="relative">
+    <div className="mb-4 flex flex-wrap gap-4 items-center">
+      {/* Grupo de filtros de búsqueda */}
+      <div className="flex flex-wrap gap-4 flex-1">
+        <div className="relative flex-1 sm:flex-none">
           <input
             type="text"
             value={nombre}
             onChange={handleNombreChange}
             placeholder="Buscar por Nombre"
-            className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
+            className="bg-white w-full sm:w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
           />
         </div>
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <input
             type="text"
             value={ubicacion}
             onChange={handleUbicacionChange}
             placeholder="Buscar por Ubicación"
-            className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
+            className="bg-white w-full sm:w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
           />
         </div>
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <select
             value={modoAdquisicion}
             onChange={handleModoAdquisicionChange}
-            className="bg-white w-[180px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
+            className="bg-white w-full sm:w-[180px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
           >
             <option value="">Modo Adquisición Todos</option>
             <option value="Ley">Por Ley</option>
@@ -70,12 +70,12 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
         </div>
       </div>
 
-      {/* Filtro de estado */}
-      <div className="relative">
+      {/* Filtro de estado: ocupa el 100% en móvil y ancho fijo en pantallas mayores */}
+      <div className="relative w-full sm:w-auto">
         <select
           value={estado}
           onChange={handleEstadoChange}
-          className="bg-white w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
+          className="bg-white w-full sm:w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
         >
           <option value="">Todos los Estados</option>
           <option value="Bueno">Bueno</option>
