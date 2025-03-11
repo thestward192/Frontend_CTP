@@ -21,4 +21,4 @@ export interface Activo {
     ubicacion?: Ubicacion;
     licitacionId?: number;
     licitacion?: Licitacion;
-}
+}//h
