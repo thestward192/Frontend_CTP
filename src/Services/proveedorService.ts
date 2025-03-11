@@ -1,6 +1,5 @@
-// src/services/ProveedorService.ts
 import axios from 'axios';
-import { CreateProveedor, Proveedor } from '../types/proveedor'; // Asegúrate de que la ruta sea correcta
+import { CreateProveedor, Proveedor } from '../types/proveedor';
 
 const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
@@ -20,9 +19,14 @@ export const createProveedor = async (proveedorData: CreateProveedor): Promise<P
   try {
     const response = await axios.post(`${API_URL}/proveedor`, proveedorData);
     return response.data;
-  } catch (error) {
-    console.error('Error al crear el proveedor:', error);
-    throw error;
+  } catch (error: any) {
+    console.error('Error al crear el proveedor:', error.response?.data?.message || error.message);
+
+    if (error.response && error.response.status === 400) {
+      throw new Error(error.response.data.message || 'Error al crear un proveedor');
+    }
+
+    throw new Error('Error inesperado al crear el proveedor');
   }
 };
 
