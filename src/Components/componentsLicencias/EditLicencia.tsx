@@ -22,9 +22,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
       modoAdquisicion: licencia.modoAdquisicion,
       licitacionId: licencia.licitacion ? licencia.licitacion.id.toString() : '',
       vigenciaFin: licencia.vigenciaFin,
-      vigenciaInicio: licencia.vigenciaInicio,
-      vigenciaFin: licencia.vigenciaFin,
-      vigenciaInicio: licencia.vigenciaInicio,
+      vigenciaInicio: licencia.vigenciaInicio
     },
   });
 

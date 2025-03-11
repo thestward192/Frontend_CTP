@@ -19,9 +19,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
       modoAdquisicion: 'Ley',
       licitacionId: undefined,
       vigenciaInicio: undefined,
-      vigenciaFin: undefined,
-      vigenciaInicio: undefined,
-      vigenciaFin: undefined,
+      vigenciaFin: undefined
     },
   });
 

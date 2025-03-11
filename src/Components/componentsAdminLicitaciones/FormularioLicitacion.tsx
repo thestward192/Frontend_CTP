@@ -4,7 +4,7 @@ import { Licitacion } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
 import { useProveedores } from '../../hooks/useProveedor';
 import { Moneda } from '../../types/moneda';
-import { Moneda } from '../../types/moneda';
+
 
 interface FormularioLicitacionProps {
   onClose: () => void;
@@ -39,13 +39,6 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
     onClose(); 
   };
 
-  const handleButtonMonedaSwitch = () => {
-    const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
-    setMoneda(nuevaMoneda);
-    setValue("moneda", nuevaMoneda);
-    onLicitacionCreated();
-    onClose();
-  };
 
   const handleButtonMonedaSwitch = () => {
     const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;

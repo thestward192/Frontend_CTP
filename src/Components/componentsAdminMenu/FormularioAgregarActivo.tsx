@@ -9,7 +9,7 @@ import { getUbicaciones } from '../../Services/ubicacionService';
 import { getLicitaciones } from '../../Services/licitacionService';
 import { useActivos } from '../../hooks/useActivo';
 import ImageUploader from './ImageUploader';
-import { Moneda } from '../../types/moneda';
+
 
 interface FormularioAgregarActivoProps {
   onClose: () => void;

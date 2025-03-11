@@ -332,6 +332,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
           <div className="flex justify-end space-x-4 mt-4">
             <button
               type="submit"
+              onClick={handleSubmit}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             >
               Guardar Cambios
@@ -343,13 +344,8 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Guardar Cambios
-            </button>
           </div>
+          
         </div>
       </div>
     </div>

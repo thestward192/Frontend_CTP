@@ -22,7 +22,6 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
       email: '',
       contraseña: '',
       confirmarContraseña: '',
-      confirmarContraseña: '',
       rolId: 0,
       ubicacionIds: [] as number[],
     },

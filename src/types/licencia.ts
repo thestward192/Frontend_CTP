@@ -12,8 +12,6 @@ export interface Licencia {
     licitacion?: Licitacion;
     vigenciaInicio: Date;
     vigenciaFin: Date;
-    vigenciaInicio: Date;
-    vigenciaFin: Date;
 }
 
 // types/dtos.ts
