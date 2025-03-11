@@ -84,3 +84,4 @@ export const getBarcode = async (numPlaca: string): Promise<Blob> => {
     throw error;
   }
 };
+//ESte si

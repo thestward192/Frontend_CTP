@@ -39,6 +39,7 @@ const Login: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+         credentials: 'include',
         body: JSON.stringify({
           email: email,
           contraseña: password,
@@ -84,7 +85,7 @@ const Login: React.FC = () => {
     }
   };
 
-  // Manejar la validación del reCAPTCHA
+  // Manejar la validación del reCAPTCHA/Jose
   const handleRecaptchaChange = (token: string | null) => {
     setRecaptchaToken(token); // Guardar el token generado por reCAPTCHA
   };
