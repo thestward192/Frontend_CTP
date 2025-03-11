@@ -26,4 +26,3 @@ export interface CreateLicenciaDTO {
     vigenciaInicio: Date;
     vigenciaFin: Date;
   }
-  

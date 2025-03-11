@@ -22,7 +22,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
       modoAdquisicion: licencia.modoAdquisicion,
       licitacionId: licencia.licitacion ? licencia.licitacion.id.toString() : '',
       vigenciaFin: licencia.vigenciaFin,
-      vigenciaInicio: licencia.vigenciaInicio,
+      vigenciaInicio: licencia.vigenciaInicio
     },
   });
 
@@ -146,41 +146,47 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           <div className="mb-4">
             <label className="block mb-1">Vigencia de Inicio</label>
-              <Controller
-                name="vigenciaInicio"
-                control={control}
-                rules={{ required: 'Este campo es obligatorio' }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    type="date"
-                    value={field.value ?  new Date(field.value).toISOString().split('T')[0] : ''}
-                    className={`w-full border p-2 rounded-md ${errors.vigenciaInicio ? 'border-red-500' : ''}`}
-                  />
-                )}
-              />
-              {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
+            <Controller
+              name="vigenciaInicio"
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="date"
+                  value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                  className={`w-full border p-2 rounded-md ${errors.vigenciaInicio ? 'border-red-500' : ''}`}
+                />
+              )}
+            />
+            {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
           </div>
 
           <div className="mb-4">
-              <label className="block mb-1">Vigencia de Fin</label>
-              <Controller
-                name="vigenciaFin"
-                control={control}
-                rules={{ required: 'Este campo es obligatorio' }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    type="date"
-                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                    className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
-                  />
-                )}
-              />
-              {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
+            <label className="block mb-1">Vigencia de Fin</label>
+            <Controller
+              name="vigenciaFin"
+              control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="date"
+                  value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                  className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
+                />
+              )}
+            />
+            {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
           </div>
 
           <div className="flex justify-end space-x-4 mt-6">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              Guardar
+            </button>
             <button
               type="button"
               onClick={onClose}
@@ -188,13 +194,8 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            >
-              Guardar
-            </button>
           </div>
+          
         </form>
       </div>
     </div>

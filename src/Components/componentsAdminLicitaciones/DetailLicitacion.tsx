@@ -2,7 +2,7 @@ import React from 'react';
 import { Licitacion } from '../../types/licitacion';
 
 interface DetailLicitacionProps {
-   licitacion: Licitacion | null;
+  licitacion: Licitacion | null;
   onClose: () => void;
   onEdit: () => void;
 }
@@ -16,7 +16,7 @@ const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose
     <>
       {/* Fondo oscuro detrás del modal */}
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose}></div>
- 
+
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
@@ -34,13 +34,14 @@ const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
-            <button onClick={onClose} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
-              Cerrar
-            </button>
             <button onClick={onEdit} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
               Editar
             </button>
+            <button onClick={onClose} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+              Cerrar
+            </button>
           </div>
+
         </div>
       </div>
     </>

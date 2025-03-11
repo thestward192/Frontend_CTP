@@ -48,19 +48,20 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) =>
             <p><strong>Disponibilidad:</strong> {licencia.disponibilidad}</p>
             <p><strong>Vigencia de la Licencia:</strong> {new Date(licencia.vigenciaInicio + "T00:00:00").toLocaleDateString()} - {new Date(licencia.vigenciaFin + "T00:00:00").toLocaleDateString()}</p>
             <div className="flex justify-end space-x-4 mt-6">
+               <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                onClick={() => setIsEditing(true)}
+              >
+                Editar
+              </button>
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={onClose}
               >
                 Cerrar
               </button>
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                onClick={() => setIsEditing(true)}
-              >
-                Editar
-              </button>
             </div>
+
           </div>
         </div>
       )}
@@ -78,7 +79,7 @@ const DetailLicencia: React.FC<DetailLicenciaProps> = ({ licencia, onClose }) =>
 
             <div className="flex justify-end mt-4">
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={() => setShowProveedorModal(false)}
               >
                 Cerrar

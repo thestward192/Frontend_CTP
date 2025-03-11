@@ -96,7 +96,14 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
               <p className="text-red-500 text-sm">{errors.email.message}</p>
             )}
           </div>
+
           <div className="flex justify-end space-x-2">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Guardar
+            </button>
             <button
               type="button"
               onClick={onCancel}
@@ -104,13 +111,8 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Guardar
-            </button>
           </div>
+          
         </form>
       </div>
     </div>

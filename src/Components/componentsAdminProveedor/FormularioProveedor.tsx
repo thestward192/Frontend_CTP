@@ -121,19 +121,20 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
 
           <div className="flex justify-end space-x-2">
             <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
               type="submit"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             >
               Guardar
             </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            >
+              Cancelar
+            </button> 
           </div>
+          
         </form>
       </div>
     </div>

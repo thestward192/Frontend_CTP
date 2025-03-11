@@ -63,19 +63,20 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
         </div>
 
         <div className="flex justify-end space-x-2">
+           <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Guardar
+          </button>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-200 rounded-md text-gray-800 hover:bg-gray-300"
           >
             Cancelar
           </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Guardar
-          </button>
         </div>
+        
       </div>
     </div>
   );

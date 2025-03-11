@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
-import { useUbicacion } from '../../hooks/useUbicacion'; // Usamos el hook de ubicaciones
-import { useLicitaciones } from '../../hooks/useLicitacion'; // Nuevo hook de licitaciones
+import { Moneda } from '../../types/moneda';         // <-- Enum para manejar la moneda
+import { useUbicacion } from '../../hooks/useUbicacion';
+import { useLicitaciones } from '../../hooks/useLicitacion';
+import ImageUploader from './ImageUploader';
 
 interface FormularioEditarActivoProps {
   asset: Activo;
@@ -10,7 +12,12 @@ interface FormularioEditarActivoProps {
   onSave: (updatedData: Partial<Activo>) => void;
 }
 
-const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, onClose, onSave }) => {
+const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
+  asset,
+  onClose,
+  onSave,
+}) => {
+  // Estado local para manejar todos los campos del activo
   const [formData, setFormData] = useState<Partial<Activo>>({
     nombre: asset.nombre,
     descripcion: asset.descripcion,
@@ -24,46 +31,73 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
     precio: asset.precio,
     observacion: asset.observacion,
     ubicacionId: asset.ubicacion?.id || 0,
-    modoAdquisicion: asset.modoAdquisicion,
+    modoAdquisicion: asset.modoAdquisicion || 'Donación',
     licitacionId: asset.licitacion?.id || '',
+    moneda: asset.moneda || Moneda.COLON, // <-- Manejamos también la moneda
   });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const isDadoDeBaja = formData.disponibilidad === 'Dado de Baja'; // Verificamos si está "Dado de Baja"
 
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
-  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
+  const {
+    ubicaciones,
+    loading: ubicacionesLoading,
+    error: ubicacionesError,
+  } = useUbicacion();
 
-  useEffect(() => {
-    if (formData.licitacionId) {
-      setFormData(prevState => ({
-        ...prevState,
-        modoAdquisicion: 'Ley',
-      }));
-    } else {
-      setFormData(prevState => ({
-        ...prevState,
-        modoAdquisicion: 'Donación',
-      }));
-    }
-  }, [formData.licitacionId]);
+  const {
+    licitaciones,
+    loading: licitacionesLoading,
+    error: licitacionesError,
+  } = useLicitaciones();
 
+  // Verifica si está "Dado de Baja" para forzar estado "Malo"
   useEffect(() => {
     if (formData.disponibilidad === 'Dado de Baja') {
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
         estado: 'Malo',
       }));
     }
   }, [formData.disponibilidad]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  // Si se selecciona una licitación, asumimos modo 'Ley'; si no, modo 'Donación'
+  useEffect(() => {
+    if (formData.licitacionId) {
+      setFormData((prev) => ({ ...prev, modoAdquisicion: 'Ley' }));
+    } else {
+      setFormData((prev) => ({ ...prev, modoAdquisicion: 'Donación' }));
+    }
+  }, [formData.licitacionId]);
+
+  // Función para cambiar moneda
+  const handleMonedaSwitch = () => {
+    const nuevaMoneda =
+      formData.moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+    setFormData((prevData) => ({
+      ...prevData,
+      moneda: nuevaMoneda,
+    }));
+  };
+
+  // Maneja la subida de la nueva imagen
+  const handleImageUpload = (url: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      foto: url,
+    }));
+  };
+
+  // Maneja los cambios en los campos del formulario
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
+  // Envía la información actualizada al padre
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -87,8 +121,8 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
             <FaCheckCircle className="mr-2" />
@@ -96,9 +130,11 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
           </div>
         )}
 
-        <h2 className="text-lg font-bold mb-4">Editar Activo</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <h2 className="text-xl font-bold mb-4">Editar Activo</h2>
+
+        {/* Contenedor interno para permitir scroll si crece mucho */}
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
@@ -107,7 +143,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="nombre"
                 value={formData.nombre || ''}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
               />
             </div>
@@ -120,7 +156,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="marca"
                 value={formData.marca || ''}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
               />
             </div>
@@ -133,7 +169,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="modelo"
                 value={formData.modelo || ''}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
               />
             </div>
@@ -146,21 +182,33 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="serie"
                 value={formData.serie || ''}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
               />
             </div>
 
-            {/* Precio */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Precio</label>
-              <input
-                type="number"
-                name="precio"
-                value={formData.precio || 0}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
+            {/* Precio + Moneda */}
+            <div className="flex flex-col">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Precio ({formData.moneda === Moneda.COLON ? '₡' : '$'})
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  step={0.01}
+                  name="precio"
+                  value={formData.precio ?? 0}
+                  onChange={handleChange}
+                  className="block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                />
+                <button
+                  type="button"
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                  onClick={handleMonedaSwitch}
+                >
+                  {formData.moneda === Moneda.COLON ? '₡' : '$'}
+                </button>
+              </div>
             </div>
 
             {/* Estado */}
@@ -170,9 +218,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="estado"
                 value={formData.estado || 'Bueno'}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
-                disabled={isDadoDeBaja}
+                disabled={formData.disponibilidad === 'Dado de Baja'} // Si está dado de baja, deshabilitamos
               >
                 <option value="Bueno">Bueno</option>
                 <option value="Regular">Regular</option>
@@ -187,7 +235,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="disponibilidad"
                 value={formData.disponibilidad || 'Activo'}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
               >
                 <option value="Activo">Activo</option>
@@ -202,7 +250,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="descripcion"
                 value={formData.descripcion || ''}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
               />
             </div>
 
@@ -213,10 +261,10 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
                 name="ubicacionId"
                 value={formData.ubicacionId || 0}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
               >
-                <option value="">Seleccione una Ubicación</option>
+                <option value={0}>Seleccione una Ubicación</option>
                 {ubicaciones.map((ubicacion) => (
                   <option key={ubicacion.id} value={ubicacion.id}>
                     {ubicacion.nombre}
@@ -225,15 +273,17 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
               </select>
             </div>
 
-            {/* Licitación */}
+            {/* Licitación (solo si modoAdquisicion es Ley) */}
             {formData.modoAdquisicion === 'Ley' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Licitación</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Licitación
+                </label>
                 <select
                   name="licitacionId"
                   value={formData.licitacionId || ''}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 p-2 rounded-lg"
+                  className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 >
                   <option value="">Seleccione una Licitación</option>
                   {licitaciones.map((licitacion) => (
@@ -247,18 +297,46 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
 
             {/* Observaciones */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Observaciones
+              </label>
               <textarea
                 name="observacion"
                 value={formData.observacion || ''}
                 onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
               />
             </div>
-          </div>
+
+            {/* Imagen: muestra la actual y permite subir otra */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Imagen
+              </label>
+              {formData.foto ? (
+                <img
+                  src={formData.foto}
+                  alt="Activo"
+                  className="w-32 h-32 object-cover mt-2 rounded border"
+                />
+              ) : (
+                <div className="w-32 h-32 bg-gray-200 mt-2 rounded flex items-center justify-center text-gray-500">
+                  Sin imagen
+                </div>
+              )}
+              <ImageUploader onUpload={handleImageUpload} />
+            </div>
+          </form>
 
           {/* Botones de acción */}
           <div className="flex justify-end space-x-4 mt-4">
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Guardar Cambios
+            </button>
             <button
               type="button"
               className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
@@ -266,14 +344,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({ asset, 
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Guardar Cambios
-            </button>
           </div>
-        </form>
+          
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import { Prestamo } from '../types/prestamo';
 
 const API_URL = 'http://localhost:3000/prestamos';
 
+//const API_URL = 'http://localhost:3000/prestamos';
+
 const getAuthToken = () => localStorage.getItem('token');
 
 export const createPrestamo = async (prestamoData: Omit<Prestamo, 'id'>) => {

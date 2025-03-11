@@ -11,7 +11,7 @@ interface FormularioEditarUsuarioProps {
 }
 
 const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userId, onClose, onSave }) => {
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<Partial<User>>(); 
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<Partial<User>>();
   const [user, setUser] = useState<User | null>(null);
 
   // Usamos el hook de ubicaciones para traer las ubicaciones y manejar el loading y error.
@@ -22,7 +22,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
       try {
         const userData = await getUserById(userId);
         setUser(userData);
-        setValue('nombre', userData.nombre); 
+        setValue('nombre', userData.nombre);
         setValue('apellido_1', userData.apellido_1);
         setValue('apellido_2', userData.apellido_2);
         setValue('email', userData.email);
@@ -62,8 +62,8 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
       onClose();
     }
     else {
-    onSave(userId, { ...data, ubicaciones: user?.ubicaciones || [] });
-    onClose();
+      onSave(userId, { ...data, ubicaciones: user?.ubicaciones || [] });
+      onClose();
     }
   };
 
@@ -125,20 +125,20 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               className="w-full border border-gray-300 p-2 rounded-lg"
             />
             {errors.contraseña && <p className="text-red-500">{errors.contraseña.message}</p>}
-          </div> 
+          </div>
 
           <div className="mb-4">
-              <label className="block text-gray-700">Confirmar Contraseña</label>
-              <input
-                type="password"
-                {...register('confirmarContraseña', {
-                  validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
-                })}
-                placeholder="Confirma tu contraseña"
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
-              {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
-            </div>
+            <label className="block text-gray-700">Confirmar Contraseña</label>
+            <input
+              type="password"
+              {...register('confirmarContraseña', {
+                validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
+              })}
+              placeholder="Confirma tu contraseña"
+              className="w-full border border-gray-300 p-2 rounded-lg"
+            />
+            {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
+          </div>
 
 
           {/* Manejo de ubicaciones */}
@@ -181,14 +181,16 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               Añadir otra ubicación
             </button>
           </div>
+
           <div className="flex justify-end space-x-2">
-            <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
-              Cancelar
-            </button>
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md">
               Guardar
             </button>
+            <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
+              Cancelar
+            </button>
           </div>
+
         </form>
       </div>
     </div>

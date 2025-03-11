@@ -89,7 +89,6 @@ const LeyesComponent: React.FC = () => {
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-gray-600 font-semibold">ID Ley</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nº Ley</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Detalle</th>
@@ -99,7 +98,6 @@ const LeyesComponent: React.FC = () => {
               <tbody>
                 {leyes?.map((ley) => (
                   <tr key={ley.id} className="border-b hover:bg-gray-100">
-                    <td className="px-4 py-2 text-sm">{ley.id}</td>
                     <td className="px-4 py-2 text-sm">{ley.numLey}</td>
                     <td className="px-4 py-2 text-sm">{ley.nombre}</td>
                     <td className="px-4 py-2 text-sm truncate max-w-xs">{ley.detalle}</td>
@@ -165,20 +163,22 @@ const LeyesComponent: React.FC = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
             <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ley</h2>
             <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta Ley?</p>
+
             <div className="flex justify-end space-x-4 mt-6">
-              <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                onClick={() => setDeleteModalOpen(null)}
-              >
-                Cancelar
-              </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                 onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
               >
                 Confirmar
               </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={() => setDeleteModalOpen(null)}
+              >
+                Cancelar
+              </button>
             </div>
+            
           </div>
         </div>
       )}

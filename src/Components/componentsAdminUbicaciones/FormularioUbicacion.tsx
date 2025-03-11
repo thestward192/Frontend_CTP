@@ -88,20 +88,21 @@ const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose, onUb
 
           <div className="flex justify-end space-x-2">
             <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
               type="submit"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               disabled={isLoading}
             >
               {isLoading ? 'Guardando...' : 'Guardar'}
             </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            >
+              Cancelar
+            </button>
           </div>
+          
         </form>
       </div>
     </div>

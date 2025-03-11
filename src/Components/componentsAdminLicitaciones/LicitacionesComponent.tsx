@@ -109,7 +109,6 @@ const LicitacionesComponent: React.FC = () => {
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-4 py-2 text-gray-600 font-semibold">Fecha</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Licitación</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nº Acta</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nº Licitación</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Monto</th>
@@ -120,7 +119,6 @@ const LicitacionesComponent: React.FC = () => {
                 {licitaciones?.map((licitacion) => (
                   <tr key={licitacion.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{new Date(licitacion.fecha).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 text-sm">{licitacion.id}</td>
                     <td className="px-4 py-2 text-sm">{licitacion.numActa}</td>
                     <td className="px-4 py-2 text-sm">{licitacion.numLicitacion}</td>
                     <td className="px-4 py-2 text-sm">
@@ -184,20 +182,22 @@ const LicitacionesComponent: React.FC = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
             <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Licitación</h2>
             <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta Licitación?</p>
+
             <div className="flex justify-end space-x-4 mt-6">
+               <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+              >
+                Confirmar
+              </button>
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={() => setDeleteModalOpen(null)}
               >
                 Cancelar
               </button>
-              <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
-              >
-                Confirmar
-              </button>
             </div>
+            
           </div>
         </div>
       )}

@@ -26,7 +26,7 @@ const DetalleActivoDocente: React.FC<DetalleActivoDocenteProps> = ({ activo, onC
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg p-6 w-96">
             <h2 className="text-xl font-semibold mb-4">Detalle del Activo</h2>
-            <p><strong>No. Identificador:</strong> {activo.id}</p>
+            <p><strong>No. Identificador:</strong> {activo.numPlaca}</p>
             <p><strong>Nombre:</strong> {activo.nombre}</p>
             <p><strong>Marca:</strong> {activo.marca}</p>
             <p><strong>Serie:</strong> {activo.serie}</p>
@@ -34,18 +34,19 @@ const DetalleActivoDocente: React.FC<DetalleActivoDocenteProps> = ({ activo, onC
 
             <div className="mt-6 flex justify-between">
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                onClick={onClose}
-              >
-                Cancelar
-              </button>
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                 onClick={handlePrestar}
               >
                 Prestar
               </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={onClose}
+              >
+                Cancelar
+              </button>
             </div>
+
           </div>
         </div>
       ) : (

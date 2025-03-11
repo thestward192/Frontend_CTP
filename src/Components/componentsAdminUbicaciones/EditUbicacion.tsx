@@ -72,19 +72,20 @@ const EditUbicacion: React.FC<EditUbicacionFormProps> = ({ ubicacion, onSave, on
           </div>
           <div className="flex justify-end space-x-2">
             <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Guardar
+            </button>
+            <button
               type="button"
               onClick={onCancel}
               className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              Guardar
-            </button>
           </div>
+          
         </form>
       </div>
     </div>

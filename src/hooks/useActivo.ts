@@ -36,7 +36,7 @@ export const useActivos = () => {
     }
   );
 
-  // Hook para obtener activos por ubicación
+  // Hook para obtener activos por ubicacion
   const useActivosByUbicacion = (ubicacionId: number) => {
     return useQuery<Activo[], Error>(
       ['activosByUbicacion', ubicacionId],

@@ -114,7 +114,7 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.contraseña && <p className="text-red-500">{errors.contraseña.message}</p>}
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-gray-700">Confirmar Contraseña</label>
               <input
@@ -191,13 +191,14 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
           </div>
 
           <div className="flex justify-end space-x-2">
-            <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
-              Cancelar
-            </button>
             <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
               Guardar
             </button>
+            <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
+              Cancelar
+            </button>
           </div>
+          
         </form>
       </div>
     </div>

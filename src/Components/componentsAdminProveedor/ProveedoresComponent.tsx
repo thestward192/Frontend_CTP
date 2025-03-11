@@ -148,20 +148,22 @@ const ProveedoresComponent: React.FC = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
             <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Proveedor</h2>
             <p>¿Estás seguro de que deseas marcar este proveedor como "Fuera de Servicio"?</p>
+
             <div className="flex justify-end space-x-4 mt-6">
-              <button
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                onClick={() => setDeleteModalOpen(null)}
-              >
-                Cancelar
-              </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                 onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
               >
                 Confirmar
               </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={() => setDeleteModalOpen(null)}
+              >
+                Cancelar
+              </button>
             </div>
+            
           </div>
         </div>
       )}

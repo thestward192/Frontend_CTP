@@ -123,20 +123,22 @@ const UsuariosComponent: React.FC = () => {
             <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
               <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Usuario</h2>
               <p>¿Estás seguro de que deseas cambiar la disponibilidad de este Usuario?</p>
+
               <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                  onClick={() => setIsDeleteModalOpen(null)}
-                >
-                  Cancelar
-                </button>
                 <button
                   className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                   onClick={() => handleUpdateAvailability(isDeleteModalOpen!)}
                 >
                   Confirmar
                 </button>
+                <button
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                  onClick={() => setIsDeleteModalOpen(null)}
+                >
+                  Cancelar
+                </button>
               </div>
+              
             </div>
           </div>
         )}
