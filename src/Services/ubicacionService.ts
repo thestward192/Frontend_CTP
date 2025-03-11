@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { CreateUbicacion, Ubicacion } from '../types/ubicacion';
 
-const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
+const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
 //const API_URL = 'http://localhost:3000';
 
