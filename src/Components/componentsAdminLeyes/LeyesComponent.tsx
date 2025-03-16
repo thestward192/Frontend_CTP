@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import FormularioLey from './FormularioLey';
 import { useLeyes } from '../../hooks/useLey';
 import DetailLey from './DetailLey';
@@ -49,16 +49,20 @@ const LeyesComponent: React.FC = () => {
     setDetailModalOpen(true);
   };
 
-  const startEdit = () => setIsEditing(true);
-  const closeDetails = () => {
-    setIsEditing(false);
-    setDetailModalOpen(false);
+  const handleEditClick = async (id: number) => {
+    await getLeyDetails(id);
+    setIsEditing(true);
+    setDetailModalOpen(true);
   };
-  const cancelEdit = () => setIsEditing(false);
 
   const handleEditSave = async (id: number, updatedData: Partial<Ley>) => {
     await editLey({ id, leyData: updatedData });
     handleLeyEdited();
+    setIsEditing(false);
+    setDetailModalOpen(false);
+  };
+
+  const closeDetails = () => {
     setIsEditing(false);
     setDetailModalOpen(false);
   };
@@ -110,6 +114,12 @@ const LeyesComponent: React.FC = () => {
                           <FaEye className="mr-1" />
                         </button>
                         <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(ley.id)}
+                        >
+                          <FaEdit className="mr-1" />
+                        </button>
+                        <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setDeleteModalOpen(ley.id)}
                         >
@@ -147,13 +157,12 @@ const LeyesComponent: React.FC = () => {
           <EditLeyForm
             ley={selectedLey}
             onSave={handleEditSave}
-            onCancel={cancelEdit}
+            onCancel={closeDetails}
           />
         ) : (
           <DetailLey
             ley={selectedLey}
             onClose={closeDetails}
-            onEdit={startEdit}
           />
         )
       )}
