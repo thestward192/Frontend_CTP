@@ -18,6 +18,7 @@ import MenuInventarioDocente from './ComponentsDocente/componentsInventarioDocen
 import ForgotPassword from './Components/componentsPages/ForgotPassword';
 import ResetPassword from './Components/componentsPages/ResetPassword';
 import MenuReportesPrestamos from './Components/componentsAdminReportes/MenuReportesPrestamos';
+import MenuReportesInventario from './Components/componentsAdminReportes/MenuReportesInventario';
 
 const App: React.FC = () => {
   return (
@@ -102,6 +103,7 @@ const App: React.FC = () => {
             }
           />
           <Route path="/ReportesPrestamos" element={<ProtectedRoute roles={['Administrador']}><MenuReportesPrestamos /></ProtectedRoute>} />
+          <Route path="/ReportesInventario" element={<ProtectedRoute roles={['Administrador']}><MenuReportesInventario /></ProtectedRoute>} />
           <Route
             path="/InventarioDocente"
             element={

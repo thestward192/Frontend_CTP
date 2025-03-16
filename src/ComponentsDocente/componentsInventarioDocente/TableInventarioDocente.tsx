@@ -1,54 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { useQueryClient } from 'react-query';
-import { useActivos } from '../../hooks/useActivo';
+import React, { useState } from 'react';
+import { useInventario } from '../../hooks/useInventario';
 import { useAuth } from '../../hooks/AuthContext';
-import DetalleActivoInventario from './DetalleActivoInventario';
+import ModalCrearInventario from './ModalCrearInventario';
 
 const TableInventarioDocente: React.FC = () => {
+  const { inventarios, isLoading, createInventarioMutate } = useInventario();
+  const { usuarioId, ubicaciones } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const { ubicaciones } = useAuth();
-  const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
-  const [selectedActivo, setSelectedActivo] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const queryClient = useQueryClient();
 
-  // Usamos el hook `useActivosByUbicacion` para obtener activos basados en la ubicación seleccionada
-  const { useActivosByUbicacion } = useActivos();
-  const { data: activos = [], isLoading: loading } = useActivosByUbicacion(selectedUbicacion || 0);
-
-  useEffect(() => {
-    if (ubicaciones.length > 0 && selectedUbicacion === null) {
-      const defaultUbicacionId = ubicaciones[0].id;
-      setSelectedUbicacion(defaultUbicacionId);
-    }
-  }, [ubicaciones]);
+  // Filtrar inventarios del docente autenticado
+  const filteredInventarios = inventarios.filter(
+    (inv) => inv.docente?.id === usuarioId
+  );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleUbicacionSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedUbicacion(parseInt(event.target.value, 10));
-  };
-
-  const handleRowClick = (activo: any) => {
-    setSelectedActivo(activo);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedActivo(null);
-  };
-
-  // Función para invalidar las queries después de actualizar un activo
-  const handleUpdate = () => {
-    queryClient.invalidateQueries(['activosByUbicacion', selectedUbicacion]);
-  };
-
   const itemsPerPage = 5;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = activos.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = filteredInventarios.slice(startIndex, startIndex + itemsPerPage);
+
+  // Función que se ejecuta al enviar la información desde el modal para crear un nuevo inventario
+  const handleModalSubmit = (modalData: { ubicacionId: number; detalles: any[] }) => {
+    if (!usuarioId) {
+      console.error('Usuario no autenticado');
+      return;
+    }
+    const fecha = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const nuevoInventario = {
+      fecha,
+      docenteId: usuarioId,
+      ubicacionId: modalData.ubicacionId,
+      detalles: modalData.detalles,
+    };
+    createInventarioMutate(nuevoInventario, {
+      onSuccess: () => {
+        console.log('Inventario creado con éxito');
+      },
+      onError: (error) => {
+        console.error('Error creando inventario:', error);
+      },
+    });
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="w-full flex justify-center py-6">
@@ -56,52 +52,38 @@ const TableInventarioDocente: React.FC = () => {
         className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
         style={{ height: 'calc(100vh - 220px)', display: 'flex', flexDirection: 'column' }}
       >
+        {/* Encabezado con título y botón para crear inventario */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-          <div className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</div>
-            <select
-              className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
-              value={selectedUbicacion || ''}
-              onChange={handleUbicacionSelect}
-            >
-              <option value="" disabled>-- Seleccione --</option>
-              {ubicaciones.map((ubicacion) => (
-                <option key={ubicacion.id} value={ubicacion.id}>
-                  {ubicacion.nombre}
-                </option>
-              ))}
-            </select>
+            <h1 className="text-2xl font-bold text-black">Historial de Inventarios</h1>
           </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Hacer Inventario
+          </button>
         </div>
 
+        {/* Tabla del historial */}
         <div className="flex-grow overflow-y-auto">
-          {loading ? (
-            <div>Cargando activos...</div>
+          {isLoading ? (
+            <div>Cargando inventarios...</div>
           ) : (
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Serie</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Fecha</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Cantidad de Activos</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => handleRowClick(row)}>
-                    <td className="px-4 py-2 text-sm">{row.numPlaca}</td>
-                    <td className="px-4 py-2 text-sm">{row.nombre}</td>
-                    <td className="px-4 py-2 text-sm">{row.marca}</td>
-                    <td className="px-4 py-2 text-sm">{row.serie}</td>
-                    <td className="px-4 py-2 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                      >
-                        {row.estado}
-                      </span>
-                    </td>
+                {paginatedData.map((inv) => (
+                  <tr key={inv.id} className="border-b hover:bg-gray-100 cursor-pointer">
+                    <td className="px-4 py-2 text-sm">{inv.fecha}</td>
+                    <td className="px-4 py-2 text-sm">{inv.ubicacion?.nombre}</td>
+                    <td className="px-4 py-2 text-sm">{inv.detalles.length}</td>
                   </tr>
                 ))}
               </tbody>
@@ -109,9 +91,12 @@ const TableInventarioDocente: React.FC = () => {
           )}
         </div>
 
+        {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           <div>
-            <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
+            <p className="text-sm text-gray-600">
+              Total de Inventarios: {filteredInventarios.length}
+            </p>
           </div>
           <div className="flex space-x-1">
             <button
@@ -121,10 +106,12 @@ const TableInventarioDocente: React.FC = () => {
             >
               &lt;
             </button>
-            {Array.from({ length: Math.ceil(activos.length / itemsPerPage) }, (_, index) => (
+            {Array.from({ length: Math.ceil(filteredInventarios.length / itemsPerPage) }, (_, index) => (
               <button
                 key={index}
-                className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                }`}
                 onClick={() => handlePageChange(index + 1)}
               >
                 {index + 1}
@@ -133,7 +120,7 @@ const TableInventarioDocente: React.FC = () => {
             <button
               className="px-3 py-1 bg-gray-200 rounded-md"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === Math.ceil(activos.length / itemsPerPage)}
+              disabled={currentPage === Math.ceil(filteredInventarios.length / itemsPerPage)}
             >
               &gt;
             </button>
@@ -141,11 +128,11 @@ const TableInventarioDocente: React.FC = () => {
         </div>
       </div>
 
-      {isModalOpen && selectedActivo && (
-        <DetalleActivoInventario
-          activo={selectedActivo}
-          onClose={closeModal}
-          onUpdate={handleUpdate} // Pasamos la función de actualización
+      {/* Modal para crear un nuevo inventario */}
+      {isModalOpen && (
+        <ModalCrearInventario
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleModalSubmit}
         />
       )}
     </div>
