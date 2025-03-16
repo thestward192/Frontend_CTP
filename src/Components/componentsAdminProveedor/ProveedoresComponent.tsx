@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import { useProveedores } from '../../hooks/useProveedor';
 import FormularioProveedor from './FormularioProveedor';
 import DetailProveedor from './DetailProveedor';
@@ -43,15 +43,19 @@ const ProveedoresComponent: React.FC = () => {
     setIsDetailOpen(true);
   };
 
-  const startEdit = () => setIsEditing(true);
-  const closeDetails = () => {
-    setIsEditing(false);
-    setIsDetailOpen(false);
+  const handleEditClick = async (id: number) => {
+    await getProveedorDetails(id);
+    setIsEditing(true);
+    setIsDetailOpen(true);
   };
-  const cancelEdit = () => setIsEditing(false);
 
   const handleEditSave = async (id: number, updatedData: Partial<Proveedor>) => {
     await editProveedor({ id, proveedorData: updatedData });
+    setIsEditing(false);
+    setIsDetailOpen(false);
+  };
+
+  const closeDetails = () => {
     setIsEditing(false);
     setIsDetailOpen(false);
   };
@@ -104,6 +108,12 @@ const ProveedoresComponent: React.FC = () => {
                           <FaEye className="mr-1" />
                         </button>
                         <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(proveedor.id)}
+                        >
+                          <FaEdit className="mr-1" />
+                        </button>
+                        <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setDeleteModalOpen(proveedor.id)}
                         >
@@ -132,13 +142,12 @@ const ProveedoresComponent: React.FC = () => {
           <EditProveedorForm
             proveedor={selectedProveedor}
             onSave={handleEditSave}
-            onCancel={cancelEdit}
+            onCancel={closeDetails}
           />
         ) : (
           <DetailProveedor
             proveedor={selectedProveedor}
             onClose={closeDetails}
-            onEdit={startEdit}
           />
         )
       )}

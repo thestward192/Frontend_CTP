@@ -9,7 +9,7 @@ interface EditProveedorFormProps {
 }
 
 const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave, onCancel }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm<Proveedor>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Proveedor>({
     defaultValues: {
       vendedor: proveedor.vendedor,
       nombreEmpresa: proveedor.nombreEmpresa,
@@ -19,8 +19,19 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
     },
   });
 
+  // Función para formatear el teléfono en tiempo real
+  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value.replace(/\D/g, ''); // Eliminar caracteres no numéricos
+
+    if (input.length > 4) {
+      input = `${input.slice(0, 4)}-${input.slice(4, 8)}`;
+    }
+
+    setValue(e.target.name as keyof Proveedor, input); // Actualizar el valor con el guion
+  };
+
   const onSubmit = (data: Proveedor) => {
-    // No es necesario formatear los números de teléfono, simplemente pasa los datos tal cual
+    // Se envía el número con el guion, no lo eliminamos
     onSave(proveedor.id, data);
   };
 
@@ -36,9 +47,7 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
               {...register('vendedor', { required: 'Este campo es obligatorio' })}
               className={`w-full border p-2 rounded-md ${errors.vendedor ? 'border-red-500' : ''}`}
             />
-            {errors.vendedor && (
-              <p className="text-red-500 text-sm">{errors.vendedor.message}</p>
-            )}
+            {errors.vendedor && <p className="text-red-500 text-sm">{errors.vendedor.message}</p>}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Empresa</label>
@@ -47,9 +56,7 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
               {...register('nombreEmpresa', { required: 'Este campo es obligatorio' })}
               className={`w-full border p-2 rounded-md ${errors.nombreEmpresa ? 'border-red-500' : ''}`}
             />
-            {errors.nombreEmpresa && (
-              <p className="text-red-500 text-sm">{errors.nombreEmpresa.message}</p>
-            )}
+            {errors.nombreEmpresa && <p className="text-red-500 text-sm">{errors.nombreEmpresa.message}</p>}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Teléfono del Proveedor</label>
@@ -63,10 +70,10 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
                 },
               })}
               className={`w-full border p-2 rounded-md ${errors.telefonoProveedor ? 'border-red-500' : ''}`}
+              onChange={handlePhoneInput} // Formatea automáticamente
+              maxLength={9} // Para evitar que el usuario escriba más de 8 números + 1 guion
             />
-            {errors.telefonoProveedor && (
-              <p className="text-red-500 text-sm">{errors.telefonoProveedor.message}</p>
-            )}
+            {errors.telefonoProveedor && <p className="text-red-500 text-sm">{errors.telefonoProveedor.message}</p>}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Teléfono de la Empresa</label>
@@ -80,10 +87,10 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
                 },
               })}
               className={`w-full border p-2 rounded-md ${errors.telefonoEmpresa ? 'border-red-500' : ''}`}
+              onChange={handlePhoneInput} // Formatea automáticamente
+              maxLength={9}
             />
-            {errors.telefonoEmpresa && (
-              <p className="text-red-500 text-sm">{errors.telefonoEmpresa.message}</p>
-            )}
+            {errors.telefonoEmpresa && <p className="text-red-500 text-sm">{errors.telefonoEmpresa.message}</p>}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Email</label>
@@ -92,9 +99,7 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
               {...register('email', { required: 'Este campo es obligatorio' })}
               className={`w-full border p-2 rounded-md ${errors.email ? 'border-red-500' : ''}`}
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
           </div>
 
           <div className="flex justify-end space-x-2">
@@ -112,7 +117,6 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
               Cancelar
             </button>
           </div>
-          
         </form>
       </div>
     </div>
