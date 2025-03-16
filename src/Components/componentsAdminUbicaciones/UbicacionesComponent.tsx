@@ -1,18 +1,16 @@
 // UbicacionesComponent.tsx
 import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import FormularioUbicacion from './FormularioUbicacion';
 import DetailUbicacion from './DetailUbicacion';
 import EditUbicacionForm from './EditUbicacion';
 import { useUbicacion } from '../../hooks/useUbicacion';
-import { Ubicacion } from '../../types/ubicacion';
 
 const UbicacionesComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedUbicacion, setSelectedUbicacion] = useState<Ubicacion | null>(null);
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
@@ -23,9 +21,9 @@ const UbicacionesComponent: React.FC = () => {
     editUbicacion,
     updateDisponibilidad,
     getUbicacionDetails,
+    selectedUbicacion
   } = useUbicacion();
 
-  // Función para mostrar el mensaje de éxito al crear una ubicación
   const handleUbicacionCreated = () => {
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -46,40 +44,36 @@ const UbicacionesComponent: React.FC = () => {
     setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
-  const closeDetails = () => {
+  const handleViewDetails = async (id: number) => {
+    await getUbicacionDetails(id);
     setIsEditing(false);
-    setDetailModalOpen(null);
-    setSelectedUbicacion(null);
+    setDetailModalOpen(id); // ✅ Cambiado a `true`
   };
 
-  const handleEditSave = async (id: number, updatedData: Partial<Ubicacion>) => {
+  const handleEditClick = async (id: number) => {
+    await getUbicacionDetails(id);
+    setIsEditing(true);
+    setDetailModalOpen(id); // ✅ Cambiado a `true`
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<any>) => {
     try {
       await editUbicacion(id, updatedData);
-      handleUbicacionEdited(); // Llamada a handleUbicacionEdited para mostrar el mensaje de éxito
+      setShowCompletedMessage(true);
+      setTimeout(() => setShowCompletedMessage(false), 3000);
     } catch (error) {
       console.error('Error al editar la ubicación:', error);
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
     } finally {
       setIsEditing(false);
-      setDetailModalOpen(null);
-      setSelectedUbicacion(null);
+      setDetailModalOpen(null); // ✅ Cerramos el modal correctamente
     }
   };
-  
-  const handleUbicacionEdited = () => {
-    setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 3000);
-  };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleSelectUbicacion = async (id: number) => {
-    const ubicacion = await getUbicacionDetails(id);
-    setSelectedUbicacion(ubicacion);
-    setDetailModalOpen(id);
+  const closeDetails = () => {
+    setIsEditing(false);
+    setDetailModalOpen(null); // ✅ Corregido a `false`
   };
 
   return (
@@ -125,11 +119,16 @@ const UbicacionesComponent: React.FC = () => {
                       <div className="flex space-x-2">
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => handleSelectUbicacion(ubicacion.id)}
+                          onClick={() => handleViewDetails(ubicacion.id)}
                         >
                           <FaEye className="mr-1" />
                         </button>
-
+                        <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(ubicacion.id)}
+                        >
+                          <FaEdit className="mr-1" />
+                        </button>
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setDeleteModalOpen(ubicacion.id)}
@@ -190,7 +189,7 @@ const UbicacionesComponent: React.FC = () => {
         isEditing ? (
           <EditUbicacionForm ubicacion={selectedUbicacion} onSave={handleEditSave} onCancel={closeDetails} />
         ) : (
-          <DetailUbicacion ubicacion={selectedUbicacion} onClose={closeDetails} onEdit={handleEdit} />
+          <DetailUbicacion ubicacion={selectedUbicacion} onClose={closeDetails} />
         )
       )}
     </div>
