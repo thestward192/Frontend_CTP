@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Dashboard from '../componentsPages/Dashboard';
 import Arriba from '../../assets/Arriba.png';
 import SearchBarComponent from '../componentsAdminMenu/SearchBarComponent';
-import DocentesComponent from './DocentesComponent';
+import DocentesComponent from './UsuariosComponent';
 import { Menu, X } from 'lucide-react';
 
 const MenuDocenteAdmin: React.FC = () => {

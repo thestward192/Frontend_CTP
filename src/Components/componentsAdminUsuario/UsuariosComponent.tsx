@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
-import FormularioDocente from './FormularioDocente';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
+import FormularioUsuario from './FormularioUsuario';
 import FormularioEditarUsuario from './FormularioEditarUsuario';
 import { User } from '../../types/user';
 import { useUsers } from '../../hooks/useUser';
-import DetailUsuarios from './DetailDocente';
+import DetailUsuario from './DetailUsuario';
 
 const UsuariosComponent: React.FC = () => {
   const { users = [], loading, error, updateDisponibilidadMutation, editUserMutation } = useUsers();
@@ -21,15 +21,11 @@ const UsuariosComponent: React.FC = () => {
 
   const handleUpdateAvailability = async (userId: number) => {
     const user = users.find((u) => u.id === userId);
-    
-    // Si el usuario ya está "Fuera de Servicio", mostramos el mensaje de error y no cerramos el modal
     if (user && user.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
       return;
     }
-
-    // Actualización de disponibilidad a "Fuera de Servicio"
     await updateDisponibilidadMutation.mutateAsync(userId);
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -46,9 +42,9 @@ const UsuariosComponent: React.FC = () => {
     }
   };
 
-  const handleEditFromDetail = (userId: number) => {
-    setIsEditModalOpen(userId); // Abre el modal de edición
-    setSelectedUser(null); // Cierra el modal de detalles
+  const handleEditClick = (userId: number) => {
+    setIsEditModalOpen(userId);
+
   };
 
   return (
@@ -103,6 +99,12 @@ const UsuariosComponent: React.FC = () => {
                           <FaEye className="mr-1" />
                         </button>
                         <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(user.id)}
+                        >
+                          <FaEdit className="mr-1" />
+                        </button>
+                        <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setIsDeleteModalOpen(user.id)}
                         >
@@ -138,7 +140,7 @@ const UsuariosComponent: React.FC = () => {
                   Cancelar
                 </button>
               </div>
-              
+
             </div>
           </div>
         )}
@@ -159,12 +161,11 @@ const UsuariosComponent: React.FC = () => {
       </div>
 
       {/* Otros modales */}
-      {isModalOpen && <FormularioDocente onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <FormularioUsuario onClose={() => setIsModalOpen(false)} />}
       {selectedUser !== null && (
-        <DetailUsuarios
+        <DetailUsuario
           userId={selectedUser}
           onClose={() => setSelectedUser(null)}
-          onEdit={handleEditFromDetail}
         />
       )}
       {isEditModalOpen !== null && (

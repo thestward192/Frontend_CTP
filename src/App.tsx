@@ -8,7 +8,7 @@ import MenuAdminProveedores from './Components/componentsAdminProveedor/MenuProv
 import MenuLicitaciones from './Components/componentsAdminLicitaciones/MenuLicitaciones';
 import MenuLeyes from './Components/componentsAdminLeyes/MenuLeyesComponent';
 import MenuUbicacion from './Components/componentsAdminUbicaciones/MenuUbicacionesComponent';
-import MenuDocenteAdmin from './Components/componentsAdminDocentes/MenuDocentesComponent';
+import MenuDocenteAdmin from './Components/componentsAdminUsuario/MenuDocentesComponent';
 import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
 import ProtectedRoute from './hooks/ProtectedRoute';
 import { AuthProvider } from './hooks/AuthContext';

@@ -8,7 +8,7 @@ interface FormularioDocenteProps {
   onClose: () => void;
 }
 
-const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
+const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUserMutation } = useUsers();
   const { roles, loading: rolesLoading } = useRoles();
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion(); // Usamos el hook de ubicaciones
@@ -209,4 +209,4 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   );
 };
 
-export default FormularioDocente;
+export default FormularioUsuario;
