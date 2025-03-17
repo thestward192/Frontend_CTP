@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useInventario } from '../../hooks/useInventario';
 import { useAuth } from '../../hooks/AuthContext';
 import ModalCrearInventario from './ModalCrearInventario';
+import ModalVerInventario from './ModalVerInventario';
 
 const TableInventarioDocente: React.FC = () => {
   const { inventarios, isLoading, createInventarioMutate } = useInventario();
   const { usuarioId, ubicaciones } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedInventario, setSelectedInventario] = useState<any>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Filtrar inventarios del docente autenticado
   const filteredInventarios = inventarios.filter(
@@ -22,7 +25,7 @@ const TableInventarioDocente: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredInventarios.slice(startIndex, startIndex + itemsPerPage);
 
-  // Función que se ejecuta al enviar la información desde el modal para crear un nuevo inventario
+  // Función para crear un nuevo inventario a partir de los datos ingresados en el modal
   const handleModalSubmit = (modalData: { ubicacionId: number; detalles: any[] }) => {
     if (!usuarioId) {
       console.error('Usuario no autenticado');
@@ -43,7 +46,13 @@ const TableInventarioDocente: React.FC = () => {
         console.error('Error creando inventario:', error);
       },
     });
-    setIsModalOpen(false);
+    setIsCreateModalOpen(false);
+  };
+
+  // Al hacer clic en una fila se abre el modal para ver el detalle del inventario
+  const handleRowClick = (inventario: any) => {
+    setSelectedInventario(inventario);
+    setIsViewModalOpen(true);
   };
 
   return (
@@ -52,13 +61,13 @@ const TableInventarioDocente: React.FC = () => {
         className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
         style={{ height: 'calc(100vh - 220px)', display: 'flex', flexDirection: 'column' }}
       >
-        {/* Encabezado con título y botón para crear inventario */}
+        {/* Encabezado: Título y botón para crear inventario */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-black">Historial de Inventarios</h1>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsCreateModalOpen(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Hacer Inventario
@@ -74,14 +83,22 @@ const TableInventarioDocente: React.FC = () => {
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-4 py-2 text-gray-600 font-semibold">Fecha</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Docente</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Ubicación</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Cantidad de Activos</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedData.map((inv) => (
-                  <tr key={inv.id} className="border-b hover:bg-gray-100 cursor-pointer">
+                  <tr
+                    key={inv.id}
+                    className="border-b hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleRowClick(inv)}
+                  >
                     <td className="px-4 py-2 text-sm">{inv.fecha}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {inv.docente ? `${inv.docente.nombre} ${inv.docente.apellido_1}` : 'N/A'}
+                    </td>
                     <td className="px-4 py-2 text-sm">{inv.ubicacion?.nombre}</td>
                     <td className="px-4 py-2 text-sm">{inv.detalles.length}</td>
                   </tr>
@@ -129,10 +146,18 @@ const TableInventarioDocente: React.FC = () => {
       </div>
 
       {/* Modal para crear un nuevo inventario */}
-      {isModalOpen && (
+      {isCreateModalOpen && (
         <ModalCrearInventario
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => setIsCreateModalOpen(false)}
           onSubmit={handleModalSubmit}
+        />
+      )}
+
+      {/* Modal para ver los detalles del inventario seleccionado */}
+      {isViewModalOpen && selectedInventario && (
+        <ModalVerInventario
+          inventario={selectedInventario}
+          onClose={() => setIsViewModalOpen(false)}
         />
       )}
     </div>
