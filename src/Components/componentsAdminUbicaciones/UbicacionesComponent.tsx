@@ -67,13 +67,13 @@ const UbicacionesComponent: React.FC = () => {
       setTimeout(() => setShowErrorMessage(false), 3000);
     } finally {
       setIsEditing(false);
-      setDetailModalOpen(null); // ✅ Cerramos el modal correctamente
+      setDetailModalOpen(null);
     }
   };
 
   const closeDetails = () => {
     setIsEditing(false);
-    setDetailModalOpen(null); // ✅ Corregido a `false`
+    setDetailModalOpen(null);
   };
 
   return (

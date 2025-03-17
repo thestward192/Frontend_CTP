@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import { useLicitaciones } from '../../hooks/useLicitacion';
 import DetailLicitacion from './DetailLicitacion';
 import EditLicitacion from './EditLicitacion';
@@ -14,15 +14,15 @@ const LicitacionesComponent: React.FC = () => {
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-  const { 
-    licitaciones, 
-    loading, 
-    error, 
-    fetchLicitacionById, 
-    selectedLicitacion, 
-    editLicitacion, 
+  const {
+    licitaciones,
+    loading,
+    error,
+    fetchLicitacionById,
+    selectedLicitacion,
+    editLicitacion,
     updateDisponibilidad,
-    addLicitacion 
+    addLicitacion
   } = useLicitaciones();
 
   const handleLicitacionCreated = () => {
@@ -36,15 +36,8 @@ const LicitacionesComponent: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleLicitacionEdited = () => {
-    setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 3000);
-  };
-
   const handleUpdateDisponibilidad = async (id: number) => {
     const licitacion = licitaciones.find((l) => l.id === id);
-
-    // Verificar si la licitación ya está fuera de servicio
     if (licitacion && licitacion.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
@@ -67,19 +60,24 @@ const LicitacionesComponent: React.FC = () => {
     return new Intl.NumberFormat("es-CR").format(monto);
   };
 
-  const startEdit = () => setIsEditing(true);
+  const handleEditClick = async (id: number) => {
+    await fetchLicitacionById(id);
+    setIsEditing(true);
+    setDetailModalOpen(true);
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<Licitacion>) => {
+    await editLicitacion(id, updatedData);
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 1000);
+    setIsEditing(false);
+    setDetailModalOpen(false);
+  };
+
   const closeDetails = () => {
     setIsEditing(false);
     setDetailModalOpen(false);
   };
-  const cancelEdit = () => setIsEditing(false);
-
-  const handleEditSave = async (id: number, updatedData: Partial<Licitacion>) => {
-    await editLicitacion(id, updatedData); // Pasamos `id` y `updatedData` como dos argumentos
-    handleLicitacionEdited();
-    setIsEditing(false);
-    setDetailModalOpen(false);
-};
 
 
   return (
@@ -124,7 +122,7 @@ const LicitacionesComponent: React.FC = () => {
                     <td className="px-4 py-2 text-sm">
                       {licitacion.moneda === "CRC" ? "₡" : "$"}
                       {licitacion.monto.toLocaleString("es-CR", { minimumFractionDigits: 2 })}
-                      </td>
+                    </td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex space-x-2">
                         <button
@@ -132,6 +130,12 @@ const LicitacionesComponent: React.FC = () => {
                           onClick={() => handleViewDetails(licitacion.id)}
                         >
                           <FaEye className="mr-1" />
+                        </button>
+                        <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(licitacion.id)}
+                        >
+                          <FaEdit className="mr-1" />
                         </button>
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
@@ -154,11 +158,11 @@ const LicitacionesComponent: React.FC = () => {
       </div>
 
       {isModalOpen && (
-         <FormularioLicitacion 
-         onClose={() => setIsModalOpen(false)} 
-         onLicitacionCreated={handleLicitacionCreated} 
-         onSubmit={handleSubmit} // Pasamos `handleSubmit` como `onSubmit`
-       />
+        <FormularioLicitacion
+          onClose={() => setIsModalOpen(false)}
+          onLicitacionCreated={handleLicitacionCreated}
+          onSubmit={handleSubmit}
+        />
       )}
 
       {detailModalOpen && selectedLicitacion && (
@@ -166,13 +170,12 @@ const LicitacionesComponent: React.FC = () => {
           <EditLicitacion
             licitacion={selectedLicitacion}
             onSave={handleEditSave}
-            onCancel={cancelEdit}
+            onCancel={closeDetails}
           />
         ) : (
           <DetailLicitacion
             licitacion={selectedLicitacion}
             onClose={closeDetails}
-            onEdit={startEdit}
           />
         )
       )}
@@ -184,7 +187,7 @@ const LicitacionesComponent: React.FC = () => {
             <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta Licitación?</p>
 
             <div className="flex justify-end space-x-4 mt-6">
-               <button
+              <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                 onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
               >
@@ -197,7 +200,7 @@ const LicitacionesComponent: React.FC = () => {
                 Cancelar
               </button>
             </div>
-            
+
           </div>
         </div>
       )}
