@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import { useLicencias } from '../../hooks/useLicencia';
 import FormularioLicencia from './FormularioLicencia';
 import DetailLicencia from './DetailLicencia';
 import { CreateLicenciaDTO, Licencia } from '../../types/licencia';
+import EditLicencia from './EditLicencia';
 
 const LicenciasComponent: React.FC = () => {
   const { licencias, loading, error, addLicencia, updateDisponibilidadLicenciaMutation } = useLicencias();
@@ -12,22 +13,31 @@ const LicenciasComponent: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleViewDetails = (licencia: Licencia) => {
     setSelectedLicencia(licencia);
   };
 
+  const handleEditClick = (licencia: Licencia) => {
+    setSelectedLicencia(licencia);
+    setIsEditing(true);
+  };
+
+  const handleCloseDetail = () => {
+    setIsEditing(false);
+    setSelectedLicencia(null);
+  };
+
   const handleUpdateDisponibilidad = async (id: number) => {
     const licencia = licencias?.find((lic) => lic.id === id);
-    
+
     // Verificamos si la licencia ya está "Fuera de Servicio"
     if (licencia && licencia.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
       return; // No cerramos el modal si ya está "Fuera de Servicio"
     }
-
-    // Procedemos a actualizar la disponibilidad
     try {
       await updateDisponibilidadLicenciaMutation.mutateAsync(id);
       setShowCompletedMessage(true);
@@ -40,13 +50,14 @@ const LicenciasComponent: React.FC = () => {
   };
 
   const handleAddLicencia = async (licencia: CreateLicenciaDTO) => {
-    await addLicencia(licencia);
-    setIsModalOpen(false);
+    try {
+      await addLicencia(licencia);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error al agregar la licencia:", error);
+    }
   };
 
-  const handleCloseDetail = () => {
-    setSelectedLicencia(null);
-  };
 
   return (
     <div className="w-full flex justify-center py-10">
@@ -97,6 +108,10 @@ const LicenciasComponent: React.FC = () => {
                         >
                           <FaEye className="mr-1" />
                         </button>
+                        <button className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(row)}>
+                          <FaEdit className="mr-1" />
+                        </button>
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setDeleteModalOpen(row.id)}
@@ -127,17 +142,24 @@ const LicenciasComponent: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <FormularioLicencia 
-          onClose={() => setIsModalOpen(false)} 
-          onSave={handleAddLicencia} 
+        <FormularioLicencia
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleAddLicencia}
         />
       )}
 
       {selectedLicencia && (
-        <DetailLicencia
-          licencia={selectedLicencia}
-          onClose={handleCloseDetail}
-        />
+        isEditing ? (
+          <EditLicencia
+            licencia={selectedLicencia}
+            onClose={handleCloseDetail}
+          />
+        ) : (
+          <DetailLicencia
+            licencia={selectedLicencia}
+            onClose={handleCloseDetail}
+          />
+        )
       )}
 
       {deleteModalOpen !== null && (
@@ -160,7 +182,7 @@ const LicenciasComponent: React.FC = () => {
                 Cancelar
               </button>
             </div>
-            
+
           </div>
         </div>
       )}
