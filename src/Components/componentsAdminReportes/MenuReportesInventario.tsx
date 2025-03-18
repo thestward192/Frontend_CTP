@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import Dashboard from '../componentsPages/Dashboard';
 import Arriba from '../../assets/Arriba.png';
 import SearchBarComponent from '../componentsAdminMenu/SearchBarComponent';
-import DocentesComponent from './DocentesComponent';
 import { Menu, X } from 'lucide-react';
+import AdminInventariosComponent from './AdminInventariosComponent';
 
-const MenuDocenteAdmin: React.FC = () => {
+const MenuReportesInventario: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
@@ -36,7 +36,8 @@ const MenuDocenteAdmin: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal: en desktop se aplica margen izquierdo si el sidebar está abierto */}
+      {/* Contenido principal:
+          En desktop, se aplica un margen izquierdo de 16rem si el sidebar está abierto; en móvil ocupa todo el ancho */}
       <div
         className={`flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300 ${
           isSidebarOpen ? 'md:ml-[16rem]' : 'md:ml-0'
@@ -55,9 +56,9 @@ const MenuDocenteAdmin: React.FC = () => {
             <SearchBarComponent />
           </div>
 
-          {/* Contenedor de DocentesComponent */}
+          {/* Contenedor de ReportesPrestamosComponent, con la misma posición que en la vista de referencia */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <DocentesComponent />
+            <AdminInventariosComponent />
           </div>
         </div>
       </div>
@@ -65,4 +66,4 @@ const MenuDocenteAdmin: React.FC = () => {
   );
 };
 
-export default MenuDocenteAdmin;
+export default MenuReportesInventario;

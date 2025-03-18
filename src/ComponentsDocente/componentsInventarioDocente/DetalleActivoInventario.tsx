@@ -1,82 +1,62 @@
+// src/components/DetalleActivoInventario.tsx
 import React, { useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
-import { useActivos } from '../../hooks/useActivo';
+import { Activo } from '../../types/activo';
+import { InventarioDetalle } from '../../types/inventario';
 
 interface DetalleActivoInventarioProps {
-  activo: any;
+  activo: Activo;
   onClose: () => void;
+  onSave: (detalle: InventarioDetalle) => void;
 }
 
-const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activo, onClose }) => {
-  const [estado, setEstado] = useState<string>(activo.estado);
-  const [observacion, setObservacion] = useState<string>(activo.observacion || '');
-  const { handleUpdateActivo } = useActivos();
+const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activo, onClose, onSave }) => {
+  const [estadoProvisional, setEstadoProvisional] = useState('Bueno');
+  const [detalle, setDetalle] = useState('');
 
-  const handleEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEstado(e.target.value);
-  };
-
-  const handleObservacionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setObservacion(e.target.value);
-  };
-
-  const handleSave = () => {
-    // Lógica para guardar el cambio de estado y la observación
-    handleUpdateActivo({
-      id: activo.id,
-      data: { estado, observacion }
-    });
-    onClose(); // Cerrar el modal después de guardar
+  const handleSubmit = () => {
+    // Se arma el objeto detalle con el id del activo y los datos ingresados
+    const detalleObj: InventarioDetalle = {
+      activoId: activo.id,
+      estadoProvisional,
+      detalle,
+    };
+    console.log('Detalle guardado para activo', activo.id, detalleObj);
+    onSave(detalleObj);
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Detalle del Activo</h2>
-          <button onClick={onClose}>
-            <FaTimes className="text-gray-600 hover:text-gray-800" />
-          </button>
-        </div>
-
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-4 rounded shadow-lg w-full max-w-md">
+        <h2 className="text-lg font-bold mb-4">Detalle para: {activo.nombre}</h2>
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Estado</label>
+          <label className="block text-sm font-medium">Estado Provisional</label>
           <select
-            value={estado}
-            onChange={handleEstadoChange}
-            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="w-full border rounded p-2"
+            value={estadoProvisional}
+            onChange={(e) => setEstadoProvisional(e.target.value)}
           >
             <option value="Bueno">Bueno</option>
             <option value="Regular">Regular</option>
             <option value="Malo">Malo</option>
           </select>
         </div>
-
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Observación</label>
+          <label className="block text-sm font-medium">Detalle</label>
           <textarea
-            value={observacion}
-            onChange={handleObservacionChange}
-            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            rows={4}
+            className="w-full border rounded p-2"
+            value={detalle}
+            onChange={(e) => setDetalle(e.target.value)}
+            rows={3}
           />
         </div>
-
         <div className="flex justify-end space-x-2">
-           <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Guardar
-          </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded-md text-gray-800 hover:bg-gray-300"
-          >
+          <button className="bg-gray-200 px-4 py-2 rounded" onClick={onClose}>
             Cancelar
           </button>
+          <button className="bg-blue-600 text-white px-4 py-2 rounded" onClick={handleSubmit}>
+            Guardar
+          </button>
         </div>
-        
       </div>
     </div>
   );

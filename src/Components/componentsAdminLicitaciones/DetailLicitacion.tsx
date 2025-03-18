@@ -4,13 +4,10 @@ import { Licitacion } from '../../types/licitacion';
 interface DetailLicitacionProps {
   licitacion: Licitacion | null;
   onClose: () => void;
-  onEdit: () => void;
 }
 
-const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose, onEdit }) => {
+const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose }) => {
   if (!licitacion) return null;
-
-  console.log("Fecha: ", licitacion.fecha);
 
   return (
     <>
@@ -34,9 +31,6 @@ const DetailLicitacion: React.FC<DetailLicitacionProps> = ({ licitacion, onClose
 
           {/* Botones */}
           <div className="flex justify-end space-x-4">
-            <button onClick={onEdit} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-              Editar
-            </button>
             <button onClick={onClose} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
               Cerrar
             </button>

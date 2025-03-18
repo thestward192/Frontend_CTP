@@ -4,10 +4,9 @@ import { Ley } from '../../types/ley';
 interface DetailLeyProps {
   ley: Ley | null;
   onClose: () => void;
-  onEdit: () => void; // Añadimos la función para editar
 }
 
-const DetailLey: React.FC<DetailLeyProps> = ({ ley, onClose, onEdit }) => {
+const DetailLey: React.FC<DetailLeyProps> = ({ ley, onClose }) => {
   if (!ley) {
     return null; // No mostrar nada si no hay ley seleccionada
   }
@@ -22,12 +21,6 @@ const DetailLey: React.FC<DetailLeyProps> = ({ ley, onClose, onEdit }) => {
         <p><strong>Disponibilidad: </strong>{ley.disponibilidad}</p>
 
         <div className="flex justify-end space-x-4 mt-6">
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            onClick={onEdit} // Acción de editar
-          >
-            Editar
-          </button>
           <button
             className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             onClick={onClose}

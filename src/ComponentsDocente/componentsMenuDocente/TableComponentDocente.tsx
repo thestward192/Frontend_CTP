@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import { useActivos } from '../../hooks/useActivo';
 import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoDocente from './DetalleActivoDocente';
-import { Activo } from '../../types/activo'; // Asegúrate de tener un tipo definido para Activo
-
+import { Activo } from '../../types/activo';
 
 const TableComponentDocente: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { useActivosByUbicacion } = useActivos(); // Usamos el hook para obtener activos por ubicación
+  const [itemsPerPage, setItemsPerPage] = useState(33);
+  const { useActivosByUbicacion } = useActivos();
   const { ubicaciones } = useAuth();
   const [selectedUbicacion, setSelectedUbicacion] = useState<number | null>(null);
   const [selectedActivo, setSelectedActivo] = useState<Activo | null>(null);
@@ -18,44 +18,100 @@ const TableComponentDocente: React.FC = () => {
   const [filterMarca, setFilterMarca] = useState('');
   const [filterNombre, setFilterNombre] = useState('');
 
-  // Usamos el hook `useActivosByUbicacion` para obtener activos basados en la ubicación seleccionada
+  // Orden
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Input para salto de página
+  const [pageInput, setPageInput] = useState('');
+
+  // Obtenemos los activos según la ubicación seleccionada
   const { data: activos = [], isLoading: loading } = useActivosByUbicacion(selectedUbicacion || 0);
 
+  // Selección por defecto de la primera ubicación
   useEffect(() => {
     if (ubicaciones && ubicaciones.length > 0 && selectedUbicacion === null) {
-      const defaultUbicacionId = ubicaciones[0].id;
-      setSelectedUbicacion(defaultUbicacionId);
+      setSelectedUbicacion(ubicaciones[0].id);
     }
-  }, [ubicaciones]);
+  }, [ubicaciones, selectedUbicacion]);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
+  // Seleccionar ubicación
   const handleUbicacionSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedUbicacion(parseInt(event.target.value, 10));
+    setCurrentPage(1);
   };
 
+  // Al hacer clic en una fila, se abre el modal
   const handleRowClick = (activo: Activo) => {
     setSelectedActivo(activo);
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  // Filtrado de activos
+  const filteredActivos = useMemo(() => {
+    return activos.filter((activo) =>
+      (filterEstado === '' || activo.estado === filterEstado) &&
+      (filterMarca === '' || activo.marca.toLowerCase().includes(filterMarca.toLowerCase())) &&
+      (filterNombre === '' || activo.nombre.toLowerCase().includes(filterNombre.toLowerCase()))
+    );
+  }, [activos, filterEstado, filterMarca, filterNombre]);
+
+  // Orden por `numPlaca` (No. Identificador)
+  const sortedActivos = useMemo(() => {
+    return [...filteredActivos].sort((a, b) => {
+      const placaA = a.numPlaca || '';
+      const placaB = b.numPlaca || '';
+      return sortOrder === 'asc'
+        ? placaA.localeCompare(placaB)
+        : placaB.localeCompare(placaA);
+    });
+  }, [filteredActivos, sortOrder]);
+
+  // Paginación
+  const totalPages = Math.ceil(sortedActivos.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedActivos.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedActivos, currentPage, itemsPerPage]);
+
+  // Generar números de página con puntos suspensivos
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(
+          1,
+          '...',
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          '...',
+          totalPages
+        );
+      }
+    }
+    return pages;
   };
 
-  const itemsPerPage = 33;
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  // Input para saltar a página
+  const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
 
-  // Filtrado de los activos en base a los filtros aplicados
-  const filteredActivos = activos.filter((activo) =>
-    (filterEstado === '' || activo.estado === filterEstado) &&
-    (filterMarca === '' || activo.marca.toLowerCase().includes(filterMarca.toLowerCase())) &&
-    (filterNombre === '' || activo.nombre.toLowerCase().includes(filterNombre.toLowerCase()))
-  );
-
-  const paginatedData = filteredActivos.slice(startIndex, startIndex + itemsPerPage);
+  const handlePageSearch = () => {
+    const pageNumber = parseInt(pageInput);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+    setPageInput('');
+  };
 
   return (
     <div className="w-full flex justify-center py-6">
@@ -63,11 +119,12 @@ const TableComponentDocente: React.FC = () => {
         className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
         style={{ height: 'calc(100vh - 220px)', display: 'flex', flexDirection: 'column' }}
       >
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</div>
+        {/* Selector de ubicación y filtros en la parte superior */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+          <div className="flex items-center mb-4 md:mb-0">
+            <span className="text-lg font-semibold text-black mr-4">Seleccione una ubicación:</span>
             <select
-              className="bg-white w-[160px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-s"
+              className="bg-white w-[160px] h-[40px] p-2 rounded-lg border border-gray-300 shadow-sm text-sm"
               value={selectedUbicacion || ''}
               onChange={handleUbicacionSelect}
             >
@@ -79,9 +136,7 @@ const TableComponentDocente: React.FC = () => {
               ))}
             </select>
           </div>
-
-          {/* Filtros adicionales */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
               className="py-2 px-4 rounded-lg shadow bg-gray-200 text-gray-800"
@@ -109,6 +164,7 @@ const TableComponentDocente: React.FC = () => {
           </div>
         </div>
 
+        {/* Tabla de activos */}
         <div className="flex-grow overflow-y-auto">
           {loading ? (
             <div>Cargando activos...</div>
@@ -137,7 +193,11 @@ const TableComponentDocente: React.FC = () => {
                     <td className="px-4 py-2 text-sm">
                       <span
                         className={`px-3 py-1 rounded-md text-sm ${
-                          row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          row.estado === 'Bueno'
+                            ? 'bg-green-100 text-green-800'
+                            : row.estado === 'Regular'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
                         }`}
                       >
                         {row.estado}
@@ -150,46 +210,102 @@ const TableComponentDocente: React.FC = () => {
           )}
         </div>
 
-        <div className="flex justify-between items-center mt-4">
-          <div>
-            <p className="text-sm text-gray-600">Total de Activos: {filteredActivos.length}</p>
-          </div>
-          <div className="flex space-x-1">
+        {/* Controles de paginación y orden (parte inferior) */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
+          {/* Izquierda: Mostrar X entradas y Botón de Orden */}
+          <div className="flex items-center space-x-4 mb-2 md:mb-0">
+            <div>
+              <label className="text-sm text-gray-600 mr-2">Mostrar</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(parseInt(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="p-1 border rounded text-sm"
+              >
+                <option value={33}>33</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-600 ml-2">entradas</span>
+            </div>
             <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="px-3 py-1 border rounded text-sm bg-gray-100 hover:bg-gray-200"
+            >
+              Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+            </button>
+          </div>
+
+          {/* Derecha: Controles de paginación */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(1)}
               className="px-3 py-1 bg-gray-200 rounded-md"
-              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              &lt;
+              {"<<"}
             </button>
-            {Array.from({ length: Math.ceil(filteredActivos.length / itemsPerPage) }, (_, index) => (
-              <button
-                key={index}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                }`}
-                onClick={() => handlePageChange(index + 1)}
-              >
-                {index + 1}
-              </button>
-            ))}
             <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-gray-200 rounded-md"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === Math.ceil(filteredActivos.length / itemsPerPage)}
+              disabled={currentPage === 1}
             >
-              &gt;
+              {"<"}
             </button>
+            {getPageNumbers().map((page, index) =>
+              page === '...' ? (
+                <span key={index} className="px-3 py-1">...</span>
+              ) : (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === totalPages}
+            >
+              {">"}
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === totalPages}
+            >
+              {">>"}
+            </button>
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={pageInput}
+                onChange={handlePageInput}
+                placeholder="Página"
+                className="border p-1 rounded w-16 text-sm"
+              />
+              <button
+                onClick={handlePageSearch}
+                className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm"
+              >
+                Ir
+              </button>
+            </div>
           </div>
         </div>
-
-        {isModalOpen && selectedActivo && (
-          <DetalleActivoDocente
-            activo={selectedActivo}
-            onClose={closeModal}
-          />
-        )}
       </div>
+
+      {/* Modal de Detalle */}
+      {isModalOpen && selectedActivo && (
+        <DetalleActivoDocente activo={selectedActivo} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };

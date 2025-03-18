@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import { useLicencias } from '../../hooks/useLicencia';
 import FormularioLicencia from './FormularioLicencia';
 import DetailLicencia from './DetailLicencia';
+import EditLicencia from './EditLicencia';
 import { CreateLicenciaDTO, Licencia } from '../../types/licencia';
 
 const LicenciasComponent: React.FC = () => {
@@ -12,27 +13,94 @@ const LicenciasComponent: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
+  // Estados de paginación y ordenamiento
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(33);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [pageInput, setPageInput] = useState('');
+
+  // Ordenamos las licencias (por ejemplo, usando la propiedad "id")
+  const sortedLicencias = useMemo(() => {
+    return [...(licencias || [])].sort((a, b) =>
+      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+    );
+  }, [licencias, sortOrder]);
+
+  // Calculamos el total de páginas
+  const totalPages = Math.ceil(sortedLicencias.length / itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages || 1);
+    }
+  }, [totalPages, currentPage]);
+
+  // Licencias a mostrar en la página actual
+  const currentLicencias = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedLicencias.slice(start, start + itemsPerPage);
+  }, [sortedLicencias, currentPage, itemsPerPage]);
+
+  // Función para generar números de página con puntos suspensivos
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
+  const handlePageSearch = () => {
+    const pageNumber = parseInt(pageInput);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+    setPageInput('');
+  };
+
+  // Handlers para ver detalles, editar y actualizar disponibilidad
   const handleViewDetails = (licencia: Licencia) => {
     setSelectedLicencia(licencia);
   };
 
+  const handleEditClick = (licencia: Licencia) => {
+    setSelectedLicencia(licencia);
+    setIsEditing(true);
+  };
+
+  const handleCloseDetail = () => {
+    setIsEditing(false);
+    setSelectedLicencia(null);
+  };
+
   const handleUpdateDisponibilidad = async (id: number) => {
     const licencia = licencias?.find((lic) => lic.id === id);
-    
-    // Verificamos si la licencia ya está "Fuera de Servicio"
     if (licencia && licencia.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
-      return; // No cerramos el modal si ya está "Fuera de Servicio"
+      return;
     }
-
-    // Procedemos a actualizar la disponibilidad
     try {
       await updateDisponibilidadLicenciaMutation.mutateAsync(id);
       setShowCompletedMessage(true);
       setTimeout(() => setShowCompletedMessage(false), 3000);
-      setDeleteModalOpen(null); // Cerramos el modal solo si la actualización fue exitosa
+      setDeleteModalOpen(null);
     } catch {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
@@ -40,12 +108,12 @@ const LicenciasComponent: React.FC = () => {
   };
 
   const handleAddLicencia = async (licencia: CreateLicenciaDTO) => {
-    await addLicencia(licencia);
-    setIsModalOpen(false);
-  };
-
-  const handleCloseDetail = () => {
-    setSelectedLicencia(null);
+    try {
+      await addLicencia(licencia);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error al agregar la licencia:", error);
+    }
   };
 
   return (
@@ -82,7 +150,7 @@ const LicenciasComponent: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {licencias?.map((row) => (
+                {currentLicencias.map((row) => (
                   <tr key={row.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{row.numeroIdentificador}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
@@ -90,12 +158,18 @@ const LicenciasComponent: React.FC = () => {
                     <td className="px-4 py-2 text-sm">{row.codigoLicencia}</td>
                     <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-3">
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => handleViewDetails(row)}
                         >
                           <FaEye className="mr-1" />
+                        </button>
+                        <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(row)}
+                        >
+                          <FaEdit className="mr-1" />
                         </button>
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
@@ -112,32 +186,104 @@ const LicenciasComponent: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-between items-center mt-4">
-          <div>
-            <p className="text-sm text-gray-600">
-              Mostrando 1 a {licencias?.length || 0} de {licencias?.length || 0} entradas
-            </p>
+        {/* Controles de paginación y filtros */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
+          <div className="flex items-center space-x-4 mb-2 md:mb-0">
+            {/* Selector de cantidad de entradas */}
+            <div>
+              <label className="text-sm text-gray-600 mr-2">Mostrar</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(parseInt(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="p-1 border rounded"
+              >
+                <option value={10}>10</option>
+                <option value={33}>33</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-600 ml-2">entradas</span>
+            </div>
+            {/* Botón para cambiar el orden */}
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="px-3 py-1 border rounded text-sm"
+            >
+              Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+            </button>
           </div>
-          <div className="flex space-x-1">
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
-            <button className="px-3 py-1 bg-blue-600 text-white rounded-md">1</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&gt;</button>
+
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setCurrentPage(1)} className="px-3 py-1 bg-gray-200 rounded-md">
+              {"<<"}
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+            >
+              {"<"}
+            </button>
+            {getPageNumbers().map((page, index) =>
+              page === '...' ? (
+                <span key={index} className="px-3 py-1">...</span>
+              ) : (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+            >
+              {">"}
+            </button>
+            <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded-md">
+              {">>"}
+            </button>
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={pageInput}
+                onChange={handlePageInput}
+                placeholder="Página"
+                className="border p-1 rounded w-16 text-sm"
+              />
+              <button onClick={handlePageSearch} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
+                Ir
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {isModalOpen && (
-        <FormularioLicencia 
-          onClose={() => setIsModalOpen(false)} 
-          onSave={handleAddLicencia} 
+        <FormularioLicencia
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleAddLicencia}
         />
       )}
 
       {selectedLicencia && (
-        <DetailLicencia
-          licencia={selectedLicencia}
-          onClose={handleCloseDetail}
-        />
+        isEditing ? (
+          <EditLicencia
+            licencia={selectedLicencia}
+            onClose={handleCloseDetail}
+          />
+        ) : (
+          <DetailLicencia
+            licencia={selectedLicencia}
+            onClose={handleCloseDetail}
+          />
+        )
       )}
 
       {deleteModalOpen !== null && (
@@ -145,7 +291,6 @@ const LicenciasComponent: React.FC = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
             <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Licencia</h2>
             <p>¿Estás seguro de que deseas marcar esta licencia como "Fuera de Servicio"?</p>
-
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
@@ -160,7 +305,6 @@ const LicenciasComponent: React.FC = () => {
                 Cancelar
               </button>
             </div>
-            
           </div>
         </div>
       )}

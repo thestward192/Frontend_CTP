@@ -1,101 +1,47 @@
 import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
 import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
-import FormularioLey from './FormularioLey';
-import { useLeyes } from '../../hooks/useLey';
-import DetailLey from './DetailLey';
-import EditLeyForm from './EditLey';
-import { Ley } from '../../types/ley';
+import FormularioUsuario from './FormularioUsuario';
+import FormularioEditarUsuario from './FormularioEditarUsuario';
+import DetailUsuario from './DetailUsuario';
+import { User } from '../../types/user';
+import { useUsers } from '../../hooks/useUser';
 
-const LeyesComponent: React.FC = () => {
-  // Estados modales y mensajes
+const UsuariosComponent: React.FC = () => {
+  // Estados de modales y mensajes
+  const { users = [], loading, error, updateDisponibilidadMutation, editUserMutation } = useUsers();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<number | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<number | null>(null);
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   // Estados de paginación y ordenamiento
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(33);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
-  const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
-
-  // Notificaciones de acción completada
-  const handleLeyCreated = () => {
-    setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 3000);
-  };
-
-  const handleLeyEdited = () => {
-    setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 3000);
-  };
-
-  // Actualiza la disponibilidad de la Ley
-  const handleUpdateDisponibilidad = async (id: number) => {
-    const ley = leyes.find((ley) => ley.id === id);
-
-    if (ley && ley.disponibilidad === 'Fuera de Servicio') {
-      setShowErrorMessage(true);
-      setTimeout(() => setShowErrorMessage(false), 3000);
-      return;
-    } 
-
-    await updateDisponibilidadLeyMutation.mutate(id);
-    setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 3000);
-    setDeleteModalOpen(null);
-  };
-
-  const handleViewDetails = async (id: number) => {
-    await getLeyDetails(id);
-    setIsEditing(false);
-    setDetailModalOpen(true);
-  };
-
-  const handleEditClick = async (id: number) => {
-    await getLeyDetails(id);
-    setIsEditing(true);
-    setDetailModalOpen(true);
-  };
-
-  const handleEditSave = async (id: number, updatedData: Partial<Ley>) => {
-    await editLey({ id, leyData: updatedData });
-    handleLeyEdited();
-    setIsEditing(false);
-    setDetailModalOpen(false);
-  };
-
-  const closeDetails = () => {
-    setIsEditing(false);
-    setDetailModalOpen(false);
-  };
-
-  // Ordenamos las leyes según el id
-  const sortedLeyes = useMemo(() => {
-    return [...(leyes || [])].sort((a, b) =>
-      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-    );
-  }, [leyes, sortOrder]);
+  // Ordenamos los usuarios según "id" (o la propiedad que prefieras) según sortOrder
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => sortOrder === 'asc' ? a.id - b.id : b.id - a.id);
+  }, [users, sortOrder]);
 
   // Calculamos el total de páginas
-  const totalPages = Math.ceil(sortedLeyes.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
 
-  // Si la página actual es mayor al total, se ajusta
+  // Aseguramos que la página actual no exceda el total
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages || 1);
     }
   }, [totalPages, currentPage]);
 
-  // Leyes a mostrar en la página actual
-  const currentLeyes = useMemo(() => {
+  // Usuarios a mostrar en la página actual
+  const currentUsers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return sortedLeyes.slice(start, start + itemsPerPage);
-  }, [sortedLeyes, currentPage, itemsPerPage]);
+    return sortedUsers.slice(start, start + itemsPerPage);
+  }, [sortedUsers, currentPage, itemsPerPage]);
 
   // Función para generar números de página con puntos suspensivos
   const getPageNumbers = () => {
@@ -116,7 +62,7 @@ const LeyesComponent: React.FC = () => {
     return pages;
   };
 
-  // Handlers para la búsqueda de página
+  // Manejadores para el input de salto de página
   const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
     setPageInput(e.target.value);
   };
@@ -129,9 +75,37 @@ const LeyesComponent: React.FC = () => {
     setPageInput('');
   };
 
-  // Cálculo para mostrar el rango de entradas
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + currentLeyes.length, sortedLeyes.length);
+  // Handlers propios del componente
+  const handleViewDetails = (userId: number) => {
+    setSelectedUser(userId);
+  };
+
+  const handleUpdateAvailability = async (userId: number) => {
+    const user = users.find((u) => u.id === userId);
+    if (user && user.disponibilidad === 'Fuera de Servicio') {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+      return;
+    }
+    await updateDisponibilidadMutation.mutateAsync(userId);
+    setShowCompletedMessage(true);
+    setTimeout(() => setShowCompletedMessage(false), 3000);
+    setIsDeleteModalOpen(null);
+  };
+
+  const handleSaveEdit = async (userId: number, updatedData: Partial<User>) => {
+    try {
+      await editUserMutation.mutateAsync({ userId, updatedData });
+      setIsEditModalOpen(null);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error('Error al editar el usuario:', error);
+    }
+  };
+
+  const handleEditClick = (userId: number) => {
+    setIsEditModalOpen(userId);
+  };
 
   return (
     <div className="w-full flex justify-center py-10">
@@ -140,53 +114,61 @@ const LeyesComponent: React.FC = () => {
         style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold">Gestión de Leyes</h2>
+          <h2 className="text-3xl font-bold">Gestión de Usuarios</h2>
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
           >
             <FaPlus />
-            <span>Agregar Ley</span>
+            <span>Agregar Usuario</span>
           </button>
         </div>
 
-        {error && <p className="text-red-500">Error al cargar leyes.</p>}
         {loading ? (
-          <p>Cargando leyes...</p>
+          <div>Cargando usuarios...</div>
+        ) : error ? (
+          <div>
+            Error al cargar los usuarios:{' '}
+            {error instanceof Error ? error.message : 'Ocurrió un error desconocido'}
+          </div>
+        ) : !users.length ? (
+          <div>No hay usuarios disponibles</div>
         ) : (
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Nº Ley</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
-                  <th className="px-4 py-2 text-gray-600 font-semibold">Detalle</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Primer Apellido</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Segundo Apellido</th>
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Email</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {currentLeyes.map((ley) => (
-                  <tr key={ley.id} className="border-b hover:bg-gray-100">
-                    <td className="px-4 py-2 text-sm">{ley.numLey}</td>
-                    <td className="px-4 py-2 text-sm">{ley.nombre}</td>
-                    <td className="px-4 py-2 text-sm truncate max-w-xs">{ley.detalle}</td>
+                {currentUsers.map((user) => (
+                  <tr key={user.id} className="border-b hover:bg-gray-100">
+                    <td className="px-4 py-2 text-sm">{user.nombre}</td>
+                    <td className="px-4 py-2 text-sm">{user.apellido_1}</td>
+                    <td className="px-4 py-2 text-sm">{user.apellido_2}</td>
+                    <td className="px-4 py-2 text-sm">{user.email}</td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex space-x-2">
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => handleViewDetails(ley.id)}
+                          onClick={() => handleViewDetails(user.id)}
                         >
                           <FaEye className="mr-1" />
                         </button>
                         <button
                           className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => handleEditClick(ley.id)}
+                          onClick={() => handleEditClick(user.id)}
                         >
                           <FaEdit className="mr-1" />
                         </button>
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => setDeleteModalOpen(ley.id)}
+                          onClick={() => setIsDeleteModalOpen(user.id)}
                         >
                           <FaTrash className="mr-1" />
                         </button>
@@ -199,9 +181,10 @@ const LeyesComponent: React.FC = () => {
           </div>
         )}
 
-        {/* Controles de paginación y filtros */}
+        {/* Filtros y controles de paginación reubicados */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
           <div className="flex items-center space-x-4 mb-2 md:mb-0">
+            {/* Selector de cantidad de entradas por página */}
             <div>
               <label className="text-sm text-gray-600 mr-2">Mostrar</label>
               <select
@@ -218,11 +201,12 @@ const LeyesComponent: React.FC = () => {
               </select>
               <span className="text-sm text-gray-600 ml-2">entradas</span>
             </div>
+            {/* Botón para cambiar el orden */}
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="px-3 py-1 border rounded text-sm"
             >
-              Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+               Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
             </button>
           </div>
 
@@ -274,43 +258,45 @@ const LeyesComponent: React.FC = () => {
             </div>
           </div>
         </div>
-        
       </div>
 
-      {isModalOpen && (
-        <FormularioLey onClose={() => setIsModalOpen(false)} onLeyCreated={handleLeyCreated} />
+      {/* Modal para agregar usuario */}
+      {isModalOpen && <FormularioUsuario onClose={() => setIsModalOpen(false)} />}
+      {/* Modal para ver detalles */}
+      {selectedUser !== null && (
+        <DetailUsuario
+          userId={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+      {/* Modal para editar usuario */}
+      {isEditModalOpen !== null && (
+        <FormularioEditarUsuario
+          userId={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(null);
+            setSelectedUser(null);
+          }}
+          onSave={handleSaveEdit}
+        />
       )}
 
-      {detailModalOpen && selectedLey && (
-        isEditing ? (
-          <EditLeyForm
-            ley={selectedLey}
-            onSave={handleEditSave}
-            onCancel={closeDetails}
-          />
-        ) : (
-          <DetailLey
-            ley={selectedLey}
-            onClose={closeDetails}
-          />
-        )
-      )}
-
-      {deleteModalOpen !== null && (
+      {/* Modal para confirmar cambio de disponibilidad */}
+      {isDeleteModalOpen !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ley</h2>
-            <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta Ley?</p>
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Usuario</h2>
+            <p>¿Estás seguro de que deseas cambiar la disponibilidad de este Usuario?</p>
             <div className="flex justify-end space-x-4 mt-6">
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                onClick={() => handleUpdateAvailability(isDeleteModalOpen!)}
               >
                 Confirmar
               </button>
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                onClick={() => setDeleteModalOpen(null)}
+                onClick={() => setIsDeleteModalOpen(null)}
               >
                 Cancelar
               </button>
@@ -319,19 +305,21 @@ const LeyesComponent: React.FC = () => {
         </div>
       )}
 
+      {/* Mensaje de éxito */}
       {showCompletedMessage && (
         <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
-          Acción Completada Correctamente!
+          ¡Acción Completada Correctamente!
         </div>
       )}
 
+      {/* Mensaje de error */}
       {showErrorMessage && (
         <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
-          Esta ley ya está Fuera de Servicio
+          Este usuario ya está Fuera de Servicio
         </div>
       )}
     </div>
   );
 };
 
-export default LeyesComponent;
+export default UsuariosComponent;

@@ -1,18 +1,16 @@
-// UbicacionesComponent.tsx
-import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import FormularioUbicacion from './FormularioUbicacion';
 import DetailUbicacion from './DetailUbicacion';
 import EditUbicacionForm from './EditUbicacion';
 import { useUbicacion } from '../../hooks/useUbicacion';
-import { Ubicacion } from '../../types/ubicacion';
 
 const UbicacionesComponent: React.FC = () => {
+  // Estados de modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedUbicacion, setSelectedUbicacion] = useState<Ubicacion | null>(null);
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
@@ -23,9 +21,68 @@ const UbicacionesComponent: React.FC = () => {
     editUbicacion,
     updateDisponibilidad,
     getUbicacionDetails,
+    selectedUbicacion
   } = useUbicacion();
 
-  // Función para mostrar el mensaje de éxito al crear una ubicación
+  // Estados de paginación y ordenamiento
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(33);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [pageInput, setPageInput] = useState('');
+
+  // Ordenamos las ubicaciones según "id" (o la propiedad que prefieras)
+  const sortedUbicaciones = useMemo(() => {
+    return [...(ubicaciones || [])].sort((a, b) =>
+      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+    );
+  }, [ubicaciones, sortOrder]);
+
+  // Calculamos el total de páginas
+  const totalPages = Math.ceil(sortedUbicaciones.length / itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages || 1);
+    }
+  }, [totalPages, currentPage]);
+
+  // Ubicaciones a mostrar en la página actual
+  const currentUbicaciones = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedUbicaciones.slice(start, start + itemsPerPage);
+  }, [sortedUbicaciones, currentPage, itemsPerPage]);
+
+  // Función para generar números de página con puntos suspensivos
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
+  const handlePageSearch = () => {
+    const pageNumber = parseInt(pageInput);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+    setPageInput('');
+  };
+
   const handleUbicacionCreated = () => {
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -33,29 +90,34 @@ const UbicacionesComponent: React.FC = () => {
 
   const handleUpdateDisponibilidad = async (id: number) => {
     const ubicacionToUpdate = ubicaciones?.find((ubicacion) => ubicacion.id === id);
-
     if (ubicacionToUpdate?.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
       return;
     }
-
     await updateDisponibilidad(id);
     setDeleteModalOpen(null);
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
-  const closeDetails = () => {
+  const handleViewDetails = async (id: number) => {
+    await getUbicacionDetails(id);
     setIsEditing(false);
-    setDetailModalOpen(null);
-    setSelectedUbicacion(null);
+    setDetailModalOpen(id);
   };
 
-  const handleEditSave = async (id: number, updatedData: Partial<Ubicacion>) => {
+  const handleEditClick = async (id: number) => {
+    await getUbicacionDetails(id);
+    setIsEditing(true);
+    setDetailModalOpen(id);
+  };
+
+  const handleEditSave = async (id: number, updatedData: Partial<any>) => {
     try {
       await editUbicacion(id, updatedData);
-      handleUbicacionEdited(); // Llamada a handleUbicacionEdited para mostrar el mensaje de éxito
+      setShowCompletedMessage(true);
+      setTimeout(() => setShowCompletedMessage(false), 3000);
     } catch (error) {
       console.error('Error al editar la ubicación:', error);
       setShowErrorMessage(true);
@@ -63,23 +125,12 @@ const UbicacionesComponent: React.FC = () => {
     } finally {
       setIsEditing(false);
       setDetailModalOpen(null);
-      setSelectedUbicacion(null);
     }
   };
-  
-  const handleUbicacionEdited = () => {
-    setShowCompletedMessage(true);
-    setTimeout(() => setShowCompletedMessage(false), 3000);
-  };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleSelectUbicacion = async (id: number) => {
-    const ubicacion = await getUbicacionDetails(id);
-    setSelectedUbicacion(ubicacion);
-    setDetailModalOpen(id);
+  const closeDetails = () => {
+    setIsEditing(false);
+    setDetailModalOpen(null);
   };
 
   return (
@@ -90,7 +141,6 @@ const UbicacionesComponent: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Ubicaciones</h2>
-
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
@@ -116,7 +166,7 @@ const UbicacionesComponent: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {ubicaciones.map((ubicacion) => (
+                {currentUbicaciones.map((ubicacion) => (
                   <tr key={ubicacion.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ubicacion.nombre}</td>
                     <td className="px-4 py-2 text-sm">{ubicacion.pabellon}</td>
@@ -125,11 +175,16 @@ const UbicacionesComponent: React.FC = () => {
                       <div className="flex space-x-2">
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md flex items-center"
-                          onClick={() => handleSelectUbicacion(ubicacion.id)}
+                          onClick={() => handleViewDetails(ubicacion.id)}
                         >
                           <FaEye className="mr-1" />
                         </button>
-
+                        <button
+                          className="bg-blue-200 hover:bg-blue-300 text-blue-700 px-3 py-1 rounded-md flex items-center"
+                          onClick={() => handleEditClick(ubicacion.id)}
+                        >
+                          <FaEdit className="mr-1" />
+                        </button>
                         <button
                           className="bg-red-200 hover:bg-red-300 text-red-700 px-3 py-1 rounded-md flex items-center"
                           onClick={() => setDeleteModalOpen(ubicacion.id)}
@@ -145,53 +200,138 @@ const UbicacionesComponent: React.FC = () => {
           </div>
         )}
 
-        {deleteModalOpen !== null && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-              <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ubicación</h2>
-              <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta ubicación?</p>
+        {/* Filtros y controles de paginación */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
+          <div className="flex items-center space-x-4 mb-2 md:mb-0">
+            {/* Selector de cantidad de entradas */}
+            <div>
+              <label className="text-sm text-gray-600 mr-2">Mostrar</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(parseInt(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="p-1 border rounded"
+              >
+                <option value={10}>10</option>
+                <option value={33}>33</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-600 ml-2">entradas</span>
+            </div>
+            {/* Botón para cambiar el orden */}
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="px-3 py-1 border rounded text-sm"
+            >
+               Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+            </button>
+          </div>
 
-              <div className="flex justify-end space-x-4 mt-6">
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setCurrentPage(1)} className="px-3 py-1 bg-gray-200 rounded-md">
+              {"<<"}
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+            >
+              {"<"}
+            </button>
+            {getPageNumbers().map((page, index) =>
+              page === '...' ? (
+                <span key={index} className="px-3 py-1">...</span>
+              ) : (
                 <button
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                  onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+                  key={index}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
                 >
-                  Confirmar
+                  {page}
                 </button>
-                <button
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                  onClick={() => setDeleteModalOpen(null)}
-                >
-                  Cancelar
-                </button>
-              </div>
-              
+              )
+            )}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+            >
+              {">"}
+            </button>
+            <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded-md">
+              {">>"}
+            </button>
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={pageInput}
+                onChange={handlePageInput}
+                placeholder="Página"
+                className="border p-1 rounded w-16 text-sm"
+              />
+              <button onClick={handlePageSearch} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
+                Ir
+              </button>
             </div>
           </div>
-        )}
-
-        {/* Mensajes de Estado */}
-        {showCompletedMessage && (
-          <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
-            Acción Completada Correctamente!
-          </div>
-        )}
-        {showErrorMessage && (
-          <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
-            Esta ubicación ya está Fuera de Servicio
-          </div>
-        )}
+        </div>
       </div>
 
       {isModalOpen && (
-        <FormularioUbicacion onClose={() => setIsModalOpen(false)} onUbicacionCreated={handleUbicacionCreated} />
+        <FormularioUbicacion
+          onClose={() => setIsModalOpen(false)}
+          onUbicacionCreated={handleUbicacionCreated}
+        />
       )}
       {detailModalOpen && selectedUbicacion && (
         isEditing ? (
-          <EditUbicacionForm ubicacion={selectedUbicacion} onSave={handleEditSave} onCancel={closeDetails} />
+          <EditUbicacionForm
+            ubicacion={selectedUbicacion}
+            onSave={handleEditSave}
+            onCancel={closeDetails}
+          />
         ) : (
-          <DetailUbicacion ubicacion={selectedUbicacion} onClose={closeDetails} onEdit={handleEdit} />
+          <DetailUbicacion
+            ubicacion={selectedUbicacion}
+            onClose={closeDetails}
+          />
         )
+      )}
+
+      {deleteModalOpen !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ubicación</h2>
+            <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta ubicación?</p>
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+              >
+                Confirmar
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                onClick={() => setDeleteModalOpen(null)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCompletedMessage && (
+        <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
+          ¡Acción Completada Correctamente!
+        </div>
+      )}
+      {showErrorMessage && (
+        <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
+          Esta ubicación ya está Fuera de Servicio
+        </div>
       )}
     </div>
   );

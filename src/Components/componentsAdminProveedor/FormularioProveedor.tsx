@@ -9,7 +9,7 @@ interface FormularioProveedorProps {
 
 const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) => {
   const { handleSubmitProveedor } = useProveedores();
-  const { handleSubmit, register, setError, formState: { errors } } = useForm<CreateProveedor>();
+  const { handleSubmit, register, setError, reset,  formState: { errors } } = useForm<CreateProveedor>();
   const [alertaVisible, setAlertaVisible] = useState(false); // Estado para controlar la visibilidad de la alerta
 
   // Función para formatear el teléfono automáticamente
@@ -30,7 +30,7 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
         setAlertaVisible(false);
         reset();
         onClose();
-      }, 1500);
+      }, 1000);
     } catch (error: any) {
       console.error('Error capturado:', error.message);
   
