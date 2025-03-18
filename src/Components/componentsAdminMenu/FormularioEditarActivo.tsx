@@ -190,7 +190,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
             {/* Precio + Moneda */}
             <div className="flex flex-col">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Precio ({formData.moneda === Moneda.COLON ? 'CRC' : 'USD'})
+                Precio ({formData.moneda === Moneda.COLON ? '₡' : '$'})
               </label>
               <div className="flex items-center space-x-2">
                 <input
