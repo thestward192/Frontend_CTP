@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import DetalleComponent from './DetalleActivo';
 import Filters from './Filters';
 import SelectionModal from './SelectionModal';
 import { useActivos } from '../../hooks/useActivo';
-import { useExportToExcel } from '../../hooks/useExportToExcel'; // Hook para exportar
+import { useExportToExcel } from '../../hooks/useExportToExcel';  // Hook para exportar
 import { Activo } from '../../types/activo';
 import FormularioAgregarActivo from './FormularioAgregarActivo';
 
@@ -31,38 +31,15 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
 
-  // Estado para ordenación (por nombre)
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
   const { activos, loading, error } = useActivos();
-  const { tomo, setTomo, exportToExcel } = useExportToExcel(); // Hook de exportación
+  const { tomo, setTomo, exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
 
   React.useEffect(() => {
     setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
   }, [activos, selectedItems]);
 
   const itemsPerPage = 33;
-
-  // Filtros
-  const filteredData = activos.filter((activo) => {
-    const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
-    const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
-    const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
-    const matchesEstado = !filterEstado || activo.estado === filterEstado;
-    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado;
-  });
-
-  // Ordenamos los activos por nombre según el orden seleccionado
-  const sortedData = useMemo(() => {
-    return [...filteredData].sort((a, b) => {
-      return sortOrder === 'asc'
-        ? a.nombre.localeCompare(b.nombre)
-        : b.nombre.localeCompare(a.nombre);
-    });
-  }, [filteredData, sortOrder]);
-
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  const paginatedData = sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(activos.length / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -92,6 +69,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     }
   };
 
+  const filteredData = activos.filter((activo) => {
+    const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
+    const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
+    const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
+    const matchesEstado = !filterEstado || activo.estado === filterEstado;
+    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado;
+  });
+
+  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   // Función para obtener los números de página a mostrar (máximo 5 visibles)
   const getPageNumbers = () => {
     let pages: number[] = [];
@@ -103,9 +90,21 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
       if (currentPage <= 3) {
         pages = [1, 2, 3, 4, 5];
       } else if (currentPage >= totalPages - 2) {
-        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+        pages = [
+          totalPages - 4,
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        ];
       } else {
-        pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+        pages = [
+          currentPage - 2,
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          currentPage + 2,
+        ];
       }
     }
     return pages;
@@ -134,17 +133,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const handleSelectLey = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Ley');
-    setIsAddingActivo(true); // Abrir formulario de agregar activo
+    setIsAddingActivo(true); // Abrimos el formulario de agregar activo
   };
 
   const handleSelectDonacion = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Donación');
-    setIsAddingActivo(true); // Abrir formulario de agregar activo
+    setIsAddingActivo(true); // Abrimos el formulario de agregar activo
   };
 
   const handleCloseForm = () => {
-    setIsAddingActivo(false);
+    setIsAddingActivo(false); // Cerramos el formulario
     setModoAdquisicion(null);
     onAddAsset(false);
   };
@@ -158,7 +157,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
   const toggleSelectAll = () => {
     if (isAllSelected) {
-      setSelectedItems([]);
+      setSelectedItems([]); // Deselecciona todo
     } else {
       const allIds = activos.map((activo) => activo.id?.toString() || '');
       setSelectedItems(allIds);
@@ -166,6 +165,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     setIsAllSelected(!isAllSelected);
   };
 
+  // Filtrar activos seleccionados
   const selectedActivos = activos.filter((activo) =>
     selectedItems.includes(activo.id?.toString() || '')
   );
@@ -238,17 +238,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
           <Filters onFilterChange={handleFilterChange} />
 
-          {/* Botón de ordenación */}
-          <div className="flex justify-end items-center mt-4">
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-3 py-1 border rounded text-sm"
-            >
-              Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
-            </button>
-          </div>
-
-          <div className="flex-grow overflow-y-auto mt-4">
+          <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -314,7 +304,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             </table>
           </div>
 
-          {/* Sección de paginación completa */}
+          {/* Sección de paginación completa con máximo 5 páginas visibles */}
           <div className="flex justify-between items-center mt-4">
             <div>
               <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
