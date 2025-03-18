@@ -4,7 +4,7 @@ import DetalleComponent from './DetalleActivo';
 import Filters from './Filters';
 import SelectionModal from './SelectionModal';
 import { useActivos } from '../../hooks/useActivo';
-import { useExportToExcel } from '../../hooks/useExportToExcel';  // Importamos el hook para exportar
+import { useExportToExcel } from '../../hooks/useExportToExcel';  // Hook para exportar
 import { Activo } from '../../types/activo';
 import FormularioAgregarActivo from './FormularioAgregarActivo';
 
@@ -17,20 +17,22 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);  // Controla el modal de selección
+  const [isModalOpen, setIsModalOpen] = useState(false); // Controla el modal de selección
   const [modoAdquisicion, setModoAdquisicion] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
   const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
   const [isAllSelected, setIsAllSelected] = useState(false);
+  const [pageInput, setPageInput] = useState('');
 
+  // Estados para filtros
   const [filterNombre, setFilterNombre] = useState('');
   const [filterUbicacion, setFilterUbicacion] = useState('');
   const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
 
   const { activos, loading, error } = useActivos();
-  const { tomo, setTomo, exportToExcel } = useExportToExcel();  // Usamos el hook
+  const { tomo, setTomo, exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
 
   React.useEffect(() => {
     setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
@@ -41,6 +43,18 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handlePageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
+  const handlePageSearch = () => {
+    const pageNumber = parseInt(pageInput);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+    setPageInput('');
   };
 
   const handleFilterChange = (filterName: string, value: string) => {
@@ -60,10 +74,41 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
     const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
     const matchesEstado = !filterEstado || activo.estado === filterEstado;
-
     return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado;
   });
+
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Función para obtener los números de página a mostrar (máximo 5 visibles)
+  const getPageNumbers = () => {
+    let pages: number[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages = [1, 2, 3, 4, 5];
+      } else if (currentPage >= totalPages - 2) {
+        pages = [
+          totalPages - 4,
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        ];
+      } else {
+        pages = [
+          currentPage - 2,
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          currentPage + 2,
+        ];
+      }
+    }
+    return pages;
+  };
 
   const enableSelectionMode = () => {
     setIsSelectionMode(true);
@@ -78,7 +123,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
   const handleSelectAsset = (asset: Activo) => {
     setSelectedAsset(asset);
-    onAssetSelect(true); // Notifica que un activo ha sido seleccionado
+    onAssetSelect(true); // Notifica que se ha seleccionado un activo
   };
 
   const handleAddActivo = () => {
@@ -88,22 +133,22 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const handleSelectLey = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Ley');
-    setIsAddingActivo(true);  // Abrimos el formulario de agregar activo
+    setIsAddingActivo(true); // Abrimos el formulario de agregar activo
   };
 
   const handleSelectDonacion = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Donación');
-    setIsAddingActivo(true);  // Abrimos el formulario de agregar activo
+    setIsAddingActivo(true); // Abrimos el formulario de agregar activo
   };
 
   const handleCloseForm = () => {
-    setIsAddingActivo(false);  // Cerramos el formulario
+    setIsAddingActivo(false); // Cerramos el formulario
     setModoAdquisicion(null);
     onAddAsset(false);
   };
 
-  // Manejar selección de activos
+  // Manejo de selección de activos
   const toggleSelectItem = (id: string) => {
     setSelectedItems((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
@@ -114,39 +159,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     if (isAllSelected) {
       setSelectedItems([]); // Deselecciona todo
     } else {
-      const allIds = activos.map((activo) => activo.id?.toString() || ''); // Selecciona todos los activos
+      const allIds = activos.map((activo) => activo.id?.toString() || '');
       setSelectedItems(allIds);
     }
-    setIsAllSelected(!isAllSelected); // Cambia el estado del checkbox "Seleccionar todo"
+    setIsAllSelected(!isAllSelected);
   };
 
-  // Filtrar los activos seleccionados
-  const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
-
-  // Función para obtener los números de página a mostrar (máximo 5)
-  const getPageNumbers = () => {
-    let pages: number[] = [];
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages = [1, 2, 3, 4, 5];
-      } else if (currentPage >= totalPages - 2) {
-        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-      } else {
-        pages = [
-          currentPage - 2,
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          currentPage + 2,
-        ];
-      }
-    }
-    return pages;
-  };
+  // Filtrar activos seleccionados
+  const selectedActivos = activos.filter((activo) =>
+    selectedItems.includes(activo.id?.toString() || '')
+  );
 
   if (loading) {
     return <p>Cargando activos...</p>;
@@ -158,7 +180,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
   return (
     <div className="w-full flex justify-center py-10 relative">
-      {!modoAdquisicion && !selectedAsset && !isAddingActivo ? (
+      {(!modoAdquisicion && !selectedAsset && !isAddingActivo) ? (
         <div
           className="w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative"
           style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
@@ -167,7 +189,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             <div className="relative inline-block text-left">
               <h1 className="text-[22px] font-semibold text-black">Activos</h1>
             </div>
-
             <div className="flex space-x-4">
               <button
                 className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
@@ -185,7 +206,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                 </button>
               ) : (
                 <div className="flex space-x-4">
-                  {/* Input para el número de tomo */}
                   <input
                     type="number"
                     placeholder="Numero de tomo"
@@ -225,16 +245,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                   {isSelectionMode && (
                     <th className="px-2 py-2 text-gray-600 font-semibold">
                       <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={isAllSelected}
-                          onChange={toggleSelectAll}
-                        />
+                        <input type="checkbox" checked={isAllSelected} onChange={toggleSelectAll} />
                         <span>Seleccionar todo</span>
                       </div>
                     </th>
                   )}
-                  {/* Columna para la imagen */}
                   <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
@@ -244,7 +259,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                   <th className="px-4 py-2 text-gray-600 font-semibold">Estado</th>
                 </tr>
               </thead>
-
               <tbody>
                 {paginatedData.map((row) => (
                   <tr
@@ -261,7 +275,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                         />
                       </td>
                     )}
-                    {/* Columna de imagen */}
                     <td className="px-4 py-2 text-sm">
                       {row.foto ? (
                         <img
@@ -281,13 +294,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
                     <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-md text-sm ${
-                          row.estado === 'Bueno'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
+                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {row.estado}
                       </span>
                     </td>
@@ -297,37 +304,64 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             </table>
           </div>
 
-          {/* Sección de paginación modificada para mostrar máximo 5 páginas */}
+          {/* Sección de paginación completa con máximo 5 páginas visibles */}
           <div className="flex justify-between items-center mt-4">
             <div>
               <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
             </div>
-            <div className="flex space-x-1">
+            <div className="flex items-center space-x-2">
               <button
-                className="px-3 py-1 bg-gray-200 rounded-md"
-                onClick={() => handlePageChange(currentPage - 1)}
+                onClick={() => handlePageChange(1)}
                 disabled={currentPage === 1}
+                className="px-3 py-1 bg-gray-200 rounded-md"
               >
-                &lt;
+                {"<<"}
+              </button>
+              <button
+                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 bg-gray-200 rounded-md"
+              >
+                {"<"}
               </button>
               {getPageNumbers().map((page, index) => (
                 <button
                   key={index}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                  }`}
                   onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                 >
                   {page}
                 </button>
               ))}
               <button
-                className="px-3 py-1 bg-gray-200 rounded-md"
-                onClick={() => handlePageChange(currentPage + 1)}
+                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                 disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1 bg-gray-200 rounded-md"
               >
-                &gt;
+                {">"}
               </button>
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-1 bg-gray-200 rounded-md"
+              >
+                {">>"}
+              </button>
+              <div className="flex items-center space-x-1">
+                <input
+                  type="number"
+                  value={pageInput}
+                  onChange={handlePageInput}
+                  placeholder="Página"
+                  className="border p-1 rounded w-16 text-sm"
+                />
+                <button
+                  onClick={handlePageSearch}
+                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm"
+                >
+                  Ir
+                </button>
+              </div>
             </div>
           </div>
 
