@@ -1,18 +1,17 @@
 // src/hooks/useInventario.ts
+
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Inventario } from '../types/inventario';
-import { getInventarios, createInventario } from '../Services/inventarioService';
+import { getInventarios, createInventario, updateInventario, deleteInventario } from '../Services/inventarioService';
 
 export const useInventario = () => {
   const queryClient = useQueryClient();
 
-  // Query para obtener el historial de inventarios
-  const { data: inventarios = [], isLoading } = useQuery<Inventario[], Error>(
+  const { data: inventarios = [], isLoading, error } = useQuery<Inventario[], Error>(
     'inventarios',
     getInventarios
   );
 
-  // Mutación para crear un inventario
   const { mutate: createInventarioMutate, isLoading: creating } = useMutation<Inventario, Error, Inventario>(
     createInventario,
     {
@@ -22,5 +21,37 @@ export const useInventario = () => {
     }
   );
 
-  return { inventarios, isLoading, createInventarioMutate, creating };
+  const { mutate: updateInventarioMutate, isLoading: updating } = useMutation<
+    Inventario,
+    Error,
+    { id: number; data: Inventario }
+  >(
+    ({ id, data }) => updateInventario(id, data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('inventarios');
+      },
+    }
+  );
+
+  const { mutate: deleteInventarioMutate, isLoading: deleting } = useMutation<void, Error, number>(
+    (id) => deleteInventario(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('inventarios');
+      },
+    }
+  );
+
+  return {
+    inventarios,
+    isLoading,
+    error,
+    createInventarioMutate,
+    creating,
+    updateInventarioMutate,
+    updating,
+    deleteInventarioMutate,
+    deleting,
+  };
 };

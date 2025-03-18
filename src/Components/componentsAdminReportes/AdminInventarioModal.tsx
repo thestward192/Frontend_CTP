@@ -1,6 +1,8 @@
+// src/components/AdminInventarioModal.tsx
 import React, { useState, useEffect } from 'react';
 import { Inventario } from '../../types/inventario';
 import { updateActivo } from '../../Services/activoService';
+import { updateInventario } from '../../Services/inventarioService';
 import { useQueryClient } from 'react-query';
 import { FaTimes } from 'react-icons/fa';
 
@@ -40,14 +42,29 @@ const AdminInventarioModal: React.FC<AdminInventarioModalProps> = ({ inventario,
         }
       }
       console.log("Activos actualizados correctamente");
+
+      // Preparamos el payload para actualizar el inventario y marcarlo como revisado
+      const inventoryData = {
+        fecha: inventario.fecha,
+        ubicacionId: inventario.ubicacion?.id,
+        detalles: inventario.detalles.map(det => ({
+          activoId: det.activo.id,
+          estadoProvisional: det.estadoProvisional,
+          detalle: det.detalle,
+        })),
+        revisado: true,
+      };
+      await updateInventario(inventario.id as number, inventoryData);
+
       // Invalida las queries para refrescar la data
       queryClient.invalidateQueries('activos');
       queryClient.invalidateQueries('inventarios');
-      // Llamamos al callback para marcar este inventario como revisado
-      onReviewComplete(inventario.id);
+
+      // Llamamos al callback para marcar este inventario como revisado en el estado local del componente padre
+      onReviewComplete(inventario.id as number);
       onClose();
     } catch (error) {
-      console.error("Error al actualizar activos:", error);
+      console.error("Error al actualizar activos o marcar inventario como revisado:", error);
     } finally {
       setProcessing(false);
     }
