@@ -5,9 +5,10 @@ import { useActivos } from '../../hooks/useActivo';
 interface DetalleActivoInventarioProps {
   activo: any;
   onClose: () => void;
+  onUpdate?: () => void;
 }
 
-const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activo, onClose }) => {
+const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activo, onClose, onUpdate }) => {
   const [estado, setEstado] = useState<string>(activo.estado);
   const [observacion, setObservacion] = useState<string>(activo.observacion || '');
   const { handleUpdateActivo } = useActivos();
@@ -21,12 +22,16 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
   };
 
   const handleSave = () => {
-    // Lógica para guardar el cambio de estado y la observación
+    // Guardamos el cambio de estado y observación
     handleUpdateActivo({
       id: activo.id,
       data: { estado, observacion }
     });
-    onClose(); // Cerrar el modal después de guardar
+    // Si se pasó la prop onUpdate, la llamamos
+    if (onUpdate) {
+      onUpdate();
+    }
+    onClose(); // Cerramos el modal después de guardar
   };
 
   return (
@@ -63,7 +68,7 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
         </div>
 
         <div className="flex justify-end space-x-2">
-           <button
+          <button
             onClick={handleSave}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
@@ -76,7 +81,6 @@ const DetalleActivoInventario: React.FC<DetalleActivoInventarioProps> = ({ activ
             Cancelar
           </button>
         </div>
-        
       </div>
     </div>
   );
