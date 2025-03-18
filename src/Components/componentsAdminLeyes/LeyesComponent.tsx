@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
+import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
+import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import FormularioLey from './FormularioLey';
 import { useLeyes } from '../../hooks/useLey';
 import DetailLey from './DetailLey';
@@ -7,6 +7,7 @@ import EditLeyForm from './EditLey';
 import { Ley } from '../../types/ley';
 
 const LeyesComponent: React.FC = () => {
+  // Estados para modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -14,8 +15,15 @@ const LeyesComponent: React.FC = () => {
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
+  // Estados de paginación y ordenamiento
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(33);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [pageInput, setPageInput] = useState('');
+
   const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
 
+  // Mensajes de confirmación y error
   const handleLeyCreated = () => {
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -29,18 +37,16 @@ const LeyesComponent: React.FC = () => {
   const handleUpdateDisponibilidad = async (id: number) => {
     const ley = leyes.find((ley) => ley.id === id);
     
-    // Si la ley está fuera de servicio, mostrar el mensaje de error y no cerrar el modal
     if (ley && ley.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
-      return; // Salimos de la función sin cerrar el modal
+      return;
     } 
 
-    // Si no está fuera de servicio, procedemos con la actualización
     await updateDisponibilidadLeyMutation.mutate(id);
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
-    setDeleteModalOpen(null); // Cerramos el modal después de la actualización exitosa
+    setDeleteModalOpen(null);
   };
 
   const handleViewDetails = async (id: number) => {
@@ -62,9 +68,57 @@ const LeyesComponent: React.FC = () => {
     setDetailModalOpen(false);
   };
 
-  const closeDetails = () => {
-    setIsEditing(false);
-    setDetailModalOpen(false);
+  // Ordenamos las leyes según el estado sortOrder (se usa "id" para el ejemplo)
+  const sortedLeyes = useMemo(() => {
+    return [...leyes].sort((a, b) => sortOrder === 'asc' ? a.id - b.id : b.id - a.id);
+  }, [leyes, sortOrder]);
+
+  // Calculamos el total de páginas
+  const totalPages = Math.ceil(sortedLeyes.length / itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+    if(totalPages === 0) setCurrentPage(1);
+  }, [totalPages, currentPage]);
+
+  // Leyes a mostrar en la página actual
+  const currentLeyes = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedLeyes.slice(start, start + itemsPerPage);
+  }, [sortedLeyes, currentPage, itemsPerPage]);
+
+  // Genera los números de página con puntos suspensivos si es necesario
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
+  // Manejadores para el input de salto de página
+  const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
+  const handlePageSearch = () => {
+    const pageNumber = parseInt(pageInput);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+    setPageInput('');
   };
 
   return (
@@ -75,7 +129,6 @@ const LeyesComponent: React.FC = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Gestión de Leyes</h2>
-
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
             onClick={() => setIsModalOpen(true)}
@@ -100,7 +153,7 @@ const LeyesComponent: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {leyes?.map((ley) => (
+                {currentLeyes.map((ley) => (
                   <tr key={ley.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{ley.numLey}</td>
                     <td className="px-4 py-2 text-sm">{ley.nombre}</td>
@@ -134,16 +187,83 @@ const LeyesComponent: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-between items-center mt-4">
-          <div>
-            <p className="text-sm text-gray-600">
-              Mostrando 1 a {leyes?.length || 0} de {leyes?.length || 0} entradas
-            </p>
+        {/* Filtros y controles de paginación reubicados con mayor separación */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
+          <div className="flex items-center space-x-4 mb-2 md:mb-0">
+            {/* Selector de cantidad de items por página */}
+            <div>
+              <label className="text-sm text-gray-600 mr-2">Mostrar</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(parseInt(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="p-1 border rounded"
+              >
+                <option value={10}>10</option>
+                <option value={33}>33</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-600 ml-2">entradas</span>
+            </div>
+            {/* Botón para cambiar el orden */}
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="px-3 py-1 border rounded text-sm"
+            >
+              Orden: {sortOrder === 'asc' ? 'Primero' : 'Último'} primero
+            </button>
           </div>
-          <div className="flex space-x-1">
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&lt;</button>
-            <button className="px-3 py-1 bg-blue-600 text-white rounded-md">1</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-md">&gt;</button>
+
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setCurrentPage(1)} className="px-3 py-1 bg-gray-200 rounded-md">
+              {"<<"}
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+            >
+              {"<"}
+            </button>
+            {getPageNumbers().map((page, index) =>
+              page === '...' ? (
+                <span key={index} className="px-3 py-1">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+            >
+              {">"}
+            </button>
+            <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded-md">
+              {">>"}
+            </button>
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                value={pageInput}
+                onChange={handlePageInput}
+                placeholder="Página"
+                className="border p-1 rounded w-16 text-sm"
+              />
+              <button onClick={handlePageSearch} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
+                Ir
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -187,23 +307,18 @@ const LeyesComponent: React.FC = () => {
                 Cancelar
               </button>
             </div>
-            
           </div>
         </div>
       )}
 
       {showCompletedMessage && (
-        <div
-          className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse"
-        >
-          Acción Completada Correctamente!
+        <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
+          ¡Acción completada correctamente!
         </div>
       )}
 
       {showErrorMessage && (
-        <div
-          className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError"
-        >
+        <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
           Esta ley ya está Fuera de Servicio
         </div>
       )}
