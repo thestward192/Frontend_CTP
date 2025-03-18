@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
-import { FaTrash, FaPlus, FaEye } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaEye, FaEdit } from 'react-icons/fa';
 import FormularioLey from './FormularioLey';
 import { useLeyes } from '../../hooks/useLey';
 import DetailLey from './DetailLey';
@@ -7,7 +7,7 @@ import EditLeyForm from './EditLey';
 import { Ley } from '../../types/ley';
 
 const LeyesComponent: React.FC = () => {
-  // Estados para modales y mensajes
+  // Estados modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -17,13 +17,13 @@ const LeyesComponent: React.FC = () => {
 
   // Estados de paginación y ordenamiento
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(33);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
   const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
 
-  // Mensajes de confirmación y error
+  // Notificaciones de acción completada
   const handleLeyCreated = () => {
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -34,9 +34,10 @@ const LeyesComponent: React.FC = () => {
     setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
+  // Actualiza la disponibilidad de la Ley
   const handleUpdateDisponibilidad = async (id: number) => {
     const ley = leyes.find((ley) => ley.id === id);
-    
+
     if (ley && ley.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
@@ -68,19 +69,26 @@ const LeyesComponent: React.FC = () => {
     setDetailModalOpen(false);
   };
 
-  // Ordenamos las leyes según el estado sortOrder (se usa "id" para el ejemplo)
+  const closeDetails = () => {
+    setIsEditing(false);
+    setDetailModalOpen(false);
+  };
+
+  // Ordenamos las leyes según el id
   const sortedLeyes = useMemo(() => {
-    return [...leyes].sort((a, b) => sortOrder === 'asc' ? a.id - b.id : b.id - a.id);
+    return [...(leyes || [])].sort((a, b) =>
+      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+    );
   }, [leyes, sortOrder]);
 
   // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedLeyes.length / itemsPerPage);
 
+  // Si la página actual es mayor al total, se ajusta
   useEffect(() => {
     if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+      setCurrentPage(totalPages || 1);
     }
-    if(totalPages === 0) setCurrentPage(1);
   }, [totalPages, currentPage]);
 
   // Leyes a mostrar en la página actual
@@ -89,7 +97,7 @@ const LeyesComponent: React.FC = () => {
     return sortedLeyes.slice(start, start + itemsPerPage);
   }, [sortedLeyes, currentPage, itemsPerPage]);
 
-  // Genera los números de página con puntos suspensivos si es necesario
+  // Función para generar números de página con puntos suspensivos
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= 5) {
@@ -108,7 +116,7 @@ const LeyesComponent: React.FC = () => {
     return pages;
   };
 
-  // Manejadores para el input de salto de página
+  // Handlers para la búsqueda de página
   const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
     setPageInput(e.target.value);
   };
@@ -120,6 +128,10 @@ const LeyesComponent: React.FC = () => {
     }
     setPageInput('');
   };
+
+  // Cálculo para mostrar el rango de entradas
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + currentLeyes.length, sortedLeyes.length);
 
   return (
     <div className="w-full flex justify-center py-10">
@@ -187,10 +199,9 @@ const LeyesComponent: React.FC = () => {
           </div>
         )}
 
-        {/* Filtros y controles de paginación reubicados con mayor separación */}
+        {/* Controles de paginación y filtros */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
           <div className="flex items-center space-x-4 mb-2 md:mb-0">
-            {/* Selector de cantidad de items por página */}
             <div>
               <label className="text-sm text-gray-600 mr-2">Mostrar</label>
               <select
@@ -207,12 +218,11 @@ const LeyesComponent: React.FC = () => {
               </select>
               <span className="text-sm text-gray-600 ml-2">entradas</span>
             </div>
-            {/* Botón para cambiar el orden */}
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="px-3 py-1 border rounded text-sm"
             >
-              Orden: {sortOrder === 'asc' ? 'Primero' : 'Último'} primero
+              Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
             </button>
           </div>
 
@@ -228,9 +238,7 @@ const LeyesComponent: React.FC = () => {
             </button>
             {getPageNumbers().map((page, index) =>
               page === '...' ? (
-                <span key={index} className="px-3 py-1">
-                  ...
-                </span>
+                <span key={index} className="px-3 py-1">...</span>
               ) : (
                 <button
                   key={index}
@@ -266,6 +274,7 @@ const LeyesComponent: React.FC = () => {
             </div>
           </div>
         </div>
+        
       </div>
 
       {isModalOpen && (
@@ -292,7 +301,6 @@ const LeyesComponent: React.FC = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
             <h2 className="text-lg font-bold mb-4">Actualizar Disponibilidad de Ley</h2>
             <p>¿Estás seguro de que deseas cambiar la disponibilidad de esta Ley?</p>
-
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
@@ -313,7 +321,7 @@ const LeyesComponent: React.FC = () => {
 
       {showCompletedMessage && (
         <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
-          ¡Acción completada correctamente!
+          Acción Completada Correctamente!
         </div>
       )}
 
