@@ -184,7 +184,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
             {/* Precio (solo se muestra si no es Donación) */}
             {modoAdquisicion !== 'Donación' && (
               <div className="flex items-center space-x-2">
-                <label className="block text-sm font-medium text-gray-700">Precio ({moneda === Moneda.COLON ? "₡" : "$"})</label>
+                <label className="block text-sm font-medium text-gray-700">Precio ({moneda === Moneda.COLON ? "CRC" : "USD"})</label>
                 <input
                   type="number"
                   step={0.01}
