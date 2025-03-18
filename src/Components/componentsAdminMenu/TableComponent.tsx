@@ -123,6 +123,31 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   // Filtrar los activos seleccionados
   const selectedActivos = activos.filter((activo) => selectedItems.includes(activo.id?.toString() || ''));
 
+  // Función para obtener los números de página a mostrar (máximo 5)
+  const getPageNumbers = () => {
+    let pages: number[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages = [1, 2, 3, 4, 5];
+      } else if (currentPage >= totalPages - 2) {
+        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        pages = [
+          currentPage - 2,
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          currentPage + 2,
+        ];
+      }
+    }
+    return pages;
+  };
+
   if (loading) {
     return <p>Cargando activos...</p>;
   }
@@ -173,8 +198,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                       exportToExcel(selectedActivos);
                       setTomo(null);
                     }}
-                    className={`${selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
-                      } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    className={`${
+                      selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                    } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
                     disabled={selectedItems.length === 0}
                   >
                     Exportar
@@ -255,7 +281,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
                     <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
-                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      <span
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          row.estado === 'Bueno'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {row.estado}
                       </span>
                     </td>
@@ -265,6 +297,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             </table>
           </div>
 
+          {/* Sección de paginación modificada para mostrar máximo 5 páginas */}
           <div className="flex justify-between items-center mt-4">
             <div>
               <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
@@ -277,19 +310,21 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               >
                 &lt;
               </button>
-              {Array.from({ length: totalPages }, (_, index) => (
+              {getPageNumbers().map((page, index) => (
                 <button
                   key={index}
-                  className={`px-3 py-1 rounded-md ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                  onClick={() => handlePageChange(index + 1)}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
+                  onClick={() => handlePageChange(page)}
                 >
-                  {index + 1}
+                  {page}
                 </button>
               ))}
               <button
                 className="px-3 py-1 bg-gray-200 rounded-md"
                 onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || totalPages === 0}
               >
                 &gt;
               </button>
