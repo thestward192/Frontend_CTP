@@ -196,7 +196,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                   className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
                   onClick={handleButtonMonedaSwitch}
                 >
-                  {moneda === Moneda.COLON ? "₡" : "$"}
+                  {moneda === Moneda.COLON ? "CRC" : "USD"}
                 </button>
               </div>
             )}
