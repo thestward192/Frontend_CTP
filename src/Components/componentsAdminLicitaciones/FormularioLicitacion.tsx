@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Licitacion } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
@@ -35,8 +35,8 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
       ...data,
       fecha: new Date(`${data.fecha}T00:00:00`),
     });
-    onLicitacionCreated(); 
-    onClose(); 
+    onLicitacionCreated();
+    onClose();
   };
 
 
@@ -112,31 +112,8 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
                 {moneda === Moneda.COLON ? "CRC" : "USD"}
               </button>
             </div>
-            <label htmlFor="monto" className="block text-sm font-medium text-gray-700 ">
-              Monto ({moneda === Moneda.COLON ? "₡" : "$"})
-            </label>
-            <div className="flex items-center space-x-2">
-              <input
-                type="number"
-                step={0.01}
-                id="monto"
-                {...register("monto", { required: "El monto es requerido" })}
-                className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
-                placeholder="Ingrese monto"
-              />
-              <button
-                type="button"
-                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
-                onClick={handleButtonMonedaSwitch}
-              >
-                {moneda === Moneda.COLON ? "CRC" : "USD"}
-              </button>
-            </div>
             {errors.monto && <span className="text-red-500">{errors.monto.message}</span>}
           </div>
-
-          {/* Campo oculto para enviar la moneda */}
-          <input type="hidden" {...register("moneda")} value={moneda} />
 
           {/* Campo oculto para enviar la moneda */}
           <input type="hidden" {...register("moneda")} value={moneda} />
@@ -219,7 +196,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
               Cancelar
             </button>
           </div>
-          
+
         </form>
       </div>
     </div>

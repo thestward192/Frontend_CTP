@@ -1,3 +1,4 @@
+// src/components/FormularioEditarUsuario.tsx
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { User } from '../../types/user';
@@ -60,8 +61,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
       delete updatePasswordData.contraseña;
       onSave(userId, { ...updatePasswordData, ubicaciones: user?.ubicaciones || [] });
       onClose();
-    }
-    else {
+    } else {
       onSave(userId, { ...data, ubicaciones: user?.ubicaciones || [] });
       onClose();
     }
@@ -120,7 +120,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
             <label className="block text-gray-700">Contraseña</label>
             <input
               type="password"
-              autoComplete='off'
+              autoComplete="off"
               {...register('contraseña')}
               className="w-full border border-gray-300 p-2 rounded-lg"
             />
@@ -131,15 +131,11 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
             <label className="block text-gray-700">Confirmar Contraseña</label>
             <input
               type="password"
-              {...register('confirmarContraseña', {
-                validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
-              })}
+              {...register('confirmarContraseña')}
               placeholder="Confirma tu contraseña"
               className="w-full border border-gray-300 p-2 rounded-lg"
             />
-            {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
           </div>
-
 
           {/* Manejo de ubicaciones */}
           {user.ubicaciones && user.ubicaciones.map((ubicacion, index) => (
@@ -182,7 +178,8 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
             </button>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          {/* Se cambió el orden: Guardar a la izquierda y Cancelar a la derecha */}
+          <div className="flex justify-between space-x-2">
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md">
               Guardar
             </button>
@@ -190,7 +187,6 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>

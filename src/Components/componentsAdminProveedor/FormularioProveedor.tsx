@@ -9,7 +9,7 @@ interface FormularioProveedorProps {
 
 const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) => {
   const { handleSubmitProveedor } = useProveedores();
-  const { handleSubmit, register, formState: { errors } } = useForm<CreateProveedor>();
+  const { handleSubmit, register, setError, reset,  formState: { errors } } = useForm<CreateProveedor>();
   const [alertaVisible, setAlertaVisible] = useState(false); // Estado para controlar la visibilidad de la alerta
 
   // Función para formatear el teléfono automáticamente
@@ -22,15 +22,22 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
     }
   };
 
-  // Manejar el envío del formulario
   const onSubmit = async (data: CreateProveedor) => {
-    const success = await handleSubmitProveedor(data); // Usamos CreateProveedor sin id
-    if (success) {
-      setAlertaVisible(true); // Mostrar alerta de éxito
+    try {
+      await handleSubmitProveedor.mutateAsync(data);
+      setAlertaVisible(true);
       setTimeout(() => {
-        setAlertaVisible(false); // Ocultar la alerta después de 1.5 segundos
-        onClose(); // Cerrar modal si el proveedor se creó con éxito
-      }, 1500);
+        setAlertaVisible(false);
+        reset();
+        onClose();
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error capturado:', error.message);
+  
+      // 🔥 Si el mensaje del backend es "El email ya está en uso", mostramos el error
+      if (error.message.includes('El email ya está en uso')) {
+        setError('email', { type: 'manual', message: 'Este email ya está registrado' });
+      }
     }
   };
 
@@ -113,7 +120,7 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
                   message: 'Formato de email inválido'
                 }
               })}
-              className="w-full border p-2 rounded-md"
+              className={`w-full border p-2 rounded-md ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="Correo Electrónico"
             />
             {errors.email && <p className="text-red-500">{errors.email.message}</p>}

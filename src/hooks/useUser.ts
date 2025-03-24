@@ -12,10 +12,12 @@ export const useUsers = () => {
 
 
   // Crear un nuevo usuario con useMutation
-  const addUserMutation = useMutation((userData: CreateUserDTO) => createUser(userData), {
+  const addUserMutation = useMutation(async (userData: CreateUserDTO) => createUser(userData), {
     onSuccess: () => {
-      // Invalida la query 'users' para refrescar la lista después de agregar un nuevo usuario
       queryClient.invalidateQueries('users');
+    },
+    onError: (error: any) => {
+      throw error;
     },
   });
 

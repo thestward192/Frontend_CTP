@@ -130,6 +130,13 @@ const Dashboard: React.FC = () => {
                 </li>
               </ul>
             </div>
+            <div className={`overflow-hidden transition-all duration-300 ${openAccordion === 'reportes' ? 'max-h-96' : 'max-h-0'}`}>
+              <ul className="ml-11 mt-2 space-y-3">
+                <li className="flex items-center text-sm font-['DM Sans'] group">
+                  <Link to="/ReportesInventario" className={`${getActiveClass('/ReportesInventario')} group-hover:text-[#2b3674]`}>Reportes Inventario</Link>
+                </li>
+              </ul>
+            </div>
           </li>
 
           <li className="flex items-center text-base font-['DM Sans'] group">

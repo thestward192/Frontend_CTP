@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Prestamo } from '../types/prestamo';
 
-//const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
+const API_URL = 'https://backendcontrolactivos-2.onrender.com/prestamos';
 
-const API_URL = 'http://localhost:3000/prestamos';
+//const API_URL = 'http://localhost:3000/prestamos';
 
 const getAuthToken = () => localStorage.getItem('token');
 

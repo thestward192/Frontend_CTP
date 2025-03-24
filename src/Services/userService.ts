@@ -2,9 +2,9 @@
 import axios from 'axios';
 import { User, CreateUserDTO } from '../types/user';
 
-//const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
+const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
-const API_URL = 'http://localhost:3000';
+//const API_URL = 'http://localhost:3000';
 
 // Obtener el token del localStorage
 const getAuthToken = () => localStorage.getItem('token');
@@ -48,8 +48,10 @@ export const createUser = async (userData: CreateUserDTO): Promise<User> => {
       },
     });
     return response.data;
-  } catch (error) {
-    console.error('Error al crear el usuario:', error);
+  } catch (error: any) {
+    if (error.response && error.response.status === 400) {
+      throw new Error(error.response.data.message || 'El email ya está en uso');
+    }
     throw new Error('Error al crear el usuario');
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useRoles } from '../../hooks/useRoles';
 import { useUsers } from '../../hooks/useUser';
@@ -8,13 +8,13 @@ interface FormularioDocenteProps {
   onClose: () => void;
 }
 
-const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
+const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUserMutation } = useUsers();
   const { roles, loading: rolesLoading } = useRoles();
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion(); // Usamos el hook de ubicaciones
   const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
 
-  const { register, handleSubmit, watch, control, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, watch, control, setError, formState: { errors }, reset } = useForm({
     defaultValues: {
       nombre: '',
       apellido_1: '',
@@ -34,8 +34,12 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
       await addUserMutation.mutateAsync(data);
       onClose();
       reset();
-    } catch (error) {
-      console.error('Error al agregar el usuario:', error);
+    } catch (error: any) {
+      if (error.message.includes('El email ya está en uso')) {
+        setError('email', { type: 'manual', message: 'Este email ya está en uso' });
+      } else {
+        console.error('Error al agregar el usuario:', error);
+      }
     }
   };
 
@@ -96,7 +100,7 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
                   pattern: { value: /\S+@\S+\.\S+/, message: 'Email inválido' },
                 })}
                 placeholder="Escribe el correo electrónico"
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                className={`w-full border p-2 rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               />
               {errors.email && <p className="text-red-500">{errors.email.message}</p>}
             </div>
@@ -198,11 +202,11 @@ const FormularioDocente: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               Cancelar
             </button>
           </div>
-          
+
         </form>
       </div>
     </div>
   );
 };
 
-export default FormularioDocente;
+export default FormularioUsuario;
