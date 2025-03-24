@@ -85,7 +85,7 @@ const App: React.FC = () => {
                 <MenuAdminLicencias />
               </ProtectedRoute>
             }
-          />
+            />
           <Route
             path="/MenuDocente"
             element={

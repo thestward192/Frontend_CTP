@@ -138,11 +138,6 @@ const Dashboard: React.FC = () => {
               </ul>
             </div>
           </li>
-
-          <li className="flex items-center text-base font-['DM Sans'] group">
-            <CogIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/configuracion')}`} />
-            <Link to="/configuracion" className={`${getActiveClass('/configuracion')} group-hover:text-[#2b3674]`}>Configuración</Link>
-          </li>
           <li className="flex items-center text-base font-['DM Sans'] group">
             <UserIcon className={`h-6 w-6 mr-4 group-hover:text-[#2b3674] ${getIconClass('/perfil')}`} />
             <Link to="/perfil" className={`${getActiveClass('/perfil')} group-hover:text-[#2b3674]`}>Perfil</Link>

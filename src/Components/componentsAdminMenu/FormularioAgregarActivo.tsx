@@ -4,7 +4,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
 import { Licitacion } from '../../types/licitacion';
 import { Ubicacion } from '../../types/ubicacion';
-import { Moneda } from '../../types/moneda';  // <--- Importamos el enum de moneda
+import { Moneda } from '../../types/moneda';
 import { getUbicaciones } from '../../Services/ubicacionService';
 import { getLicitaciones } from '../../Services/licitacionService';
 import { useActivos } from '../../hooks/useActivo';

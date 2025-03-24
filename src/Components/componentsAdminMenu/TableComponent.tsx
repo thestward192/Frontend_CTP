@@ -1,3 +1,4 @@
+// src/Components/componentsAdminMenu/TableComponent.tsx
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import DetalleComponent from './DetalleActivo';
@@ -7,6 +8,7 @@ import { useActivos } from '../../hooks/useActivo';
 import { useExportToExcel } from '../../hooks/useExportToExcel';  // Hook para exportar
 import { Activo } from '../../types/activo';
 import FormularioAgregarActivo from './FormularioAgregarActivo';
+import ConfiguracionExportacionModal from '../../Components/ComponentsAdminConfig/ConfiguracionExportacionModal';
 
 interface TableComponentProps {
   onAssetSelect: (isSelected: boolean) => void;
@@ -17,13 +19,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Controla el modal de selección
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal para selección (ley/donación)
   const [modoAdquisicion, setModoAdquisicion] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
   const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
   const [currentPage, setCurrentPage] = useState(1);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const [pageInput, setPageInput] = useState('');
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false); // Estado para el modal de configuración
 
   // Estados para filtros
   const [filterNombre, setFilterNombre] = useState('');
@@ -32,7 +35,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [filterEstado, setFilterEstado] = useState('');
 
   const { activos, loading, error } = useActivos();
-  const { tomo, setTomo, exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
+  const { exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
 
   React.useEffect(() => {
     setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
@@ -133,17 +136,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const handleSelectLey = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Ley');
-    setIsAddingActivo(true); // Abrimos el formulario de agregar activo
+    setIsAddingActivo(true); // Abrir formulario para agregar activo
   };
 
   const handleSelectDonacion = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Donación');
-    setIsAddingActivo(true); // Abrimos el formulario de agregar activo
+    setIsAddingActivo(true); // Abrir formulario para agregar activo
   };
 
   const handleCloseForm = () => {
-    setIsAddingActivo(false); // Cerramos el formulario
+    setIsAddingActivo(false); // Cerrar formulario
     setModoAdquisicion(null);
     onAddAsset(false);
   };
@@ -206,17 +209,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                 </button>
               ) : (
                 <div className="flex space-x-4">
-                  <input
-                    type="number"
-                    placeholder="Numero de tomo"
-                    value={tomo !== null ? tomo : ''}
-                    onChange={(e) => setTomo(Number(e.target.value) || 1)}
-                    className="border p-2"
-                  />
+                  {/* Botón para abrir el modal de configuración */}
+                  <button
+                    onClick={() => setIsConfigModalOpen(true)}
+                    className="bg-yellow-600 text-white px-3 py-1 rounded-lg shadow hover:bg-yellow-700 transition text-sm"
+                  >
+                    Configurar exportación
+                  </button>
                   <button
                     onClick={() => {
                       exportToExcel(selectedActivos);
-                      setTomo(null);
                     }}
                     className={`${
                       selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
@@ -386,6 +388,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
           }}
         />
       ) : null}
+
+      {/* Modal de Configuración de Exportación */}
+      {isConfigModalOpen && (
+        <ConfiguracionExportacionModal onClose={() => setIsConfigModalOpen(false)} />
+      )}
     </div>
   );
 };
