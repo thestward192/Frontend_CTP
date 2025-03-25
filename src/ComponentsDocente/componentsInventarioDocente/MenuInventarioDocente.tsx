@@ -11,7 +11,7 @@ const MenuInventarioDocente: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Botón toggle*/}
+      {/* Botón toggle */}
       <button
         className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -19,7 +19,7 @@ const MenuInventarioDocente: React.FC = () => {
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <div
         className={`
           fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
@@ -37,9 +37,9 @@ const MenuInventarioDocente: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal */}
+      {/* Contenido principal: se aplica margen izquierdo en desktop cuando el sidebar está abierto */}
       <div
-        className="flex-1 relative z-10 overflow-hidden transition-all duration-300"
+        className="flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300"
         style={{ marginLeft: isSidebarOpen ? '16rem' : '0' }}
       >
         {/* Imagen de fondo */}
@@ -55,13 +55,13 @@ const MenuInventarioDocente: React.FC = () => {
             <ProfileDocenteComponent />
           </div>
 
-          {/* Espaciado superior para buscadores */}
-          <div className="pt-[20px] px-4 md:px-10">
+          {/* Sección de búsqueda */}
+          <div className="pt-[40px] px-10">
             <SearchBarDocente />
           </div>
 
-          {/* Tabla con márgenes laterales */}
-          <div className="relative z-20 mt-6 mx-4 md:mx-10">
+          {/* Contenedor de TableInventarioDocente con márgenes laterales consistentes */}
+          <div className="relative z-20 -mt-6 ml-10 mr-10">
             <TableInventarioDocente />
           </div>
         </div>
