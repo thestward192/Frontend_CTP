@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Activo } from '../types/activo';
 
-//const API_URL = 'https://backendcontrolactivos-2.onrender.com';
+const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
-const API_URL = 'http://localhost:3000';
+//const API_URL = 'http://localhost:3000';
 
 // Obtener todos los activos
 export const getActivos = async (): Promise<Activo[]> => {
