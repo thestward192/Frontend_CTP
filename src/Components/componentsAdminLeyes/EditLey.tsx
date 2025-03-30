@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Ley } from '../../types/ley';
 
 interface EditLeyFormProps {
   ley: Ley;
-  onSave: (id: number, updatedData: Partial<Ley>) => void;
+  onSave: (id: number, updatedData: Partial<Ley>) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -22,18 +22,28 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
       detalle: ley.detalle,
     },
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (data: FormData) => {
-    onSave(ley.id, data); // Llama a la función onSave con los datos actualizados
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await onSave(ley.id, data);
+    } catch (error) {
+      console.error('Error al guardar los cambios de la ley:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-        <h2 className="text-lg font-bold mb-4">Editar Ley</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
+        <h2 className="text-xl font-bold mb-4">Editar Ley</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="mb-4">
-            <label className="block mb-1">Número de Ley</label>
+            <label className="block mb-1">
+              Número de Ley <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="numLey"
               control={control}
@@ -46,10 +56,14 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
                 />
               )}
             />
-            {errors.numLey && <p className="text-red-500 text-sm mt-1">{errors.numLey.message}</p>}
+            {errors.numLey && (
+              <p className="text-red-500 text-sm mt-1">{errors.numLey.message}</p>
+            )}
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Nombre</label>
+            <label className="block mb-1">
+              Nombre <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="nombre"
               control={control}
@@ -62,7 +76,9 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
                 />
               )}
             />
-            {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
+            {errors.nombre && (
+              <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>
+            )}
           </div>
           <div className="mb-4">
             <label className="block mb-1">Detalle</label>
@@ -79,23 +95,24 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
               )}
             />
           </div>
-          
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              disabled={isSubmitting}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
-              onClick={onCancel} // Botón para cancelar la edición
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              onClick={onCancel}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>

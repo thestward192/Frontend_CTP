@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Licitacion, UpdateLicitacionDTO } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
@@ -7,19 +7,19 @@ import { Moneda } from '../../types/moneda';
 
 interface EditLicitacionFormProps {
   licitacion: Licitacion;
-  onSave: (id: number, updatedData: UpdateLicitacionDTO) => void;
+  onSave: (id: number, updatedData: UpdateLicitacionDTO) => Promise<void>;
   onCancel: () => void;
 }
 
 const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave, onCancel }) => {
   const { leyes, loading: leyesLoading } = useLeyes();
   const { proveedores, loading: proveedoresLoading } = useProveedores();
-
-  const [moneda, setMoneda] = React.useState(licitacion.moneda);
+  const [moneda, setMoneda] = useState(licitacion.moneda);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<UpdateLicitacionDTO>();
 
-  // Uso de useEffect para inicializar los valores cuando licitacion está disponible
+  // Inicializar valores del formulario cuando la licitación esté disponible
   useEffect(() => {
     reset({
       numActa: licitacion.numActa,
@@ -34,11 +34,18 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
     });
   }, [licitacion, reset]);
 
-  const onSubmit: SubmitHandler<UpdateLicitacionDTO> = (data) => {
-    onSave(licitacion.id, {
-      ...data,
-      fecha: new Date(`${data.fecha}T00:00:00`), // Esto asegura que la fecha se guarde correctamente
-    });
+  const onSubmit: SubmitHandler<UpdateLicitacionDTO> = async (data) => {
+    setIsSubmitting(true);
+    try {
+      await onSave(licitacion.id, {
+        ...data,
+        fecha: new Date(`${data.fecha}T00:00:00`),
+      });
+    } catch (error) {
+      console.error('Error al guardar la licitación:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleButtonMonedaSwitch = () => {
@@ -48,39 +55,51 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
         <h2 className="text-lg font-bold mb-4">Editar Licitación</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
+          {/* Número de Acta */}
           <div className="mb-4">
-            <label className="block mb-1">Número de Acta</label>
+            <label className="block mb-1">
+              Número de Acta <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               {...register('numActa', { required: 'El número de acta es requerido' })}
               className="w-full border p-2 rounded-md"
             />
-            {errors.numActa && <span className="text-red-500">{errors.numActa.message}</span>}
+            {errors.numActa && <span className="text-red-500 text-sm">{errors.numActa.message}</span>}
           </div>
+          {/* Número de Licitación */}
           <div className="mb-4">
-            <label className="block mb-1">Número de Licitación</label>
+            <label className="block mb-1">
+              Número de Licitación <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
               {...register('numLicitacion', { required: 'El número de licitación es requerido' })}
               className="w-full border p-2 rounded-md"
             />
-            {errors.numLicitacion && <span className="text-red-500">{errors.numLicitacion.message}</span>}
+            {errors.numLicitacion && <span className="text-red-500 text-sm">{errors.numLicitacion.message}</span>}
           </div>
+          {/* Nombre */}
           <div className="mb-4">
-            <label className="block mb-1">Nombre</label>
+            <label className="block mb-1">
+              Nombre <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               {...register('nombre', { required: 'El nombre es requerido' })}
               className="w-full border p-2 rounded-md"
             />
-            {errors.nombre && <span className="text-red-500">{errors.nombre.message}</span>}
+            {errors.nombre && <span className="text-red-500 text-sm">{errors.nombre.message}</span>}
           </div>
+          {/* Monto */}
           <div className="mb-4">
-            <label className="block mb-1">Monto</label>
+            <label className="block mb-1">
+              Monto ({moneda === Moneda.COLON ? "₡" : "$"}) <span className="text-red-500">*</span>
+            </label>
             <div className="flex items-center space-x-2">
               <input
                 type="number"
@@ -98,74 +117,93 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
                 {moneda === Moneda.COLON ? "CRC" : "USD"}
               </button>
             </div>
-            {errors.monto && <span className="text-red-500">{errors.monto.message}</span>}
+            {errors.monto && <span className="text-red-500 text-sm">{errors.monto.message}</span>}
           </div>
+          {/* Descripción */}
           <div className="col-span-2 mb-4">
-            <label className="block mb-1">Descripción</label>
+            <label className="block mb-1">
+              Descripción <span className="text-red-500">*</span>
+            </label>
             <textarea
-              {...register('descripcion')}
+              {...register('descripcion', { required: 'La descripción es requerida' })}
               className="w-full border p-2 rounded-md"
             />
-            {errors.descripcion && <span className="text-red-500">{errors.descripcion.message}</span>}
+            {errors.descripcion && <span className="text-red-500 text-sm">{errors.descripcion.message}</span>}
           </div>
+          {/* Fecha */}
           <div className="mb-4">
-            <label className="block mb-1">Fecha</label>
+            <label className="block mb-1">
+              Fecha <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
-              {...register('fecha')}
+              {...register('fecha', { required: 'La fecha es requerida' })}
               className="w-full border p-2 rounded-md"
             />
-            {errors.fecha && <span className="text-red-500">{errors.fecha.message}</span>}
+            {errors.fecha && <span className="text-red-500 text-sm">{errors.fecha.message}</span>}
           </div>
+          {/* Ley Asociada */}
           <div className="mb-4">
-            <label className="block mb-1">Ley Asociada</label>
+            <label className="block mb-1">
+              Ley Asociada <span className="text-red-500">*</span>
+            </label>
             <select
               {...register('idLey', { required: 'Debe seleccionar una ley' })}
               className="w-full border p-2 rounded-md"
               disabled={leyesLoading}
             >
-              <option value="" disabled>Seleccionar Ley</option>
+              <option value="" disabled>
+                Seleccionar Ley
+              </option>
               {(leyes || []).map((ley) => (
                 <option key={ley.id} value={ley.id}>
                   {ley.nombre}
                 </option>
               ))}
             </select>
-            {errors.idLey && <span className="text-red-500">{errors.idLey.message}</span>}
+            {errors.idLey && <span className="text-red-500 text-sm">{errors.idLey.message}</span>}
           </div>
+          {/* Proveedor Asociado */}
           <div className="mb-4">
-            <label className="block mb-1">Proveedor Asociado</label>
+            <label className="block mb-1">
+              Proveedor Asociado <span className="text-red-500">*</span>
+            </label>
             <select
               {...register('idProveedor', { required: 'Debe seleccionar un proveedor' })}
               className="w-full border p-2 rounded-md"
               disabled={proveedoresLoading}
             >
-              <option value="" disabled>Seleccionar Proveedor</option>
+              <option value="" disabled>
+                Seleccionar Proveedor
+              </option>
               {(proveedores || []).map((proveedor) => (
                 <option key={proveedor.id} value={proveedor.id}>
                   {proveedor.vendedor}
                 </option>
               ))}
             </select>
-            {errors.idProveedor && <span className="text-red-500">{errors.idProveedor.message}</span>}
+            {errors.idProveedor && <span className="text-red-500 text-sm">{errors.idProveedor.message}</span>}
           </div>
 
-          <div className="col-span-2 flex justify-end space-x-2">
+          {/* Botones de Acción */}
+          <div className="col-span-2 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              disabled={isSubmitting}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>

@@ -13,15 +13,18 @@ interface FormularioLicitacionProps {
   onSubmit: (licitacion: Omit<Licitacion, 'id'>) => void;
 }
 
+interface FormData extends Omit<Licitacion, 'id'> {}
+
 const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, onSubmit, onLicitacionCreated }) => {
   const { leyes, loading: leyesLoading } = useLeyes();
   const { proveedores, loading: proveedoresLoading } = useProveedores();
   const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<Omit<Licitacion, 'id'>>({
     defaultValues: {
-      numActa: undefined,
-      numLicitacion: undefined,
+      numActa: '',
+      numLicitacion: '',
       nombre: '',
       moneda: Moneda.COLON,
       descripcion: '',
@@ -31,13 +34,20 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
     },
   });
 
-  const onSubmitForm: SubmitHandler<Omit<Licitacion, 'id'>> = (data) => {
-    onSubmit({
-      ...data,
-      fecha: new Date(`${data.fecha}T00:00:00`),
-    });
-    onLicitacionCreated();
-    onClose();
+  const onSubmitForm: SubmitHandler<FormData> = async (data) => {
+    setIsSubmitting(true);
+    try {
+      onSubmit({
+        ...data,
+        fecha: new Date(`${data.fecha}T00:00:00`),
+      });
+      onLicitacionCreated();
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleButtonMonedaSwitch = () => {
@@ -58,53 +68,59 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
   }));
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
         <h2 className="text-xl font-bold mb-4">Agregar Licitación</h2>
         <form onSubmit={handleSubmit(onSubmitForm)} className="grid grid-cols-2 gap-4">
           {/* Número de Acta */}
           <div className="form-group">
-            <label htmlFor="numActa" className="block text-sm font-medium text-gray-700">Número de Acta</label>
+            <label htmlFor="numActa" className="block text-sm font-medium text-gray-700">
+              Número de Acta <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               id="numActa"
               {...register('numActa', { required: 'El número de acta es requerido' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese número de acta"
             />
-            {errors.numActa && <span className="text-red-500">{errors.numActa.message}</span>}
+            {errors.numActa && <span className="text-red-500 text-sm">{errors.numActa.message}</span>}
           </div>
 
           {/* Número de Licitación */}
           <div className="form-group">
-            <label htmlFor="numLicitacion" className="block text-sm font-medium text-gray-700">Número de Licitación</label>
+            <label htmlFor="numLicitacion" className="block text-sm font-medium text-gray-700">
+              Número de Licitación <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
               id="numLicitacion"
               {...register('numLicitacion', { required: 'El número de licitación es requerido' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese número de licitación"
             />
-            {errors.numLicitacion && <span className="text-red-500">{errors.numLicitacion.message}</span>}
+            {errors.numLicitacion && <span className="text-red-500 text-sm">{errors.numLicitacion.message}</span>}
           </div>
 
           {/* Nombre */}
           <div className="form-group">
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre</label>
+            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+              Nombre <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               id="nombre"
               {...register('nombre', { required: 'El nombre es requerido' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese nombre"
             />
-            {errors.nombre && <span className="text-red-500">{errors.nombre.message}</span>}
+            {errors.nombre && <span className="text-red-500 text-sm">{errors.nombre.message}</span>}
           </div>
 
           {/* Monto */}
           <div className="form-group">
             <label htmlFor="monto" className="block text-sm font-medium text-gray-700">
-              Monto ({moneda === Moneda.COLON ? "₡" : "$"})
+              Monto ({moneda === Moneda.COLON ? "₡" : "$"}) <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center space-x-2">
               <input
@@ -112,7 +128,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
                 step={0.01}
                 id="monto"
                 {...register("monto", { required: "El monto es requerido" })}
-                className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                className="mt-2 block w-full border p-2 rounded-md shadow-sm"
                 placeholder="Ingrese monto"
               />
               <button
@@ -123,34 +139,38 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
                 {moneda === Moneda.COLON ? "CRC" : "USD"}
               </button>
             </div>
-            {errors.monto && <span className="text-red-500">{errors.monto.message}</span>}
+            {errors.monto && <span className="text-red-500 text-sm">{errors.monto.message}</span>}
           </div>
 
-          {/* Campo oculto para enviar la moneda */}
+          {/* Campo oculto para la moneda */}
           <input type="hidden" {...register("moneda")} value={moneda} />
 
-          {/* Descripción */}
+          {/* Descripción (NO obligatoria) */}
           <div className="form-group col-span-2">
-            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">Descripción</label>
+            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
+              Descripción
+            </label>
             <textarea
               id="descripcion"
-              {...register('descripcion', { required: 'La descripción es requerida' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+              {...register('descripcion')}
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese descripción"
             />
-            {errors.descripcion && <span className="text-red-500">{errors.descripcion.message}</span>}
+            {errors.descripcion && <span className="text-red-500 text-sm">{errors.descripcion.message}</span>}
           </div>
 
           {/* Fecha */}
           <div className="form-group">
-            <label htmlFor="fecha" className="block text-sm font-medium text-gray-700">Fecha</label>
+            <label htmlFor="fecha" className="block text-sm font-medium text-gray-700">
+              Fecha <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               id="fecha"
               {...register('fecha', { required: 'La fecha es requerida' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
             />
-            {errors.fecha && <span className="text-red-500">{errors.fecha.message}</span>}
+            {errors.fecha && <span className="text-red-500 text-sm">{errors.fecha.message}</span>}
           </div>
 
           {/* Selección de Ley */}
@@ -216,17 +236,20 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
 
 
           {/* Botones de Acción */}
-          <div className="flex justify-end col-span-2 mt-4 space-x-4">
+          <div className="flex flex-col sm:flex-row justify-end col-span-2 mt-4 space-y-4 sm:space-y-0 sm:space-x-4">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              disabled={isSubmitting}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
               onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>
@@ -238,3 +261,4 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
 };
 
 export default FormularioLicitacion;
+
