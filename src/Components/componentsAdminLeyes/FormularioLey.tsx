@@ -29,12 +29,14 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] relative">
-        <h2 className="text-lg font-bold mb-4">Agregar Ley</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
+        <h2 className="text-xl font-bold mb-4">Agregar Ley</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="mb-4">
-            <label className="block mb-1">Número de Ley</label>
+            <label className="block mb-1">
+              Número de Ley <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="numLey"
               control={control}
@@ -47,11 +49,15 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
                 />
               )}
             />
-            {errors.numLey && <p className="text-red-500 text-sm">{errors.numLey.message}</p>}
+            {errors.numLey && (
+              <p className="text-red-500 text-sm mt-1">{errors.numLey.message}</p>
+            )}
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1">Nombre</label>
+            <label className="block mb-1">
+              Nombre <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="nombre"
               control={control}
@@ -64,7 +70,9 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
                 />
               )}
             />
-            {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
+            {errors.nombre && (
+              <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -83,22 +91,21 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
             >
               Guardar
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>

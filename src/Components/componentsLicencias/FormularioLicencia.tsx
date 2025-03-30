@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { CreateLicenciaDTO } from '../../types/licencia';
 import { useLicitaciones } from '../../hooks/useLicitacion';
-
 
 interface FormularioLicenciaProps {
   onClose: () => void;
@@ -10,8 +9,12 @@ interface FormularioLicenciaProps {
 }
 
 const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
-  const {licitaciones, error, loading } = useLicitaciones();
-  const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
+  const { licitaciones, error, loading } = useLicitaciones();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<CreateLicenciaDTO>({
     defaultValues: {
       nombre: '',
       descripcion: '',
@@ -19,9 +22,11 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
       modoAdquisicion: 'Ley',
       licitacionId: undefined,
       vigenciaInicio: undefined,
-      vigenciaFin: undefined
+      vigenciaFin: undefined,
     },
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const modoAdquisicion = useWatch({
     control,
@@ -30,17 +35,27 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
   });
 
   const onSubmit = async (data: CreateLicenciaDTO) => {
-    await onSave(data);
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSave(data);
+      onClose();
+    } catch (error) {
+      console.error('Error al guardar la licencia:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
         <h2 className="text-lg font-bold mb-4">Agregar Licencia</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-4">
-            <label className="block mb-1">Nombre de la Licencia</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Nombre */}
+          <div>
+            <label className="block mb-1">
+              Nombre de la Licencia <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="nombre"
               control={control}
@@ -48,16 +63,19 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               render={({ field }) => (
                 <input
                   {...field}
+                  placeholder="Nombre"
                   className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
-                  placeholder="Nombre de la Licencia"
                 />
               )}
             />
             {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-1">Descripción</label>
+          {/* Descripción */}
+          <div>
+            <label className="block mb-1">
+              Descripción <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="descripcion"
               control={control}
@@ -65,16 +83,19 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
                   placeholder="Descripción"
+                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
                 />
               )}
             />
             {errors.descripcion && <p className="text-red-500 text-sm">{errors.descripcion.message}</p>}
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-1">Código de la Licencia</label>
+          {/* Código */}
+          <div>
+            <label className="block mb-1">
+              Código de la Licencia <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="codigoLicencia"
               control={control}
@@ -82,16 +103,19 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               render={({ field }) => (
                 <input
                   {...field}
+                  placeholder="Código"
                   className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
-                  placeholder="Código de la Licencia"
                 />
               )}
             />
             {errors.codigoLicencia && <p className="text-red-500 text-sm">{errors.codigoLicencia.message}</p>}
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-1">Modo de Adquisición</label>
+          {/* Modo de Adquisición */}
+          <div>
+            <label className="block mb-1">
+              Modo de Adquisición <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="modoAdquisicion"
               control={control}
@@ -109,9 +133,12 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.modoAdquisicion && <p className="text-red-500 text-sm">{errors.modoAdquisicion.message}</p>}
           </div>
 
+          {/* Licitación (si es Ley) */}
           {modoAdquisicion === 'Ley' && (
-            <div className="mb-4">
-              <label className="block mb-1">Licitación</label>
+            <div>
+              <label className="block mb-1">
+                Licitación <span className="text-red-500">*</span>
+              </label>
               <Controller
                 name="licitacionId"
                 control={control}
@@ -135,12 +162,15 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                 )}
               />
               {errors.licitacionId && <p className="text-red-500 text-sm">{errors.licitacionId.message}</p>}
-              {error && <p className="text-red-500 text-sm mt-1">Error al cargar las Licitaciones.</p>}
+              {error && <p className="text-red-500 text-sm mt-1">Error al cargar las licitaciones.</p>}
             </div>
           )}
 
-          <div className="mb-4">
-            <label className="block mb-1">Vigencia Inicio</label>
+          {/* Fechas */}
+          <div>
+            <label className="block mb-1">
+              Vigencia Inicio <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="vigenciaInicio"
               control={control}
@@ -155,10 +185,13 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               )}
             />
             {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
+          </div>
 
-            <label className="block mb-1 mt-4">Vigencia Fin</label>
+          <div>
+            <label className="block mb-1">
+              Vigencia Fin <span className="text-red-500">*</span>
+            </label>
             <Controller
-
               name="vigenciaFin"
               control={control}
               rules={{ required: 'Este campo es obligatorio' }}
@@ -170,28 +203,29 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                   className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
                 />
               )}
-
             />
-
             {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
           </div>
 
+          {/* Botones */}
           <div className="flex justify-end space-x-4 mt-6">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              disabled={isSubmitting}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>
