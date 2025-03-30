@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import Select, { GroupBase, SingleValue } from 'react-select';
 import { useRoles } from '../../hooks/useRoles';
 import { useUsers } from '../../hooks/useUser';
-import { useUbicacion } from '../../hooks/useUbicacion'; // Importamos el hook de ubicaciones
+import { useUbicacion } from '../../hooks/useUbicacion';
+import { OptionType } from '../../types/proveedor';
 
 interface FormularioDocenteProps {
   onClose: () => void;
@@ -11,10 +13,18 @@ interface FormularioDocenteProps {
 const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUserMutation } = useUsers();
   const { roles, loading: rolesLoading } = useRoles();
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion(); // Usamos el hook de ubicaciones
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
   const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
 
-  const { register, handleSubmit, watch, control, setError, formState: { errors }, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    control,
+    setError,
+    formState: { errors },
+    reset,
+  } = useForm({
     defaultValues: {
       nombre: '',
       apellido_1: '',
@@ -54,13 +64,20 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   if (ubicacionesLoading) return <p>Cargando ubicaciones...</p>;
   if (ubicacionesError) return <p>Error al cargar las ubicaciones</p>;
 
+  // Mapea las ubicaciones a opciones para react‑select
+  const ubicacionOptions: OptionType[] = ubicaciones.map((ubicacion) => ({
+    value: ubicacion.id,
+    label: ubicacion.nombre,
+  }));
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
         <h2 className="text-lg font-bold mb-4">Agregar Usuario</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Dividimos el formulario en columnas */}
+          {/* Formulario dividido en dos columnas */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Nombre */}
             <div className="mb-4">
               <label className="block text-gray-700">Nombre</label>
               <input
@@ -70,7 +87,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
             </div>
-
+            {/* Primer Apellido */}
             <div className="mb-4">
               <label className="block text-gray-700">Primer Apellido</label>
               <input
@@ -80,7 +97,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.apellido_1 && <p className="text-red-500">{errors.apellido_1.message}</p>}
             </div>
-
+            {/* Segundo Apellido */}
             <div className="mb-4">
               <label className="block text-gray-700">Segundo Apellido</label>
               <input
@@ -90,7 +107,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.apellido_2 && <p className="text-red-500">{errors.apellido_2.message}</p>}
             </div>
-
+            {/* Email */}
             <div className="mb-4">
               <label className="block text-gray-700">Email</label>
               <input
@@ -104,7 +121,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.email && <p className="text-red-500">{errors.email.message}</p>}
             </div>
-
+            {/* Contraseña */}
             <div className="mb-4">
               <label className="block text-gray-700">Contraseña</label>
               <input
@@ -118,7 +135,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.contraseña && <p className="text-red-500">{errors.contraseña.message}</p>}
             </div>
-
+            {/* Confirmar Contraseña */}
             <div className="mb-4">
               <label className="block text-gray-700">Confirmar Contraseña</label>
               <input
@@ -132,7 +149,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
               />
               {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
             </div>
-
+            {/* Rol */}
             <div className="mb-4">
               <label className="block text-gray-700">Rol</label>
               <select
@@ -151,7 +168,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Campos de ubicaciones */}
+          {/* Campos dinámicos para Ubicaciones usando react‑select con filtro y scroll */}
           {ubicacionFields.map((_, index) => (
             <div className="mb-4" key={index}>
               <label className="block text-gray-700">Ubicación {index + 1}</label>
@@ -160,17 +177,19 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
                   name={`ubicacionIds.${index}`}
                   control={control}
                   render={({ field }) => (
-                    <select
-                      {...field}
-                      className="w-full border border-gray-300 p-2 rounded-lg"
-                    >
-                      <option value="">Selecciona una ubicación</option>
-                      {ubicaciones.map((ubicacion) => (
-                        <option key={ubicacion.id} value={ubicacion.id}>
-                          {ubicacion.nombre}
-                        </option>
-                      ))}
-                    </select>
+                    <Select<OptionType, false, GroupBase<OptionType>>
+                      options={ubicacionOptions}
+                      placeholder="Selecciona una ubicación"
+                      value={ubicacionOptions.find(option => option.value === field.value) || null}
+                      onChange={(selectedOption: SingleValue<OptionType>) => {
+                        field.onChange(selectedOption?.value);
+                      }}
+                      className="w-full"
+                      classNamePrefix="react-select"
+                      // react-select ya incluye búsqueda y scroll por defecto,
+                      // si deseas personalizar el menú (por ejemplo, maxHeight), puedes usar la prop "styles"
+                      // styles={{ menu: (provided) => ({ ...provided, maxHeight: 200 }) }}
+                    />
                   )}
                 />
                 <button
@@ -198,11 +217,14 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
             <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
               Guardar
             </button>
-            <button type="button" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onClick={onClose}>
+            <button
+              type="button"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              onClick={onClose}
+            >
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>

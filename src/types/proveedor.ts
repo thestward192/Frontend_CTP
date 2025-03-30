@@ -16,3 +16,9 @@ export interface CreateProveedor {
     disponibilidad?: string;
     email: string;
   }
+  // OptionType es el shape que React-Select espera para cada opción
+export interface OptionType {
+    value: number;
+    label: string;
+  }
+  

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
+import Select, { GroupBase, SingleValue } from 'react-select';
 import { CreateLicenciaDTO } from '../../types/licencia';
 import { useLicitaciones } from '../../hooks/useLicitacion';
-
+import { OptionType } from '../../types/proveedor';
 
 interface FormularioLicenciaProps {
   onClose: () => void;
@@ -10,8 +11,13 @@ interface FormularioLicenciaProps {
 }
 
 const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
-  const {licitaciones, error, loading } = useLicitaciones();
-  const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
+  const { licitaciones, error, loading } = useLicitaciones();
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<CreateLicenciaDTO>({
     defaultValues: {
       nombre: '',
       descripcion: '',
@@ -19,10 +25,11 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
       modoAdquisicion: 'Ley',
       licitacionId: undefined,
       vigenciaInicio: undefined,
-      vigenciaFin: undefined
+      vigenciaFin: undefined,
     },
   });
 
+  // Obtenemos el valor de "modoAdquisicion" para condicionar el campo de Licitación
   const modoAdquisicion = useWatch({
     control,
     name: 'modoAdquisicion',
@@ -34,11 +41,18 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
     onClose();
   };
 
+  // Mapea las licitaciones a opciones para react‑select
+  const licitacionOptions: OptionType[] = (licitaciones || []).map((licitacion) => ({
+    value: licitacion.id,
+    label: licitacion.nombre,
+  }));
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Agregar Licencia</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Nombre de la Licencia */}
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Licencia</label>
             <Controller
@@ -56,6 +70,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
           </div>
 
+          {/* Descripción */}
           <div className="mb-4">
             <label className="block mb-1">Descripción</label>
             <Controller
@@ -73,6 +88,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.descripcion && <p className="text-red-500 text-sm">{errors.descripcion.message}</p>}
           </div>
 
+          {/* Código de la Licencia */}
           <div className="mb-4">
             <label className="block mb-1">Código de la Licencia</label>
             <Controller
@@ -90,6 +106,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.codigoLicencia && <p className="text-red-500 text-sm">{errors.codigoLicencia.message}</p>}
           </div>
 
+          {/* Modo de Adquisición */}
           <div className="mb-4">
             <label className="block mb-1">Modo de Adquisición</label>
             <Controller
@@ -109,6 +126,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.modoAdquisicion && <p className="text-red-500 text-sm">{errors.modoAdquisicion.message}</p>}
           </div>
 
+          {/* Campo de Licitación solo si el modo es "Ley" */}
           {modoAdquisicion === 'Ley' && (
             <div className="mb-4">
               <label className="block mb-1">Licitación</label>
@@ -116,29 +134,76 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                 name="licitacionId"
                 control={control}
                 rules={{ required: 'Debe seleccionar una licitación' }}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="w-full border p-2 rounded-md"
-                    disabled={loading || error !== null}
-                    defaultValue=""
-                  >
-                    <option value="" disabled hidden>
-                      Seleccione una Licitación
-                    </option>
-                    {licitaciones?.map((licitacion) => (
-                      <option key={licitacion.id} value={licitacion.id.toString()}>
-                        {licitacion.nombre}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                render={({ field, fieldState: { error: fieldError } }) => {
+                  const currentValue = field.value as number | undefined;
+                  return (
+                    <>
+                      <Select<OptionType, false, GroupBase<OptionType>>
+                        options={licitacionOptions}
+                        placeholder="Seleccione una Licitación"
+                        value={licitacionOptions.find(option => option.value === currentValue) || null}
+                        onChange={(selectedOption: SingleValue<OptionType>) => {
+                          field.onChange(selectedOption?.value);
+                        }}
+                        isDisabled={loading || error !== null}
+                        className="mt-2"
+                        classNamePrefix="react-select"
+                        styles={{
+                          control: (provided, state) => ({
+                            ...provided,
+                            borderColor: state.isFocused ? '#2563EB' : '#D1D5DB', // azul cuando está enfocado, gris de base
+                            boxShadow: state.isFocused ? '0 0 0 1px #2563EB' : 'none',
+                            '&:hover': {
+                              borderColor: state.isFocused ? '#2563EB' : '#9CA3AF',
+                            },
+                            minHeight: '2.5rem',
+                            height: '2.5rem',
+                          }),
+                          valueContainer: (provided) => ({
+                            ...provided,
+                            padding: '0 0.5rem',
+                          }),
+                          input: (provided) => ({
+                            ...provided,
+                            margin: 0,
+                            padding: 0,
+                          }),
+                          indicatorsContainer: (provided) => ({
+                            ...provided,
+                            height: '2.5rem',
+                          }),
+                          menu: (provided) => ({
+                            ...provided,
+                            zIndex: 9999,
+                            maxHeight: '200px', // limita la altura para mostrar scroll
+                          }),
+                          option: (provided, state) => ({
+                            ...provided,
+                            backgroundColor: state.isSelected
+                              ? '#2563EB'
+                              : state.isFocused
+                                ? '#EFF6FF'
+                                : 'white',
+                            color: state.isSelected ? 'white' : 'black',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#E0F2FE',
+                            },
+                          }),
+                        }}
+                      />
+                      {fieldError && <p className="text-red-500 text-sm mt-1">{fieldError.message}</p>}
+                    </>
+                  );
+                }}
               />
-              {errors.licitacionId && <p className="text-red-500 text-sm">{errors.licitacionId.message}</p>}
               {error && <p className="text-red-500 text-sm mt-1">Error al cargar las Licitaciones.</p>}
             </div>
           )}
 
+
+
+          {/* Vigencia Inicio */}
           <div className="mb-4">
             <label className="block mb-1">Vigencia Inicio</label>
             <Controller
@@ -155,10 +220,12 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               )}
             />
             {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
+          </div>
 
-            <label className="block mb-1 mt-4">Vigencia Fin</label>
+          {/* Vigencia Fin */}
+          <div className="mb-4">
+            <label className="block mb-1">Vigencia Fin</label>
             <Controller
-
               name="vigenciaFin"
               control={control}
               rules={{ required: 'Este campo es obligatorio' }}
@@ -170,9 +237,7 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                   className={`w-full border p-2 rounded-md ${errors.vigenciaFin ? 'border-red-500' : ''}`}
                 />
               )}
-
             />
-
             {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
           </div>
 
@@ -191,7 +256,6 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>

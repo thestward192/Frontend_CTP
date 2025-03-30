@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import Select from 'react-select';
 import { Licitacion } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
 import { useProveedores } from '../../hooks/useProveedor';
 import { Moneda } from '../../types/moneda';
-
+import { OptionType } from '../../types/proveedor';
 
 interface FormularioLicitacionProps {
   onClose: () => void;
@@ -17,7 +18,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
   const { proveedores, loading: proveedoresLoading } = useProveedores();
   const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Omit<Licitacion, 'id'>>({
+  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<Omit<Licitacion, 'id'>>({
     defaultValues: {
       numActa: undefined,
       numLicitacion: undefined,
@@ -25,8 +26,8 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
       moneda: Moneda.COLON,
       descripcion: '',
       fecha: new Date(),
-      idProveedor: '',
-      idLey: '',
+      idProveedor: 0,
+      idLey: 0,
     },
   });
 
@@ -39,12 +40,22 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
     onClose();
   };
 
-
   const handleButtonMonedaSwitch = () => {
     const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
     setMoneda(nuevaMoneda);
     setValue("moneda", nuevaMoneda);
   };
+
+  // Preparamos las opciones para react-select
+  const leyOptions = (leyes || []).map(ley => ({
+    value: ley.id,
+    label: ley.nombre,
+  }));
+
+  const proveedorOptions = (proveedores || []).map(proveedor => ({
+    value: proveedor.id,
+    label: proveedor.vendedor,
+  }));
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
@@ -145,40 +156,64 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
           {/* Selección de Ley */}
           <div className="form-group">
             <label htmlFor="ley" className="block text-sm font-medium text-gray-700">Ley</label>
-            <select
-              id="ley"
-              {...register('idLey', { required: 'Debe seleccionar una ley' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
-              disabled={leyesLoading}
-            >
-              <option value="" disabled>Seleccione una Ley</option>
-              {(leyes || []).map((ley) => (
-                <option key={ley.id} value={ley.id}>
-                  {ley.nombre}
-                </option>
-              ))}
-            </select>
-            {errors.idLey && <span className="text-red-500">{errors.idLey.message}</span>}
+            <Controller
+              control={control}
+              name="idLey"
+              rules={{ required: 'Debe seleccionar una ley' }}
+              render={({ field, fieldState: { error } }) => {
+                // El valor actual en el formulario
+                const currentValue = field.value; // number | undefined
+
+                return (
+                  <>
+                    <Select<OptionType>
+                      options={leyOptions}
+                      isLoading={leyesLoading}
+                      placeholder="Seleccione una Ley"
+                      // Con esto, el dropdown mostrará la opción seleccionada correctamente
+                      value={leyOptions.find((op) => op.value === currentValue) || null}
+                      // Cuando se seleccione una opción, actualiza el form
+                      onChange={(selectedOption) => {
+                        // selectedOption puede ser "null" en caso de clear, así que validamos
+                        field.onChange(selectedOption?.value ?? 0);
+                      }}
+                    />
+                    {error && <span className="text-red-500">{error.message}</span>}
+                  </>
+                );
+              }}
+            />
           </div>
+
 
           {/* Selección de Proveedor */}
           <div className="form-group">
             <label htmlFor="proveedor" className="block text-sm font-medium text-gray-700">Proveedor</label>
-            <select
-              id="proveedor"
-              {...register('idProveedor', { required: 'Debe seleccionar un proveedor' })}
-              className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
-              disabled={proveedoresLoading}
-            >
-              <option value="" disabled>Seleccione un Proveedor</option>
-              {(proveedores || []).map((proveedor) => (
-                <option key={proveedor.id} value={proveedor.id}>
-                  {proveedor.vendedor}
-                </option>
-              ))}
-            </select>
-            {errors.idProveedor && <span className="text-red-500">{errors.idProveedor.message}</span>}
+            <Controller
+              control={control}
+              name="idProveedor"
+              rules={{ required: 'Debe seleccionar un proveedor' }}
+              render={({ field, fieldState: { error } }) => {
+                const currentValue = field.value; // number | undefined
+
+                return (
+                  <>
+                    <Select<OptionType>
+                      options={proveedorOptions}
+                      isLoading={proveedoresLoading}
+                      placeholder="Seleccione un Proveedor"
+                      value={proveedorOptions.find((op) => op.value === currentValue) || null}
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value ?? 0);
+                      }}
+                    />
+                    {error && <span className="text-red-500">{error.message}</span>}
+                  </>
+                );
+              }}
+            />
           </div>
+
 
           {/* Botones de Acción */}
           <div className="flex justify-end col-span-2 mt-4 space-x-4">
@@ -196,7 +231,6 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
               Cancelar
             </button>
           </div>
-
         </form>
       </div>
     </div>
