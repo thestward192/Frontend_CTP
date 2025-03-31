@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Select, { SingleValue } from 'react-select';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Activo } from '../../types/activo';
-import { Moneda } from '../../types/moneda';         // <-- Enum para manejar la moneda
+import { Moneda } from '../../types/moneda';
 import { useUbicacion } from '../../hooks/useUbicacion';
 import { useLicitaciones } from '../../hooks/useLicitacion';
 import ImageUploader from './ImageUploader';
@@ -17,7 +18,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
   onClose,
   onSave,
 }) => {
-  // Estado local para manejar todos los campos del activo
+  // Estado local para manejar los campos del activo
   const [formData, setFormData] = useState<Partial<Activo>>({
     nombre: asset.nombre,
     descripcion: asset.descripcion,
@@ -30,27 +31,20 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
     foto: asset.foto,
     precio: asset.precio,
     observacion: asset.observacion,
+    // Se asume que si no existe, se guarda 0 (sin selección)
     ubicacionId: asset.ubicacion?.id || 0,
     modoAdquisicion: asset.modoAdquisicion || 'Donación',
-    licitacionId: asset.licitacion?.id || '',
-    moneda: asset.moneda || Moneda.COLON, // <-- Manejamos también la moneda
+    // Para licitación usaremos 0 cuando no haya
+    licitacionId: asset.licitacion?.id || 0,
+    moneda: asset.moneda || Moneda.COLON,
   });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const {
-    ubicaciones,
-    loading: ubicacionesLoading,
-    error: ubicacionesError,
-  } = useUbicacion();
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
 
-  const {
-    licitaciones,
-    loading: licitacionesLoading,
-    error: licitacionesError,
-  } = useLicitaciones();
-
-  // Verifica si está "Dado de Baja" para forzar estado "Malo"
+  // Si está "Dado de Baja", forzamos estado "Malo"
   useEffect(() => {
     if (formData.disponibilidad === 'Dado de Baja') {
       setFormData((prevState) => ({
@@ -60,26 +54,25 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
     }
   }, [formData.disponibilidad]);
 
-  // Si se selecciona una licitación, asumimos modo 'Ley'; si no, modo 'Donación'
+  // Si se selecciona una licitación, asumimos modo 'Ley'; de lo contrario, 'Donación'
   useEffect(() => {
-    if (formData.licitacionId) {
+    if (formData.licitacionId && formData.licitacionId !== 0) {
       setFormData((prev) => ({ ...prev, modoAdquisicion: 'Ley' }));
     } else {
       setFormData((prev) => ({ ...prev, modoAdquisicion: 'Donación' }));
     }
   }, [formData.licitacionId]);
 
-  // Función para cambiar moneda
+  // Cambio de moneda
   const handleMonedaSwitch = () => {
-    const nuevaMoneda =
-      formData.moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+    const nuevaMoneda = formData.moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
     setFormData((prevData) => ({
       ...prevData,
       moneda: nuevaMoneda,
     }));
   };
 
-  // Maneja la subida de la nueva imagen
+  // Manejo de subida de imagen
   const handleImageUpload = (url: string) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -87,7 +80,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
     }));
   };
 
-  // Maneja los cambios en los campos del formulario
+  // Maneja los cambios en campos tipo input, textarea o select nativo
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -112,13 +105,24 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
     }
   };
 
+  // Mientras se cargan los datos, mostramos un mensaje
   if (ubicacionesLoading || licitacionesLoading) {
     return <p>Cargando ubicaciones y licitaciones...</p>;
   }
-
   if (ubicacionesError || licitacionesError) {
     return <p>Error al cargar los datos</p>;
   }
+
+  // Opciones para react‑select (usamos números para value)
+  const ubicacionOptions = ubicaciones.map((ubicacion) => ({
+    value: ubicacion.id,
+    label: ubicacion.nombre,
+  }));
+
+  const licitacionOptions = licitaciones.map((licitacion) => ({
+    value: licitacion.id,
+    label: licitacion.nombre,
+  }));
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
@@ -132,7 +136,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
 
         <h2 className="text-xl font-bold mb-4">Editar Activo</h2>
 
-        {/* Contenedor interno para permitir scroll si crece mucho */}
+        {/* Contenedor con scroll si el contenido es extenso */}
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
@@ -203,8 +207,8 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                 />
                 <button
                   type="button"
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                   onClick={handleMonedaSwitch}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 >
                   {formData.moneda === Moneda.COLON ? 'CRC' : 'USD'}
                 </button>
@@ -220,7 +224,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                 onChange={handleChange}
                 className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 required
-                disabled={formData.disponibilidad === 'Dado de Baja'} // Si está dado de baja, deshabilitamos
+                disabled={formData.disponibilidad === 'Dado de Baja'}
               >
                 <option value="Bueno">Bueno</option>
                 <option value="Regular">Regular</option>
@@ -254,44 +258,53 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
               />
             </div>
 
-            {/* Ubicación */}
+            {/* Ubicación con react‑select */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Ubicación</label>
-              <select
-                name="ubicacionId"
-                value={formData.ubicacionId || 0}
-                onChange={handleChange}
-                className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
-                required
-              >
-                <option value={0}>Seleccione una Ubicación</option>
-                {ubicaciones.map((ubicacion) => (
-                  <option key={ubicacion.id} value={ubicacion.id}>
-                    {ubicacion.nombre}
-                  </option>
-                ))}
-              </select>
+              <Select
+                options={ubicacionOptions}
+                value={
+                  ubicacionOptions.find(
+                    (option) => option.value === formData.ubicacionId
+                  ) || null
+                }
+                onChange={(
+                  option: SingleValue<{ value: number; label: string }>
+                ) =>
+                  setFormData({
+                    ...formData,
+                    ubicacionId: option ? option.value : 0,
+                  })
+                }
+                placeholder="Seleccione una Ubicación"
+                classNamePrefix="react-select"
+              />
             </div>
 
-            {/* Licitación (solo si modoAdquisicion es Ley) */}
+            {/* Licitación (solo si modoAdquisicion es 'Ley') */}
             {formData.modoAdquisicion === 'Ley' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Licitación
                 </label>
-                <select
-                  name="licitacionId"
-                  value={formData.licitacionId || ''}
-                  onChange={handleChange}
-                  className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
-                >
-                  <option value="">Seleccione una Licitación</option>
-                  {licitaciones.map((licitacion) => (
-                    <option key={licitacion.id} value={licitacion.id}>
-                      {licitacion.nombre}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  options={licitacionOptions}
+                  value={
+                    licitacionOptions.find(
+                      (option) => option.value === formData.licitacionId
+                    ) || null
+                  }
+                  onChange={(
+                    option: SingleValue<{ value: number; label: string }>
+                  ) =>
+                    setFormData({
+                      ...formData,
+                      licitacionId: option ? option.value : 0,
+                    })
+                  }
+                  placeholder="Seleccione una Licitación"
+                  classNamePrefix="react-select"
+                />
               </div>
             )}
 
@@ -339,13 +352,12 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
             </button>
             <button
               type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
               onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
             >
               Cancelar
             </button>
           </div>
-          
         </div>
       </div>
     </div>

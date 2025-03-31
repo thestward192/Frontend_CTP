@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+import Select from 'react-select';
 import { Licitacion, UpdateLicitacionDTO } from '../../types/licitacion';
 import { useLeyes } from '../../hooks/useLey';
 import { useProveedores } from '../../hooks/useProveedor';
@@ -17,7 +18,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
   const [moneda, setMoneda] = useState(licitacion.moneda);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<UpdateLicitacionDTO>();
+  const { register, handleSubmit, control, setValue, formState: { errors }, reset } = useForm<UpdateLicitacionDTO>();
 
   // Inicializar valores del formulario cuando la licitación esté disponible
   useEffect(() => {
@@ -142,46 +143,62 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             />
             {errors.fecha && <span className="text-red-500 text-sm">{errors.fecha.message}</span>}
           </div>
-          {/* Ley Asociada */}
+          {/* Ley Asociada con react-select */}
           <div className="mb-4">
             <label className="block mb-1">
               Ley Asociada <span className="text-red-500">*</span>
             </label>
-            <select
-              {...register('idLey', { required: 'Debe seleccionar una ley' })}
-              className="w-full border p-2 rounded-md"
-              disabled={leyesLoading}
-            >
-              <option value="" disabled>
-                Seleccionar Ley
-              </option>
-              {(leyes || []).map((ley) => (
-                <option key={ley.id} value={ley.id}>
-                  {ley.nombre}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="idLey"
+              render={({ field }) => {
+                const options = (leyes || []).map((ley) => ({
+                  value: ley.id,
+                  label: ley.nombre,
+                }));
+                const selectedOption = options.find(option => option.value === field.value) || null;
+                return (
+                  <Select
+                    {...field}
+                    options={options}
+                    value={selectedOption}
+                    onChange={(option) => field.onChange(option.value)}
+                    isLoading={leyesLoading}
+                    placeholder="Seleccionar Ley"
+                    classNamePrefix="react-select"
+                  />
+                );
+              }}
+            />
             {errors.idLey && <span className="text-red-500 text-sm">{errors.idLey.message}</span>}
           </div>
-          {/* Proveedor Asociado */}
+          {/* Proveedor Asociado con react-select */}
           <div className="mb-4">
             <label className="block mb-1">
               Proveedor Asociado <span className="text-red-500">*</span>
             </label>
-            <select
-              {...register('idProveedor', { required: 'Debe seleccionar un proveedor' })}
-              className="w-full border p-2 rounded-md"
-              disabled={proveedoresLoading}
-            >
-              <option value="" disabled>
-                Seleccionar Proveedor
-              </option>
-              {(proveedores || []).map((proveedor) => (
-                <option key={proveedor.id} value={proveedor.id}>
-                  {proveedor.vendedor}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="idProveedor"
+              render={({ field }) => {
+                const options = (proveedores || []).map((proveedor) => ({
+                  value: proveedor.id,
+                  label: proveedor.vendedor,
+                }));
+                const selectedOption = options.find(option => option.value === field.value) || null;
+                return (
+                  <Select
+                    {...field}
+                    options={options}
+                    value={selectedOption}
+                    onChange={(option) => field.onChange(option.value)}
+                    isLoading={proveedoresLoading}
+                    placeholder="Seleccionar Proveedor"
+                    classNamePrefix="react-select"
+                  />
+                );
+              }}
+            />
             {errors.idProveedor && <span className="text-red-500 text-sm">{errors.idProveedor.message}</span>}
           </div>
 

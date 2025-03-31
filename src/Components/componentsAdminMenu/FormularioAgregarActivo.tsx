@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import Select, { SingleValue } from 'react-select';
 import { Activo } from '../../types/activo';
 import { Licitacion } from '../../types/licitacion';
 import { Ubicacion } from '../../types/ubicacion';
@@ -16,7 +17,7 @@ interface FormularioAgregarActivoProps {
 }
 
 const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Omit<Activo, 'id'>>();
+  const { register, handleSubmit, control, setValue, reset, formState: { errors } } = useForm<Omit<Activo, 'id'>>();
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
@@ -24,7 +25,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleCreateActivo, loading } = useActivos();
 
-  // Cargar ubicaciones y licitaciones
+  // Cargar datos de ubicaciones y licitaciones
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -41,7 +42,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     fetchData();
   }, []);
 
-  // Configurar modoAdquisicion y precio (si es Donación = 0)
+  // Configurar modoAdquisicion y precio (si es Donación, precio = 0)
   useEffect(() => {
     if (modoAdquisicion === 'Donación') {
       setValue('precio', 0);
@@ -56,20 +57,18 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     setValue("moneda", nuevaMoneda);
   };
 
-  // Guarda la URL de la foto en el campo 'foto'
+  // Función para subir imagen y asignar la URL al campo 'foto'
   const onUpload = (url: string) => {
     setValue('foto', url);
   };
 
   const onSubmitHandler: SubmitHandler<Omit<Activo, 'id'>> = async (data) => {
-    // Si ya se está enviando, evitar múltiples envíos
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       console.log('Datos enviados al servidor:', data);
       await handleCreateActivo(data);
       setSuccessMessage('Activo creado exitosamente');
-      // Una vez enviado, no se re-activa isSubmitting para evitar envíos adicionales
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
@@ -81,6 +80,17 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     }
   };
 
+  // Generar opciones para Ubicación y Licitación en formato react-select
+  const ubicacionOptions = ubicaciones.map((ubicacion) => ({
+    value: ubicacion.id.toString(),
+    label: ubicacion.nombre,
+  }));
+
+  const licitacionOptions = licitaciones.map((licitacion) => ({
+    value: licitacion.id.toString(),
+    label: licitacion.nombre,
+  }));
+
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
@@ -91,7 +101,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
           </div>
         )}
         <h2 className="text-xl font-bold mb-4">Agregar Activo</h2>
-        {/* Contenedor interno con scroll para formularios extensos */}
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -151,7 +160,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
               </div>
 
-              {/* Precio (solo se muestra si no es Donación) */}
+              {/* Precio (solo si no es Donación) */}
               {modoAdquisicion !== 'Donación' && (
                 <div className="flex items-center space-x-2">
                   <label className="block text-sm font-medium text-gray-700">
@@ -173,7 +182,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 </div>
               )}
 
-              {/* Descripción (no obligatoria) */}
+              {/* Descripción */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Descripción
@@ -185,51 +194,67 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 />
               </div>
 
-              {/* Ubicación */}
+              {/* Ubicación con react-select */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Ubicación <span className="text-red-500">*</span>
                 </label>
-                <select
-                  {...register('ubicacionId', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.ubicacionId ? 'border-red-500' : ''}`}
-                >
-                  <option value="">Seleccione una Ubicación</option>
-                  {ubicaciones.map((ubicacion) => (
-                    <option key={ubicacion.id} value={ubicacion.id}>
-                      {ubicacion.nombre}
-                    </option>
-                  ))}
-                </select>
-                {errors.ubicacionId && (
-                  <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>
-                )}
+                <Controller
+                  control={control}
+                  name="ubicacionId"
+                  defaultValue=""
+                  rules={{ required: 'Este campo es obligatorio' }}
+                  render={({ field }) => {
+                    const selectedOption = ubicacionOptions.find(option => option.value === field.value) || null;
+                    return (
+                      <Select
+                        {...field}
+                        options={ubicacionOptions}
+                        value={selectedOption}
+                        onChange={(option: SingleValue<{ value: string; label: string }>) =>
+                          field.onChange(option?.value || '')
+                        }
+                        placeholder="Seleccione una Ubicación"
+                        classNamePrefix="react-select"
+                      />
+                    );
+                  }}
+                />
+                {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
               </div>
 
-              {/* Licitación (solo si es "Ley") */}
+              {/* Licitación con react-select (solo si modoAdquisicion es 'Ley') */}
               {modoAdquisicion === 'Ley' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Licitación <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    {...register('licitacionId', { required: 'Este campo es obligatorio' })}
-                    className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.licitacionId ? 'border-red-500' : ''}`}
-                  >
-                    <option value="">Seleccione una Licitación</option>
-                    {licitaciones.map((licitacion) => (
-                      <option key={licitacion.id} value={licitacion.id}>
-                        {licitacion.nombre}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.licitacionId && (
-                    <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>
-                  )}
+                  <Controller
+                    control={control}
+                    name="licitacionId"
+                    defaultValue={0}
+                    rules={{ required: 'Este campo es obligatorio' }}
+                    render={({ field }) => {
+                      const selectedOption = licitacionOptions.find(option => option.value === field.value) || null;
+                      return (
+                        <Select
+                          {...field}
+                          options={licitacionOptions}
+                          value={selectedOption}
+                          onChange={(option: SingleValue<{ value: string; label: string }>) =>
+                            field.onChange(option?.value || '')
+                          }
+                          placeholder="Seleccione una Licitación"
+                          classNamePrefix="react-select"
+                        />
+                      );
+                    }}
+                  />
+                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
                 </div>
               )}
 
-              {/* Observaciones (no obligatoria) */}
+              {/* Observaciones */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Observaciones
@@ -252,9 +277,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
               <button
                 type="submit"
                 disabled={loading || isSubmitting}
-                className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
-                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {loading || isSubmitting ? 'Guardando...' : 'Crear Activo'}
               </button>
