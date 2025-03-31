@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import Select, { GroupBase, SingleValue } from 'react-select';
 import { CreateLicenciaDTO } from '../../types/licencia';
@@ -13,11 +13,7 @@ interface FormularioLicenciaProps {
 const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
   const { licitaciones, error, loading } = useLicitaciones();
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<CreateLicenciaDTO>({
+  const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
     defaultValues: {
       nombre: '',
       descripcion: '',
@@ -29,7 +25,8 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
     },
   });
 
-  // Obtenemos el valor de "modoAdquisicion" para condicionar el campo de Licitación
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const modoAdquisicion = useWatch({
     control,
     name: 'modoAdquisicion',
@@ -37,8 +34,15 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
   });
 
   const onSubmit = async (data: CreateLicenciaDTO) => {
-    await onSave(data);
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSave(data);
+      onClose();
+    } catch (error) {
+      console.error('Error al guardar la licencia:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Mapea las licitaciones a opciones para react‑select
@@ -48,13 +52,15 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
   }));
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
         <h2 className="text-lg font-bold mb-4">Agregar Licencia</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Nombre de la Licencia */}
-          <div className="mb-4">
-            <label className="block mb-1">Nombre de la Licencia</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Nombre */}
+          <div>
+            <label className="block mb-1">
+              Nombre de la Licencia <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="nombre"
               control={control}
@@ -62,8 +68,8 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
                   placeholder="Nombre de la Licencia"
+                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
                 />
               )}
             />
@@ -71,8 +77,10 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
           </div>
 
           {/* Descripción */}
-          <div className="mb-4">
-            <label className="block mb-1">Descripción</label>
+          <div>
+            <label className="block mb-1">
+              Descripción <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="descripcion"
               control={control}
@@ -80,8 +88,8 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
                   placeholder="Descripción"
+                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
                 />
               )}
             />
@@ -89,8 +97,10 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
           </div>
 
           {/* Código de la Licencia */}
-          <div className="mb-4">
-            <label className="block mb-1">Código de la Licencia</label>
+          <div>
+            <label className="block mb-1">
+              Código de la Licencia <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="codigoLicencia"
               control={control}
@@ -98,8 +108,8 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
                   placeholder="Código de la Licencia"
+                  className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
                 />
               )}
             />
@@ -107,8 +117,10 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
           </div>
 
           {/* Modo de Adquisición */}
-          <div className="mb-4">
-            <label className="block mb-1">Modo de Adquisición</label>
+          <div>
+            <label className="block mb-1">
+              Modo de Adquisición <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="modoAdquisicion"
               control={control}
@@ -126,56 +138,41 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.modoAdquisicion && <p className="text-red-500 text-sm">{errors.modoAdquisicion.message}</p>}
           </div>
 
-          {/* Campo de Licitación solo si el modo es "Ley" */}
+          {/* Campo de Licitación (solo si modoAdquisición es "Ley") */}
           {modoAdquisicion === 'Ley' && (
-            <div className="mb-4">
-              <label className="block mb-1">Licitación</label>
+            <div>
+              <label className="block mb-1">
+                Licitación <span className="text-red-500">*</span>
+              </label>
               <Controller
                 name="licitacionId"
                 control={control}
                 rules={{ required: 'Debe seleccionar una licitación' }}
                 render={({ field, fieldState: { error: fieldError } }) => {
-                  const currentValue = field.value as number | undefined;
+                  const currentValue = field.value ? Number(field.value) : undefined;
                   return (
                     <>
                       <Select<OptionType, false, GroupBase<OptionType>>
+                        isSearchable
                         options={licitacionOptions}
                         placeholder="Seleccione una Licitación"
                         value={licitacionOptions.find(option => option.value === currentValue) || null}
                         onChange={(selectedOption: SingleValue<OptionType>) => {
-                          field.onChange(selectedOption?.value);
+                          field.onChange(selectedOption ? selectedOption.value : undefined);
                         }}
                         isDisabled={loading || error !== null}
                         className="mt-2"
                         classNamePrefix="react-select"
+                        maxMenuHeight={200}
                         styles={{
-                          control: (provided, state) => ({
-                            ...provided,
-                            borderColor: state.isFocused ? '#2563EB' : '#D1D5DB', // azul cuando está enfocado, gris de base
-                            boxShadow: state.isFocused ? '0 0 0 1px #2563EB' : 'none',
-                            '&:hover': {
-                              borderColor: state.isFocused ? '#2563EB' : '#9CA3AF',
-                            },
-                            minHeight: '2.5rem',
-                            height: '2.5rem',
-                          }),
-                          valueContainer: (provided) => ({
-                            ...provided,
-                            padding: '0 0.5rem',
-                          }),
-                          input: (provided) => ({
-                            ...provided,
-                            margin: 0,
-                            padding: 0,
-                          }),
-                          indicatorsContainer: (provided) => ({
-                            ...provided,
-                            height: '2.5rem',
-                          }),
                           menu: (provided) => ({
                             ...provided,
-                            zIndex: 9999,
-                            maxHeight: '200px', // limita la altura para mostrar scroll
+                            backgroundColor: 'white',
+                            maxHeight: 200,
+                          }),
+                          menuList: (provided) => ({
+                            ...provided,
+                            backgroundColor: 'white',
                           }),
                           option: (provided, state) => ({
                             ...provided,
@@ -197,15 +194,14 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
                   );
                 }}
               />
-              {error && <p className="text-red-500 text-sm mt-1">Error al cargar las Licitaciones.</p>}
             </div>
           )}
 
-
-
-          {/* Vigencia Inicio */}
-          <div className="mb-4">
-            <label className="block mb-1">Vigencia Inicio</label>
+          {/* Vigencia de Inicio */}
+          <div>
+            <label className="block mb-1">
+              Vigencia Inicio <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="vigenciaInicio"
               control={control}
@@ -222,9 +218,11 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
           </div>
 
-          {/* Vigencia Fin */}
-          <div className="mb-4">
-            <label className="block mb-1">Vigencia Fin</label>
+          {/* Vigencia de Fin */}
+          <div>
+            <label className="block mb-1">
+              Vigencia Fin <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="vigenciaFin"
               control={control}
@@ -241,17 +239,21 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             {errors.vigenciaFin && <p className="text-red-500 text-sm">{errors.vigenciaFin.message}</p>}
           </div>
 
+          {/* Botones */}
           <div className="flex justify-end space-x-4 mt-6">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              disabled={isSubmitting}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>

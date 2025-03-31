@@ -1,5 +1,6 @@
 import React from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
+import Select, { GroupBase, SingleValue } from 'react-select';
 import { Licencia } from '../../types/licencia';
 import { useLicencias } from '../../hooks/useLicencia';
 import { useLicitaciones } from '../../hooks/useLicitacion';
@@ -9,9 +10,14 @@ interface EditLicenciaProps {
   onClose: () => void;
 }
 
+interface OptionType {
+  value: number;
+  label: string;
+}
+
 const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
   const { updateLicencia } = useLicencias();
-  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones()
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
 
   const { handleSubmit, control, formState: { errors } } = useForm<Licencia>({
     defaultValues: {
@@ -20,9 +26,10 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
       descripcion: licencia.descripcion,
       codigoLicencia: licencia.codigoLicencia,
       modoAdquisicion: licencia.modoAdquisicion,
+      // Convertimos el id a string, tal como estaba en el defaultValues original
       licitacionId: licencia.licitacion ? licencia.licitacion.id.toString() : '',
       vigenciaFin: licencia.vigenciaFin,
-      vigenciaInicio: licencia.vigenciaInicio
+      vigenciaInicio: licencia.vigenciaInicio,
     },
   });
 
@@ -41,11 +48,18 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
     }
   };
 
+  // Mapear las licitaciones a opciones para react‑select
+  const licitacionOptions: OptionType[] = (licitaciones || []).map((licitacion) => ({
+    value: licitacion.id,
+    label: licitacion.nombre,
+  }));
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
         <h2 className="text-lg font-bold mb-4">Editar Licencia</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Nombre de la Licencia */}
           <div className="mb-4">
             <label className="block mb-1">Nombre de la Licencia</label>
             <Controller
@@ -55,14 +69,15 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
                   placeholder="Nombre de la Licencia"
+                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
                 />
               )}
             />
             {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
           </div>
 
+          {/* Descripción */}
           <div className="mb-4">
             <label className="block mb-1">Descripción</label>
             <Controller
@@ -72,14 +87,15 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
                   placeholder="Descripción"
+                  className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : ''}`}
                 />
               )}
             />
             {errors.descripcion && <p className="text-red-500 text-sm">{errors.descripcion.message}</p>}
           </div>
 
+          {/* Código de la Licencia */}
           <div className="mb-4">
             <label className="block mb-1">Código de la Licencia</label>
             <Controller
@@ -89,14 +105,15 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
                   placeholder="Código de la Licencia"
+                  className={`w-full border p-2 rounded-md ${errors.codigoLicencia ? 'border-red-500' : ''}`}
                 />
               )}
             />
             {errors.codigoLicencia && <p className="text-red-500 text-sm">{errors.codigoLicencia.message}</p>}
           </div>
 
+          {/* Modo de Adquisición */}
           <div className="mb-4">
             <label className="block mb-1">Modo de Adquisición</label>
             <Controller
@@ -115,35 +132,59 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
             {errors.modoAdquisicion && <p className="text-red-500 text-sm">{errors.modoAdquisicion.message}</p>}
           </div>
 
+          {/* Campo de Licitación solo si el modo es "Ley" */}
           {modoAdquisicion === 'Ley' && (
             <div className="mb-4">
               <label className="block mb-1">Licitación</label>
               <Controller
                 name="licitacionId"
                 control={control}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="w-full border p-2 rounded-md"
-                    disabled={licitacionesLoading || licitacionesError !== null}
-                    defaultValue="" // Esto asegura que "Seleccione una licitación" sea el valor por defecto
-                  >
-                    <option value="" disabled hidden>
-                      Seleccione una licitación
-                    </option>
-                    {licitaciones?.map((licitacion) => (
-                      <option key={licitacion.id} value={licitacion.id.toString()}>
-                        {licitacion.nombre}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                rules={{ required: 'Debe seleccionar una licitación' }}
+                render={({ field, fieldState: { error } }) => {
+                  // Convertir el valor a número para buscar la opción
+                  const currentValue = field.value ? Number(field.value) : undefined;
+                  return (
+                    <>
+                      <Select<OptionType, false, GroupBase<OptionType>>
+                        isSearchable
+                        options={licitacionOptions}
+                        placeholder="Seleccione una Licitación"
+                        value={licitacionOptions.find(option => option.value === currentValue) || null}
+                        onChange={(selectedOption: SingleValue<OptionType>) => {
+                          field.onChange(selectedOption ? selectedOption.value : undefined);
+                        }}
+                        isDisabled={licitacionesLoading || licitacionesError !== null}
+                        // Renderiza el menú dentro del modal (sin portal) para evitar doble scroll
+                        menuPortalTarget={undefined}
+                        menuPlacement="auto"
+                        styles={{
+                          menu: (provided) => ({
+                            ...provided,
+                            backgroundColor: 'white', // Fondo sólido
+                            maxHeight: 200,
+                          }),
+                          menuList: (provided) => ({
+                            ...provided,
+                            backgroundColor: 'white',
+                          }),
+                        }}
+                        className="mt-2"
+                        classNamePrefix="react-select"
+                      />
+                      {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+                    </>
+                  );
+                }}
               />
-              {errors.licitacionId && <p className="text-red-500 text-sm">{errors.licitacionId.message}</p>}
-              {licitacionesError && <p className="text-red-500 text-sm mt-1">Error al cargar las licitaciones.</p>}
+              {licitacionesError && (
+                <p className="text-red-500 text-sm mt-1">
+                  Error al cargar las licitaciones.
+                </p>
+              )}
             </div>
           )}
 
+          {/* Vigencia de Inicio */}
           <div className="mb-4">
             <label className="block mb-1">Vigencia de Inicio</label>
             <Controller
@@ -162,6 +203,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
             {errors.vigenciaInicio && <p className="text-red-500 text-sm">{errors.vigenciaInicio.message}</p>}
           </div>
 
+          {/* Vigencia de Fin */}
           <div className="mb-4">
             <label className="block mb-1">Vigencia de Fin</label>
             <Controller
@@ -195,7 +237,6 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
               Cancelar
             </button>
           </div>
-          
         </form>
       </div>
     </div>
