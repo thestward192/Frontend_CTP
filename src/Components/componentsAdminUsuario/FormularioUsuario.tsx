@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useState } from 'react';
+import { useForm, Controller, SubmitHandler, useWatch } from 'react-hook-form';
 import Select, { GroupBase, SingleValue } from 'react-select';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useRoles } from '../../hooks/useRoles';
 import { useUsers } from '../../hooks/useUser';
 import { useUbicacion } from '../../hooks/useUbicacion';
@@ -10,11 +11,24 @@ interface FormularioDocenteProps {
   onClose: () => void;
 }
 
+interface FormData {
+  nombre: string;
+  apellido_1: string;
+  apellido_2: string;
+  email: string;
+  contraseña: string;
+  confirmarContraseña: string;
+  rolId: number;
+  ubicacionIds: number[];
+}
+
 const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUserMutation } = useUsers();
   const { roles, loading: rolesLoading } = useRoles();
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
   const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -24,7 +38,7 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
     setError,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<FormData>({
     defaultValues: {
       nombre: '',
       apellido_1: '',
@@ -39,7 +53,8 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
 
   const contraseña = watch('contraseña');
 
-  const onSubmit = async (data: any) => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    setIsSubmitting(true);
     try {
       await addUserMutation.mutateAsync(data);
       onClose();
@@ -50,6 +65,8 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
       } else {
         console.error('Error al agregar el usuario:', error);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -64,52 +81,60 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   if (ubicacionesLoading) return <p>Cargando ubicaciones...</p>;
   if (ubicacionesError) return <p>Error al cargar las ubicaciones</p>;
 
-  // Mapea las ubicaciones a opciones para react‑select
+  // Convertir la lista de ubicaciones en opciones para react‑select
   const ubicacionOptions: OptionType[] = ubicaciones.map((ubicacion) => ({
     value: ubicacion.id,
     label: ubicacion.nombre,
   }));
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-[600px] font-['DM Sans']">
         <h2 className="text-lg font-bold mb-4">Agregar Usuario</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Formulario dividido en dos columnas */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Campos principales */}
           <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
             <div className="mb-4">
-              <label className="block text-gray-700">Nombre</label>
+              <label className="block text-gray-700">
+                Nombre <span className="text-red-500">*</span>
+              </label>
               <input
                 {...register('nombre', { required: 'El nombre es obligatorio' })}
                 placeholder="Escribe el nombre"
                 className="w-full border border-gray-300 p-2 rounded-lg"
               />
-              {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
+              {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
             </div>
             {/* Primer Apellido */}
             <div className="mb-4">
-              <label className="block text-gray-700">Primer Apellido</label>
+              <label className="block text-gray-700">
+                Primer Apellido <span className="text-red-500">*</span>
+              </label>
               <input
                 {...register('apellido_1', { required: 'El primer apellido es obligatorio' })}
                 placeholder="Escribe el primer apellido"
                 className="w-full border border-gray-300 p-2 rounded-lg"
               />
-              {errors.apellido_1 && <p className="text-red-500">{errors.apellido_1.message}</p>}
+              {errors.apellido_1 && <p className="text-red-500 text-sm">{errors.apellido_1.message}</p>}
             </div>
             {/* Segundo Apellido */}
             <div className="mb-4">
-              <label className="block text-gray-700">Segundo Apellido</label>
+              <label className="block text-gray-700">
+                Segundo Apellido <span className="text-red-500">*</span>
+              </label>
               <input
                 {...register('apellido_2', { required: 'El segundo apellido es obligatorio' })}
                 placeholder="Escribe el segundo apellido"
                 className="w-full border border-gray-300 p-2 rounded-lg"
               />
-              {errors.apellido_2 && <p className="text-red-500">{errors.apellido_2.message}</p>}
+              {errors.apellido_2 && <p className="text-red-500 text-sm">{errors.apellido_2.message}</p>}
             </div>
             {/* Email */}
             <div className="mb-4">
-              <label className="block text-gray-700">Email</label>
+              <label className="block text-gray-700">
+                Email <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 {...register('email', {
@@ -117,41 +142,69 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
                   pattern: { value: /\S+@\S+\.\S+/, message: 'Email inválido' },
                 })}
                 placeholder="Escribe el correo electrónico"
-                className={`w-full border p-2 rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border p-2 rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
               />
-              {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+              {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
             </div>
             {/* Contraseña */}
             <div className="mb-4">
-              <label className="block text-gray-700">Contraseña</label>
-              <input
-                type="password"
-                {...register('contraseña', {
-                  required: 'La contraseña es obligatoria',
-                  minLength: { value: 6, message: 'Debe tener al menos 6 caracteres' },
-                })}
-                placeholder="Escribe la contraseña"
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
-              {errors.contraseña && <p className="text-red-500">{errors.contraseña.message}</p>}
+              <label className="block text-gray-700">
+                Contraseña <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('contraseña', {
+                    required: 'La contraseña es obligatoria',
+                    minLength: { value: 6, message: 'Debe tener al menos 6 caracteres' },
+                  })}
+                  placeholder="Escribe la contraseña"
+                  className="w-full border border-gray-300 p-2 rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-600"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {errors.contraseña && <p className="text-red-500 text-sm">{errors.contraseña.message}</p>}
             </div>
             {/* Confirmar Contraseña */}
             <div className="mb-4">
-              <label className="block text-gray-700">Confirmar Contraseña</label>
-              <input
-                type="password"
-                {...register('confirmarContraseña', {
-                  required: 'Confirma la contraseña',
-                  validate: (value) => value === contraseña || 'Las contraseñas no coinciden',
-                })}
-                placeholder="Confirma tu contraseña"
-                className="w-full border border-gray-300 p-2 rounded-lg"
-              />
-              {errors.confirmarContraseña && <p className="text-red-500">{errors.confirmarContraseña.message}</p>}
+              <label className="block text-gray-700">
+                Confirmar Contraseña <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('confirmarContraseña', {
+                    required: 'Confirma la contraseña',
+                    validate: (value) =>
+                      value === contraseña || 'Las contraseñas no coinciden',
+                  })}
+                  placeholder="Confirma tu contraseña"
+                  className="w-full border border-gray-300 p-2 rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-600"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {errors.confirmarContraseña && (
+                <p className="text-red-500 text-sm">{errors.confirmarContraseña.message}</p>
+              )}
             </div>
             {/* Rol */}
             <div className="mb-4">
-              <label className="block text-gray-700">Rol</label>
+              <label className="block text-gray-700">
+                Rol <span className="text-red-500">*</span>
+              </label>
               <select
                 {...register('rolId', { required: 'El rol es obligatorio' })}
                 className="w-full border border-gray-300 p-2 rounded-lg"
@@ -164,11 +217,11 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
                   </option>
                 ))}
               </select>
-              {errors.rolId && <p className="text-red-500">{errors.rolId.message}</p>}
+              {errors.rolId && <p className="text-red-500 text-sm">{errors.rolId.message}</p>}
             </div>
           </div>
 
-          {/* Campos dinámicos para Ubicaciones usando react‑select con filtro y scroll */}
+          {/* Campos dinámicos para Ubicaciones usando react‑select */}
           {ubicacionFields.map((_, index) => (
             <div className="mb-4" key={index}>
               <label className="block text-gray-700">Ubicación {index + 1}</label>
@@ -186,12 +239,22 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
                       }}
                       className="w-full"
                       classNamePrefix="react-select"
-                      // react-select ya incluye búsqueda y scroll por defecto,
-                      // si deseas personalizar el menú (por ejemplo, maxHeight), puedes usar la prop "styles"
-                      // styles={{ menu: (provided) => ({ ...provided, maxHeight: 200 }) }}
+                      // Renderiza el menú en un portal para evitar que se corte
+                      menuPortalTarget={document.body}
+                      // Asegura que el menú se muestre por encima de todo
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                        menu: (base) => ({
+                          ...base,
+                          maxHeight: 200,
+                          overflowY: 'auto',
+                        }),
+                      }}
+                      isSearchable
                     />
                   )}
                 />
+
                 <button
                   type="button"
                   onClick={() => removeUbicacionField(index)}
@@ -213,14 +276,20 @@ const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
             </button>
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-              Guardar
+          {/* Botones de acción */}
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+            >
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
               onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>

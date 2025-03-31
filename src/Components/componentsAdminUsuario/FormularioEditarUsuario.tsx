@@ -4,6 +4,8 @@ import { User } from '../../types/user';
 import { getUserById } from '../../Services/userService';
 import { useUbicacion } from '../../hooks/useUbicacion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import Select, { GroupBase, SingleValue } from 'react-select';
+import { OptionType } from '../../types/proveedor';
 
 interface FormularioEditarUsuarioProps {
   userId: number;
@@ -17,13 +19,14 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Para manejar las ubicaciones del usuario (se agregan verticalmente)
+  // Para manejar las ubicaciones del usuario
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
 
-  // Funciones para manejo de campos de ubicación
-  const handleUbicacionChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
+  // Función para actualizar una ubicación específica
+  const handleUbicacionChange = (index: number, selectedOption: SingleValue<OptionType>) => {
+    const newUbicacionId = selectedOption ? selectedOption.value : 0;
     const newUbicaciones = user?.ubicaciones ? [...user.ubicaciones] : [];
-    newUbicaciones[index] = { ...newUbicaciones[index], id: Number(e.target.value) };
+    newUbicaciones[index] = { ...newUbicaciones[index], id: newUbicacionId };
     setUser({ ...user!, ubicaciones: newUbicaciones });
   };
 
@@ -53,7 +56,6 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
         console.error('Error al obtener los detalles del usuario:', error);
       }
     };
-
     fetchUserDetails();
   }, [userId, setValue]);
 
@@ -62,7 +64,6 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   const onSubmit = async (data: Partial<User>) => {
     setIsSubmitting(true);
     try {
-      // Si no se ingresó contraseña, la eliminamos del objeto a actualizar
       const updateData = { ...data };
       if (!contraseña) {
         delete updateData.contraseña;
@@ -80,11 +81,18 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   if (ubicacionesLoading) return <p>Cargando ubicaciones...</p>;
   if (ubicacionesError) return <p>Error al cargar las ubicaciones</p>;
 
+  // Convertimos la lista de ubicaciones a opciones para react‑select
+  const ubicacionOptions: OptionType[] = ubicaciones.map((ub) => ({
+    value: ub.id,
+    label: ub.nombre,
+  }));
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-[600px] font-['DM Sans']">
         <h2 className="text-lg font-bold mb-4">Editar Usuario</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Campos de datos básicos */}
           <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
             <div className="mb-4">
@@ -133,7 +141,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
             </div>
           </div>
 
-          {/* Contraseña y Confirmar Contraseña alineados lado a lado */}
+          {/* Contraseña y Confirmar Contraseña */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-gray-700">
@@ -142,7 +150,10 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  {...register('contraseña', { required: 'La contraseña es obligatoria', minLength: { value: 6, message: 'Debe tener al menos 6 caracteres' } })}
+                  {...register('contraseña', {
+                    required: 'La contraseña es obligatoria',
+                    minLength: { value: 6, message: 'Debe tener al menos 6 caracteres' },
+                  })}
                   placeholder="Escribe la contraseña"
                   className="w-full border border-gray-300 p-2 rounded-lg"
                 />
@@ -163,8 +174,11 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  {...register('confirmarContraseña', { required: 'Confirma la contraseña', validate: (value) => value === watch('contraseña') || 'Las contraseñas no coinciden' })}
-                  placeholder="Confirma la contraseña"
+                  {...register('confirmarContraseña', {
+                    required: 'Confirma la contraseña',
+                    validate: (value) => value === watch('contraseña') || 'Las contraseñas no coinciden',
+                  })}
+                  placeholder="Confirma tu contraseña"
                   className="w-full border border-gray-300 p-2 rounded-lg"
                 />
                 <button
@@ -175,30 +189,33 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
-              {errors.confirmarContraseña && <p className="text-red-500 text-sm">{errors.confirmarContraseña.message}</p>}
+              {errors.confirmarContraseña && (
+                <p className="text-red-500 text-sm">{errors.confirmarContraseña.message}</p>
+              )}
             </div>
           </div>
 
-          {/* Manejo de ubicaciones */}
+          {/* Manejo de ubicaciones con react‑select */}
           {user.ubicaciones && user.ubicaciones.map((ubicacion, index) => (
             <div className="mb-4" key={index}>
               <label className="block text-gray-700">Ubicación {index + 1}</label>
               <div className="flex">
-                <select
-                  name={`ubicacion_${index}`}
-                  value={ubicacion.id || ''}
-                  onChange={(e) => handleUbicacionChange(index, e)}
-                  className="w-full border border-gray-300 p-2 rounded-lg"
-                >
-                  <option value="" disabled>
-                    Selecciona una ubicación
-                  </option>
-                  {ubicaciones.map((ub) => (
-                    <option key={ub.id} value={ub.id}>
-                      {ub.nombre}
-                    </option>
-                  ))}
-                </select>
+                <Select<OptionType, false, GroupBase<OptionType>>
+                  isSearchable
+                  options={ubicacionOptions}  // Asegúrate de declarar: const ubicacionOptions = ubicaciones.map(ub => ({ value: ub.id, label: ub.nombre }));
+                  placeholder="Selecciona una ubicación"
+                  value={ubicacionOptions.find(option => option.value === ubicacion.id) || null}
+                  onChange={(selectedOption: SingleValue<OptionType>) => {
+                    handleUbicacionChange(index, selectedOption);
+                  }}
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    menu: (provided) => ({ ...provided, maxHeight: 200, overflowY: 'auto' }),
+                  }}
+                  className="w-full"
+                  classNamePrefix="react-select"
+                />
                 <button
                   type="button"
                   onClick={() => removeUbicacionField(index)}
@@ -219,8 +236,8 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
             </button>
           </div>
 
-          {/* Botones de Acción */}
-          <div className="flex justify-between space-x-2">
+          {/* Botones de acción */}
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               type="submit"
               disabled={isSubmitting}
