@@ -7,6 +7,7 @@ interface FiltersProps {
 const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   const [nombre, setNombre] = useState('');
   const [ubicacion, setUbicacion] = useState('');
+  const [numPlaca, setNumPlaca] = useState('');
   const [modoAdquisicion, setModoAdquisicion] = useState('');
   const [estado, setEstado] = useState('');
 
@@ -21,6 +22,12 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
     const value = e.target.value;
     setUbicacion(value);
     onFilterChange('ubicacion', value);
+  };
+
+  const handleNumPlacaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNumPlaca(value);
+    onFilterChange('numPlaca', value);
   };
 
   const handleModoAdquisicionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -54,6 +61,15 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
             value={ubicacion}
             onChange={handleUbicacionChange}
             placeholder="Buscar por Ubicación"
+            className="bg-white w-full sm:w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
+          />
+        </div>
+        <div className="relative flex-1 sm:flex-none">
+          <input
+            type="text"
+            value={numPlaca}
+            onChange={handleNumPlacaChange}
+            placeholder="Buscar por Número de Placa"
             className="bg-white w-full sm:w-[160px] h-[35px] p-2 rounded-lg border border-gray-300 shadow-sm text-xs"
           />
         </div>

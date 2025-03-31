@@ -1,4 +1,3 @@
-// src/Components/componentsAdminMenu/TableComponent.tsx
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import DetalleComponent from './DetalleActivo';
@@ -33,6 +32,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [filterUbicacion, setFilterUbicacion] = useState('');
   const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
+  const [filterNumPlaca, setFilterNumPlaca] = useState('');
 
   const { activos, loading, error } = useActivos();
   const { exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
@@ -69,6 +69,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
       setFilterModoAdquisicion(value);
     } else if (filterName === 'estado') {
       setFilterEstado(value);
+    } else if (filterName === 'numPlaca') {
+      setFilterNumPlaca(value);
     }
   };
 
@@ -77,7 +79,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
     const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
     const matchesEstado = !filterEstado || activo.estado === filterEstado;
-    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado;
+    const matchesNumPlaca = filterNumPlaca === '' || (activo.numPlaca && activo.numPlaca.toLowerCase().includes(filterNumPlaca.toLowerCase()));
+    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado && matchesNumPlaca;
   });
 
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
