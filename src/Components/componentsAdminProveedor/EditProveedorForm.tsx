@@ -1,10 +1,10 @@
-import React from 'react';
-import { Proveedor } from '../../types/proveedor';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Proveedor } from '../../types/proveedor';
 
 interface EditProveedorFormProps {
   proveedor: Proveedor;
-  onSave: (id: number, updatedData: Partial<Proveedor>) => void;
+  onSave: (id: number, updatedData: Partial<Proveedor>) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -18,48 +18,65 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
       email: proveedor.email,
     },
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Función para formatear el teléfono en tiempo real
   const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     let input = e.target.value.replace(/\D/g, ''); // Eliminar caracteres no numéricos
-
     if (input.length > 4) {
       input = `${input.slice(0, 4)}-${input.slice(4, 8)}`;
     }
-
     setValue(e.target.name as keyof Proveedor, input); // Actualizar el valor con el guion
   };
 
-  const onSubmit = (data: Proveedor) => {
-    // Se envía el número con el guion, no lo eliminamos
-    onSave(proveedor.id, data);
+  const onSubmit = async (data: Proveedor) => {
+    setIsSubmitting(true);
+    try {
+      await onSave(proveedor.id, data);
+    } catch (error) {
+      console.error('Error al guardar los cambios de la proveedor:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[500px]">
-        <h2 className="text-lg font-bold mb-4">Editar Proveedor</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
+        <h2 className="text-xl font-bold mb-4">Editar Proveedor</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="mb-4">
-            <label className="block mb-1">Nombre del Proveedor</label>
+            <label className="block mb-1">
+              Nombre del Proveedor <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               {...register('vendedor', { required: 'Este campo es obligatorio' })}
               className={`w-full border p-2 rounded-md ${errors.vendedor ? 'border-red-500' : ''}`}
+              placeholder="Nombre del Proveedor"
             />
-            {errors.vendedor && <p className="text-red-500 text-sm">{errors.vendedor.message}</p>}
+            {errors.vendedor && (
+              <p className="text-red-500 text-sm mt-1">{errors.vendedor.message}</p>
+            )}
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Nombre de la Empresa</label>
+            <label className="block mb-1">
+              Nombre de la Empresa <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               {...register('nombreEmpresa', { required: 'Este campo es obligatorio' })}
               className={`w-full border p-2 rounded-md ${errors.nombreEmpresa ? 'border-red-500' : ''}`}
+              placeholder="Nombre de la Empresa"
             />
-            {errors.nombreEmpresa && <p className="text-red-500 text-sm">{errors.nombreEmpresa.message}</p>}
+            {errors.nombreEmpresa && (
+              <p className="text-red-500 text-sm mt-1">{errors.nombreEmpresa.message}</p>
+            )}
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Teléfono del Proveedor</label>
+            <label className="block mb-1">
+              Teléfono del Proveedor <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               {...register('telefonoProveedor', {
@@ -70,13 +87,18 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
                 },
               })}
               className={`w-full border p-2 rounded-md ${errors.telefonoProveedor ? 'border-red-500' : ''}`}
-              onChange={handlePhoneInput} // Formatea automáticamente
-              maxLength={9} // Para evitar que el usuario escriba más de 8 números + 1 guion
+              placeholder="####-####"
+              onChange={handlePhoneInput}
+              maxLength={9}
             />
-            {errors.telefonoProveedor && <p className="text-red-500 text-sm">{errors.telefonoProveedor.message}</p>}
+            {errors.telefonoProveedor && (
+              <p className="text-red-500 text-sm mt-1">{errors.telefonoProveedor.message}</p>
+            )}
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Teléfono de la Empresa</label>
+            <label className="block mb-1">
+              Teléfono de la Empresa <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               {...register('telefonoEmpresa', {
@@ -87,32 +109,42 @@ const EditProveedorForm: React.FC<EditProveedorFormProps> = ({ proveedor, onSave
                 },
               })}
               className={`w-full border p-2 rounded-md ${errors.telefonoEmpresa ? 'border-red-500' : ''}`}
-              onChange={handlePhoneInput} // Formatea automáticamente
+              placeholder="####-####"
+              onChange={handlePhoneInput}
               maxLength={9}
             />
-            {errors.telefonoEmpresa && <p className="text-red-500 text-sm">{errors.telefonoEmpresa.message}</p>}
+            {errors.telefonoEmpresa && (
+              <p className="text-red-500 text-sm mt-1">{errors.telefonoEmpresa.message}</p>
+            )}
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Email</label>
+            <label className="block mb-1">
+              Email <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
               {...register('email', { required: 'Este campo es obligatorio' })}
               className={`w-full border p-2 rounded-md ${errors.email ? 'border-red-500' : ''}`}
+              placeholder="Correo Electrónico"
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+            )}
           </div>
-
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              disabled={isSubmitting}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar
             </button>
