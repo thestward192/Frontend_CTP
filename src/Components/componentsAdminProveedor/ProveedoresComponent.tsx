@@ -45,20 +45,20 @@ const ProveedoresComponent: React.FC = () => {
     return sortedProveedores.slice(start, start + itemsPerPage);
   }, [sortedProveedores, currentPage, itemsPerPage]);
 
-  // Función para generar números de página con puntos suspensivos
+  // Función para generar números de página (mostrar siempre 5 páginas consecutivas)
   const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
+    let pages: number[] = [];
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
       if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
+        pages = [1, 2, 3, 4, 5];
       } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
       } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+        pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
       }
     }
     return pages;
@@ -210,7 +210,7 @@ const ProveedoresComponent: React.FC = () => {
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="px-3 py-1 border rounded text-sm"
             >
-               Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+              Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
             </button>
           </div>
 
@@ -224,21 +224,17 @@ const ProveedoresComponent: React.FC = () => {
             >
               {"<"}
             </button>
-            {getPageNumbers().map((page, index) =>
-              page === '...' ? (
-                <span key={index} className="px-3 py-1">...</span>
-              ) : (
-                <button
-                  key={index}
-                  onClick={() => setCurrentPage(page as number)}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                  }`}
-                >
-                  {page}
-                </button>
-              )
-            )}
+            {getPageNumbers().map((page, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(page as number)}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-gray-200 rounded-md"

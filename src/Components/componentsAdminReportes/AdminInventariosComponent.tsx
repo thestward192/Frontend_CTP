@@ -52,20 +52,20 @@ const AdminInventariosComponent: React.FC = () => {
     return sortedInventarios.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedInventarios, currentPage, itemsPerPage]);
 
-  // Función para generar números de página con puntos suspensivos
+  // Función para generar números de página (mostrar siempre 5 números consecutivos)
   const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
+    let pages: number[] = [];
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
       if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
+        pages = [1, 2, 3, 4, 5];
       } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
       } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+        pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
       }
     }
     return pages;
@@ -173,7 +173,7 @@ const AdminInventariosComponent: React.FC = () => {
         )}
         {/* Controles de paginación y orden */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-4">
-          {/* Izquierda: Mostrar 33 entradas y botón de orden */}
+          {/* Izquierda: Mostrar entradas y botón de orden */}
           <div className="flex items-center space-x-4 mb-2 md:mb-0">
             <span className="text-sm text-gray-600">Mostrar 33 entradas</span>
             <button 
@@ -199,19 +199,15 @@ const AdminInventariosComponent: React.FC = () => {
             >
               {"<"}
             </button>
-            {getPageNumbers().map((page, index) =>
-              page === '...' ? (
-                <span key={index} className="px-3 py-1">...</span>
-              ) : (
-                <button 
-                  key={index}
-                  onClick={() => setCurrentPage(page as number)}
-                  className={`px-3 py-1 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                >
-                  {page}
-                </button>
-              )
-            )}
+            {getPageNumbers().map((page, index) => (
+              <button 
+                key={index}
+                onClick={() => setCurrentPage(page as number)}
+                className={`px-3 py-1 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+              >
+                {page}
+              </button>
+            ))}
             <button 
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
               className="px-3 py-1 bg-gray-200 rounded-md"
@@ -248,9 +244,11 @@ const AdminInventariosComponent: React.FC = () => {
         <AdminInventarioModal 
           inventario={selectedInventario}
           onClose={() => setIsModalOpen(false)}
-          onReviewComplete={(id) => setFilteredInventarios(prev => 
-            prev.map(inv => (inv.id === id ? { ...inv, revisado: true } : inv))
-          )}
+          onReviewComplete={(id) =>
+            setFilteredInventarios(prev =>
+              prev.map(inv => (inv.id === id ? { ...inv, revisado: true } : inv))
+            )
+          }
         />
       )}
     </div>

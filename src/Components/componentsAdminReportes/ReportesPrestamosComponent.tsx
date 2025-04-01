@@ -18,7 +18,7 @@ const ReportesPrestamosComponent: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
-  // Actualiza los préstamos filtrados cuando se cambia el filtro o los préstamos originales
+  // Actualiza los préstamos filtrados cuando se cambia algún filtro o los préstamos originales
   useEffect(() => {
     let prestamosFiltrados = prestamos || [];
     
@@ -49,14 +49,14 @@ const ReportesPrestamosComponent: React.FC = () => {
     setCurrentPage(1);
   }, [filterNombre, filterPlaca, filterUbicacion, prestamos]);
 
-  // Ordena los préstamos filtrados según el campo "id" (puedes cambiarlo a otro criterio si lo deseas)
+  // Ordena los préstamos filtrados según el campo "id"
   const sortedFilteredPrestamos = useMemo(() => {
     return [...filteredPrestamos].sort((a, b) =>
       sortOrder === 'asc' ? a.id - b.id : b.id - a.id
     );
   }, [filteredPrestamos, sortOrder]);
 
-  // Calcula el total de páginas según la cantidad de préstamos filtrados y el itemsPerPage
+  // Calcula el total de páginas según la cantidad de préstamos filtrados
   const totalPages = Math.ceil(sortedFilteredPrestamos.length / itemsPerPage);
 
   // Obtiene la porción de préstamos a mostrar en la página actual
@@ -65,20 +65,20 @@ const ReportesPrestamosComponent: React.FC = () => {
     return sortedFilteredPrestamos.slice(start, start + itemsPerPage);
   }, [sortedFilteredPrestamos, currentPage, itemsPerPage]);
 
-  // Función para generar números de página con puntos suspensivos
+  // Función para generar números de página (mostrar siempre 5 números consecutivos)
   const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
+    let pages: number[] = [];
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
       if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
+        pages = [1, 2, 3, 4, 5];
       } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
       } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+        pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
       }
     }
     return pages;
@@ -99,7 +99,7 @@ const ReportesPrestamosComponent: React.FC = () => {
   return (
     <div className="w-full flex justify-center py-10">
       <div 
-        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative" 
+        className="table-container w-full max-w-full bg-white shadow-lg rounded-lg p-8 relative flex flex-col" 
         style={{ height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' }}
       >
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
@@ -201,48 +201,55 @@ const ReportesPrestamosComponent: React.FC = () => {
             </button>
           </div>
           <div className="flex items-center space-x-2">
-            <button onClick={() => setCurrentPage(1)} className="px-3 py-1 bg-gray-200 rounded-md">
+            <button 
+              onClick={() => setCurrentPage(1)}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === 1}
+            >
               {"<<"}
             </button>
-            <button
+            <button 
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === 1}
             >
               {"<"}
             </button>
-            {getPageNumbers().map((page, index) =>
-              page === '...' ? (
-                <span key={index} className="px-3 py-1">...</span>
-              ) : (
-                <button
-                  key={index}
-                  onClick={() => setCurrentPage(page as number)}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                  }`}
-                >
-                  {page}
-                </button>
-              )
-            )}
-            <button
+            {getPageNumbers().map((page, index) => (
+              <button 
+                key={index}
+                onClick={() => setCurrentPage(page as number)}
+                className={`px-3 py-1 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+              >
+                {page}
+              </button>
+            ))}
+            <button 
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === totalPages}
             >
               {">"}
             </button>
-            <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded-md">
+            <button 
+              onClick={() => setCurrentPage(totalPages)}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === totalPages}
+            >
               {">>"}
             </button>
             <div className="flex items-center space-x-1">
-              <input
-                type="number"
-                value={pageInput}
-                onChange={handlePageInput}
-                placeholder="Página"
+              <input 
+                type="number" 
+                value={pageInput} 
+                onChange={handlePageInput} 
+                placeholder="Página" 
                 className="border p-1 rounded w-16 text-sm"
               />
-              <button onClick={handlePageSearch} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
+              <button 
+                onClick={handlePageSearch}
+                className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm"
+              >
                 Ir
               </button>
             </div>
