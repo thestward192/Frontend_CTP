@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useLeyes } from '../../hooks/useLey';
 
@@ -16,23 +16,27 @@ interface FormData {
 const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) => {
   const { createLey } = useLeyes();
   const { handleSubmit, control, reset, formState: { errors } } = useForm<FormData>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = async (data: FormData) => {
+  const submitHandler = async (data: FormData) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      await createLey(data); // Enviar la nueva ley
-      reset(); // Resetear el formulario
+      await createLey(data);
+      reset();
       onLeyCreated();
-      onClose(); // Cerrar el modal al crear la ley
+      onClose();
     } catch (error) {
       console.error('Error al crear la ley:', error);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
         <h2 className="text-xl font-bold mb-4">Agregar Ley</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
           <div className="mb-4">
             <label className="block mb-1">
               Número de Ley <span className="text-red-500">*</span>
@@ -44,8 +48,8 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.numLey ? 'border-red-500' : ''}`}
                   placeholder="Número de la Ley"
+                  className={`w-full border p-2 rounded-md ${errors.numLey ? 'border-red-500' : ''}`}
                 />
               )}
             />
@@ -65,8 +69,8 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
               render={({ field }) => (
                 <input
                   {...field}
-                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
                   placeholder="Nombre de la Ley"
+                  className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : ''}`}
                 />
               )}
             />
@@ -83,9 +87,9 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
               render={({ field }) => (
                 <textarea
                   {...field}
-                  className="w-full border p-2 rounded-md"
                   placeholder="Detalle"
                   rows={4}
+                  className="w-full border p-2 rounded-md"
                 />
               )}
             />
@@ -94,13 +98,17 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+              disabled={isSubmitting}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancelar

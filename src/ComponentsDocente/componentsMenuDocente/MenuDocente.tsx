@@ -9,6 +9,12 @@ import DashboardDocente from '../componentsPagesDocente/DashboardDocentes';
 const MenuDocente: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // Función para actualizar el estado del sidebar según si se muestra el detalle
+  const handleDetailToggle = (isDetailOpen: boolean) => {
+    // Si el detalle se abre, ocultamos el sidebar; si se cierra, lo mostramos nuevamente.
+    setIsSidebarOpen(!isDetailOpen);
+  };
+
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
       {/* Botón toggle */}
@@ -37,7 +43,7 @@ const MenuDocente: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal: se aplica margen izquierdo en desktop cuando el sidebar está abierto */}
+      {/* Contenido principal */}
       <div
         className="flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300"
         style={{ marginLeft: isSidebarOpen ? '16rem' : '0' }}
@@ -60,9 +66,10 @@ const MenuDocente: React.FC = () => {
             <SearchBarDocente />
           </div>
 
-          {/* Contenedor de TableComponentDocente con márgenes laterales consistentes */}
+          {/* Contenedor de TableComponentDocente */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <TableComponentDocente />
+            {/* Se pasa el callback onDetailToggle */}
+            <TableComponentDocente onDetailToggle={handleDetailToggle} />
           </div>
         </div>
       </div>

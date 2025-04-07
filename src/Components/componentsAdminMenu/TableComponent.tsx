@@ -132,7 +132,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     onAssetSelect(true); // Notifica que se ha seleccionado un activo
   };
 
+  // Modificamos handleAddActivo para invocar el callback inmediatamente
   const handleAddActivo = () => {
+    onAddAsset(true);
     setIsModalOpen(true);
   };
 

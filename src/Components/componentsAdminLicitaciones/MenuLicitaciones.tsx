@@ -7,10 +7,23 @@ import { Menu, X } from 'lucide-react';
 
 const MenuLicitaciones: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAddingLicitacion, setIsAddingLicitacion] = useState(false);
+
+  // Callback para iniciar o cerrar el flujo de "Agregar Licitación"
+  const handleAddLicitacion = (isAdding: boolean) => {
+    setIsAddingLicitacion(isAdding);
+    if (isAdding) {
+      // Al iniciar el flujo, ocultamos el sidebar
+      setIsSidebarOpen(false);
+    } else {
+      // Al cerrar el formulario, se vuelve a mostrar el sidebar
+      setIsSidebarOpen(true);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Botón toggle, siempre visible y posicionado un poco más abajo */}
+      {/* Botón toggle, siempre visible */}
       <button
         className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -18,7 +31,7 @@ const MenuLicitaciones: React.FC = () => {
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <div
         className={`
           fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
@@ -28,7 +41,7 @@ const MenuLicitaciones: React.FC = () => {
         <Dashboard />
       </div>
 
-      {/* Overlay para móviles (cuando el sidebar está abierto) */}
+      {/* Overlay para móviles */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
@@ -36,9 +49,7 @@ const MenuLicitaciones: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal:
-          En desktop, se aplica margen izquierdo si el sidebar está abierto;
-          en móvil, el contenido ocupa todo el ancho */}
+      {/* Contenido principal: en desktop se aplica margen izquierdo si el sidebar está abierto */}
       <div
         className={`flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300 ${
           isSidebarOpen ? 'md:ml-[16rem]' : 'md:ml-0'
@@ -57,9 +68,10 @@ const MenuLicitaciones: React.FC = () => {
             <SearchBarComponent />
           </div>
 
-          {/* Contenedor de LicitacionesComponent, con la misma posición que en la vista de referencia */}
+          {/* Contenedor de LicitacionesComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <LicitacionesComponent />
+            {/* Se pasa el callback para el flujo de agregar licitación */}
+            <LicitacionesComponent onAddLicitacion={handleAddLicitacion} />
           </div>
         </div>
       </div>

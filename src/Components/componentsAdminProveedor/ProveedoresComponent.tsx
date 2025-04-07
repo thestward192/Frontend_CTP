@@ -6,7 +6,11 @@ import DetailProveedor from './DetailProveedor';
 import EditProveedorForm from './EditProveedorForm';
 import { Proveedor } from '../../types/proveedor';
 
-const ProveedoresComponent: React.FC = () => {
+interface ProveedoresComponentProps {
+  onAddProveedor: (isAdding: boolean) => void;
+}
+
+const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProveedor }) => {
   // Estados para modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
@@ -127,7 +131,10 @@ const ProveedoresComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Proveedores</h2>
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              onAddProveedor(true);
+              setIsModalOpen(true);
+            }}
           >
             <FaPlus />
             <span>Agregar Proveedor</span>
@@ -215,12 +222,17 @@ const ProveedoresComponent: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <button onClick={() => setCurrentPage(1)} className="px-3 py-1 bg-gray-200 rounded-md">
+            <button
+              onClick={() => setCurrentPage(1)}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === 1}
+            >
               {"<<"}
             </button>
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === 1}
             >
               {"<"}
             </button>
@@ -238,10 +250,15 @@ const ProveedoresComponent: React.FC = () => {
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === totalPages}
             >
               {">"}
             </button>
-            <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded-md">
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              className="px-3 py-1 bg-gray-200 rounded-md"
+              disabled={currentPage === totalPages}
+            >
               {">>"}
             </button>
             <div className="flex items-center space-x-1">
@@ -260,7 +277,19 @@ const ProveedoresComponent: React.FC = () => {
         </div>
       </div>
 
-      {isModalOpen && <FormularioProveedor onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <FormularioProveedor
+          onClose={() => {
+            setIsModalOpen(false);
+            onAddProveedor(false);
+          }}
+          onProveedorCreated={() => {
+            setIsModalOpen(false);
+            onAddProveedor(false);
+          }}
+        />
+      )}
+
       {isDetailOpen && selectedProveedor && (
         isEditing ? (
           <EditProveedorForm

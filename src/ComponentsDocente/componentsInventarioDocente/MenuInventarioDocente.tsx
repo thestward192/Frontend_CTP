@@ -8,6 +8,19 @@ import { Menu, X } from 'lucide-react';
 
 const MenuInventarioDocente: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAddingInventario, setIsAddingInventario] = useState(false);
+
+  // Callback para iniciar o cerrar el flujo de "Hacer Inventario"
+  const handleAddInventario = (isAdding: boolean) => {
+    setIsAddingInventario(isAdding);
+    if (isAdding) {
+      // Oculta el sidebar al iniciar el inventario
+      setIsSidebarOpen(false);
+    } else {
+      // Al cerrar el modal, vuelve a mostrar el sidebar
+      setIsSidebarOpen(true);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
@@ -37,7 +50,7 @@ const MenuInventarioDocente: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal: se aplica margen izquierdo en desktop cuando el sidebar está abierto */}
+      {/* Contenido principal: en desktop se aplica margen izquierdo si el sidebar está abierto */}
       <div
         className="flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300"
         style={{ marginLeft: isSidebarOpen ? '16rem' : '0' }}
@@ -60,9 +73,9 @@ const MenuInventarioDocente: React.FC = () => {
             <SearchBarDocente />
           </div>
 
-          {/* Contenedor de TableInventarioDocente con márgenes laterales consistentes */}
+          {/* Contenedor de TableInventarioDocente */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <TableInventarioDocente />
+            <TableInventarioDocente onAddInventario={handleAddInventario} />
           </div>
         </div>
       </div>

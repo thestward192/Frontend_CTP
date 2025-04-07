@@ -6,7 +6,11 @@ import EditLicitacion from './EditLicitacion';
 import FormularioLicitacion from './FormularioLicitacion';
 import { Licitacion } from '../../types/licitacion';
 
-const LicitacionesComponent: React.FC = () => {
+interface LicitacionesComponentProps {
+  onAddLicitacion: (isAdding: boolean) => void;
+}
+
+const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLicitacion }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,6 +44,7 @@ const LicitacionesComponent: React.FC = () => {
     await addLicitacion(licitacion);
     handleLicitacionCreated();
     setIsModalOpen(false);
+    onAddLicitacion(false);
   };
 
   const handleUpdateDisponibilidad = async (id: number) => {
@@ -105,7 +110,6 @@ const LicitacionesComponent: React.FC = () => {
     return sortedLicitaciones.slice(start, start + itemsPerPage);
   }, [sortedLicitaciones, currentPage, itemsPerPage]);
 
-  // Función para generar números de página (mostrar solo 5 páginas consecutivas)
   const getPageNumbers = () => {
     let pages: number[] = [];
     if (totalPages <= 5) {
@@ -146,7 +150,10 @@ const LicitacionesComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Licitaciones</h2>
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              onAddLicitacion(true);
+              setIsModalOpen(true);
+            }}
           >
             <FaPlus />
             <span>Agregar Licitación</span>
@@ -284,8 +291,15 @@ const LicitacionesComponent: React.FC = () => {
 
       {isModalOpen && (
         <FormularioLicitacion
-          onClose={() => setIsModalOpen(false)}
-          onLicitacionCreated={handleLicitacionCreated}
+          onClose={() => {
+            setIsModalOpen(false);
+            onAddLicitacion(false);
+          }}
+          onLicitacionCreated={() => {
+            handleLicitacionCreated();
+            setIsModalOpen(false);
+            onAddLicitacion(false);
+          }}
           onSubmit={handleSubmit}
         />
       )}

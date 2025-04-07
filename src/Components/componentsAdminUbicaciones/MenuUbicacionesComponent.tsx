@@ -7,10 +7,23 @@ import { Menu, X } from 'lucide-react';
 
 const MenuUbicacion: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAddingUbicacion, setIsAddingUbicacion] = useState(false);
+
+  // Callback para iniciar o cerrar el flujo de "Agregar Ubicación"
+  const handleAddUbicacion = (isAdding: boolean) => {
+    setIsAddingUbicacion(isAdding);
+    if (isAdding) {
+      // Al iniciar el formulario, ocultamos el sidebar
+      setIsSidebarOpen(false);
+    } else {
+      // Al cerrar el formulario, se vuelve a mostrar el sidebar
+      setIsSidebarOpen(true);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Botón toggle, siempre visible y posicionado un poco más abajo */}
+      {/* Botón toggle, siempre visible */}
       <button
         className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -18,7 +31,7 @@ const MenuUbicacion: React.FC = () => {
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <div
         className={`
           fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
@@ -37,8 +50,7 @@ const MenuUbicacion: React.FC = () => {
       )}
 
       {/* Contenido principal:
-          En desktop se aplica un margen izquierdo si el sidebar está abierto,
-          en móvil ocupa todo el ancho */}
+          En desktop se aplica un margen izquierdo si el sidebar está abierto */}
       <div
         className={`flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300 ${
           isSidebarOpen ? 'md:ml-[16rem]' : 'md:ml-0'
@@ -57,9 +69,9 @@ const MenuUbicacion: React.FC = () => {
             <SearchBarComponent />
           </div>
 
-          {/* Contenedor de UbicacionesComponent, con la misma posición que en la vista de referencia */}
+          {/* Contenedor de UbicacionesComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <UbicacionesComponent />
+            <UbicacionesComponent onAddUbicacion={handleAddUbicacion} />
           </div>
         </div>
       </div>

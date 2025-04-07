@@ -6,7 +6,11 @@ import DetailLicencia from './DetailLicencia';
 import EditLicencia from './EditLicencia';
 import { CreateLicenciaDTO, Licencia } from '../../types/licencia';
 
-const LicenciasComponent: React.FC = () => {
+interface LicenciasComponentProps {
+  onAddLicencia: (isAdding: boolean) => void;
+}
+
+const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }) => {
   const { licencias, loading, error, addLicencia, updateDisponibilidadLicenciaMutation } = useLicencias();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLicencia, setSelectedLicencia] = useState<Licencia | null>(null);
@@ -21,14 +25,13 @@ const LicenciasComponent: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
-  // Ordenamos las licencias (por ejemplo, usando la propiedad "id")
+  // Ordenamos las licencias (por ejemplo, por "id")
   const sortedLicencias = useMemo(() => {
     return [...(licencias || [])].sort((a, b) =>
       sortOrder === 'asc' ? a.id - b.id : b.id - a.id
     );
   }, [licencias, sortOrder]);
 
-  // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedLicencias.length / itemsPerPage);
 
   useEffect(() => {
@@ -37,13 +40,11 @@ const LicenciasComponent: React.FC = () => {
     }
   }, [totalPages, currentPage]);
 
-  // Licencias a mostrar en la página actual
   const currentLicencias = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedLicencias.slice(start, start + itemsPerPage);
   }, [sortedLicencias, currentPage, itemsPerPage]);
 
-  // Función para generar números de página (mostrar solo 5 páginas)
   const getPageNumbers = () => {
     let pages: number[] = [];
     if (totalPages <= 5) {
@@ -107,10 +108,12 @@ const LicenciasComponent: React.FC = () => {
     }
   };
 
-  const handleAddLicencia = async (licencia: CreateLicenciaDTO) => {
+  const handleAddLicenciaSubmit = async (licencia: CreateLicenciaDTO) => {
     try {
       await addLicencia(licencia);
       setIsModalOpen(false);
+      // Al cerrar el modal, se vuelve a notificar al padre para mostrar el sidebar
+      onAddLicencia(false);
     } catch (error) {
       console.error("Error al agregar la licencia:", error);
     }
@@ -126,7 +129,10 @@ const LicenciasComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Licencias</h2>
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              onAddLicencia(true);
+              setIsModalOpen(true);
+            }}
           >
             <FaPlus />
             <span>Agregar Licencia</span>
@@ -189,7 +195,6 @@ const LicenciasComponent: React.FC = () => {
         {/* Controles de paginación y filtros */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
           <div className="flex items-center space-x-4 mb-2 md:mb-0">
-            {/* Selector de cantidad de entradas */}
             <div>
               <label className="text-sm text-gray-600 mr-2">Mostrar</label>
               <select
@@ -206,7 +211,6 @@ const LicenciasComponent: React.FC = () => {
               </select>
               <span className="text-sm text-gray-600 ml-2">entradas</span>
             </div>
-            {/* Botón para cambiar el orden */}
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="px-3 py-1 border rounded text-sm"
@@ -263,8 +267,11 @@ const LicenciasComponent: React.FC = () => {
 
       {isModalOpen && (
         <FormularioLicencia
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleAddLicencia}
+          onClose={() => {
+            setIsModalOpen(false);
+            onAddLicencia(false);
+          }}
+          onSave={handleAddLicenciaSubmit}
         />
       )}
 

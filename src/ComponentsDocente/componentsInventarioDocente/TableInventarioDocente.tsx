@@ -4,7 +4,11 @@ import { useAuth } from '../../hooks/AuthContext';
 import ModalCrearInventario from './ModalCrearInventario';
 import ModalVerInventario from './ModalVerInventario';
 
-const TableInventarioDocente: React.FC = () => {
+interface TableInventarioDocenteProps {
+  onAddInventario: (isAdding: boolean) => void;
+}
+
+const TableInventarioDocente: React.FC<TableInventarioDocenteProps> = ({ onAddInventario }) => {
   const { 
     inventarios, 
     isLoading, 
@@ -97,6 +101,7 @@ const TableInventarioDocente: React.FC = () => {
       },
     });
     setIsCreateModalOpen(false);
+    onAddInventario(false);
   };
 
   // Estados y funciones para modales
@@ -127,7 +132,10 @@ const TableInventarioDocente: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-black">Historial de Inventarios</h1>
           <button 
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              onAddInventario(true);
+              setIsCreateModalOpen(true);
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Hacer Inventario
@@ -156,7 +164,9 @@ const TableInventarioDocente: React.FC = () => {
                     onClick={() => handleRowClick(inv)}
                   >
                     <td className="px-4 py-2 text-sm">{inv.fecha}</td>
-                    <td className="px-4 py-2 text-sm">{inv.docente ? `${inv.docente.nombre} ${inv.docente.apellido_1}` : 'N/A'}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {inv.docente ? `${inv.docente.nombre} ${inv.docente.apellido_1}` : 'N/A'}
+                    </td>
                     <td className="px-4 py-2 text-sm">{inv.ubicacion?.nombre}</td>
                     <td className="px-4 py-2 text-sm">{inv.detalles.length}</td>
                   </tr>
@@ -239,7 +249,10 @@ const TableInventarioDocente: React.FC = () => {
       {/* Modal para crear inventario */}
       {isCreateModalOpen && (
         <ModalCrearInventario 
-          onClose={() => setIsCreateModalOpen(false)}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            onAddInventario(false);
+          }}
           onSubmit={handleModalSubmit}
         />
       )}

@@ -5,7 +5,11 @@ import DetailUbicacion from './DetailUbicacion';
 import EditUbicacionForm from './EditUbicacion';
 import { useUbicacion } from '../../hooks/useUbicacion';
 
-const UbicacionesComponent: React.FC = () => {
+interface UbicacionesComponentProps {
+  onAddUbicacion: (isAdding: boolean) => void;
+}
+
+const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicacion }) => {
   // Estados de modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
@@ -30,14 +34,12 @@ const UbicacionesComponent: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
-  // Ordenamos las ubicaciones según "id" (o la propiedad que prefieras)
   const sortedUbicaciones = useMemo(() => {
     return [...(ubicaciones || [])].sort((a, b) =>
       sortOrder === 'asc' ? a.id - b.id : b.id - a.id
     );
   }, [ubicaciones, sortOrder]);
 
-  // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedUbicaciones.length / itemsPerPage);
 
   useEffect(() => {
@@ -46,13 +48,11 @@ const UbicacionesComponent: React.FC = () => {
     }
   }, [totalPages, currentPage]);
 
-  // Ubicaciones a mostrar en la página actual
   const currentUbicaciones = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return sortedUbicaciones.slice(start, start + itemsPerPage);
   }, [sortedUbicaciones, currentPage, itemsPerPage]);
 
-  // Función para generar números de página (mostrar siempre 5 números consecutivos)
   const getPageNumbers = () => {
     let pages: number[] = [];
     if (totalPages <= 5) {
@@ -143,7 +143,10 @@ const UbicacionesComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Ubicaciones</h2>
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              onAddUbicacion(true);
+              setIsModalOpen(true);
+            }}
           >
             <FaPlus />
             <span>Agregar Ubicación</span>
@@ -200,10 +203,9 @@ const UbicacionesComponent: React.FC = () => {
           </div>
         )}
 
-        {/* Filtros y controles de paginación */}
+        {/* Controles de paginación y filtros */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
           <div className="flex items-center space-x-4 mb-2 md:mb-0">
-            {/* Selector de cantidad de entradas */}
             <div>
               <label className="text-sm text-gray-600 mr-2">Mostrar</label>
               <select
@@ -220,7 +222,6 @@ const UbicacionesComponent: React.FC = () => {
               </select>
               <span className="text-sm text-gray-600 ml-2">entradas</span>
             </div>
-            {/* Botón para cambiar el orden */}
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="px-3 py-1 border rounded text-sm"
@@ -247,7 +248,7 @@ const UbicacionesComponent: React.FC = () => {
             {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentPage(page as number)}
+                onClick={() => setCurrentPage(page)}
                 className={`px-3 py-1 rounded-md ${
                   currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
                 }`}
@@ -287,10 +288,18 @@ const UbicacionesComponent: React.FC = () => {
 
       {isModalOpen && (
         <FormularioUbicacion
-          onClose={() => setIsModalOpen(false)}
-          onUbicacionCreated={handleUbicacionCreated}
+          onClose={() => {
+            setIsModalOpen(false);
+            onAddUbicacion(false);
+          }}
+          onUbicacionCreated={() => {
+            handleUbicacionCreated();
+            setIsModalOpen(false);
+            onAddUbicacion(false);
+          }}
         />
       )}
+
       {detailModalOpen && selectedUbicacion && (
         isEditing ? (
           <EditUbicacionForm

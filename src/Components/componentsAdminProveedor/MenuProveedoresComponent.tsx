@@ -7,10 +7,20 @@ import { Menu, X } from 'lucide-react';
 
 const MenuAdminProveedores: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAddingProveedor, setIsAddingProveedor] = useState(false);
+
+  const handleAddProveedor = (isAdding: boolean) => {
+    setIsAddingProveedor(isAdding);
+    if (isAdding) {
+      setIsSidebarOpen(false);
+    } else {
+      setIsSidebarOpen(true);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Botón toggle, siempre visible y posicionado un poco más abajo */}
+      {/* Botón toggle */}
       <button
         className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -18,7 +28,7 @@ const MenuAdminProveedores: React.FC = () => {
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <div
         className={`
           fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
@@ -36,7 +46,7 @@ const MenuAdminProveedores: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal: en desktop se aplica un margen izquierdo si el sidebar está abierto; en móvil, ocupa todo el ancho */}
+      {/* Contenido principal */}
       <div
         className={`flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300 ${
           isSidebarOpen ? 'md:ml-[16rem]' : 'md:ml-0'
@@ -55,9 +65,9 @@ const MenuAdminProveedores: React.FC = () => {
             <SearchBarComponent />
           </div>
 
-          {/* Contenedor de ProveedoresComponent, con la misma posición que en la vista de referencia */}
+          {/* Contenedor de ProveedoresComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <ProveedoresComponent />
+            <ProveedoresComponent onAddProveedor={handleAddProveedor} />
           </div>
         </div>
       </div>

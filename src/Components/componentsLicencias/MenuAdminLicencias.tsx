@@ -7,10 +7,23 @@ import { Menu, X } from 'lucide-react';
 
 const MenuLeyes: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAddingLicencia, setIsAddingLicencia] = useState(false);
+
+  // Esta función se invoca desde LicenciasComponent cuando se activa o cierra el flujo de "Agregar Licencia"
+  const handleAddLicencia = (isAdding: boolean) => {
+    setIsAddingLicencia(isAdding);
+    if (isAdding) {
+      // Al agregar licencia, cerramos el sidebar para que el contenido se expanda
+      setIsSidebarOpen(false);
+    } else {
+      // Cuando se cierra el modal, se vuelve a mostrar el sidebar (si se desea)
+      setIsSidebarOpen(true);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Botón toggle, siempre visible y posicionado un poco más abajo */}
+      {/* Botón toggle, siempre visible */}
       <button
         className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -18,7 +31,7 @@ const MenuLeyes: React.FC = () => {
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <div
         className={`
           fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
@@ -36,7 +49,7 @@ const MenuLeyes: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal: sin margen izquierdo cuando el sidebar está cerrado */}
+      {/* Contenido principal: se expande a 100% de ancho cuando el sidebar está cerrado */}
       <div
         className="flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300"
         style={{ marginLeft: isSidebarOpen ? '16rem' : '0' }}
@@ -54,9 +67,9 @@ const MenuLeyes: React.FC = () => {
             <SearchBarComponent />
           </div>
 
-          {/* Contenedor de LicenciasComponent, con la misma posición que en la vista de referencia */}
+          {/* Contenedor de LicenciasComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <LicenciasComponent />
+            <LicenciasComponent onAddLicencia={handleAddLicencia} />
           </div>
         </div>
       </div>

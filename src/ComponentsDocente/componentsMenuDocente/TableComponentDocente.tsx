@@ -4,7 +4,11 @@ import { useAuth } from '../../hooks/AuthContext';
 import DetalleActivoDocente from './DetalleActivoDocente';
 import { Activo } from '../../types/activo';
 
-const TableComponentDocente: React.FC = () => {
+interface TableComponentDocenteProps {
+  onDetailToggle: (isDetailOpen: boolean) => void;
+}
+
+const TableComponentDocente: React.FC<TableComponentDocenteProps> = ({ onDetailToggle }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(33);
   const { useActivosByUbicacion } = useActivos();
@@ -40,10 +44,11 @@ const TableComponentDocente: React.FC = () => {
     setCurrentPage(1);
   };
 
-  // Al hacer clic en una fila, se abre el modal
+  // Al hacer clic en una fila, se abre el modal y se notifica al padre
   const handleRowClick = (activo: Activo) => {
     setSelectedActivo(activo);
     setIsModalOpen(true);
+    onDetailToggle(true);
   };
 
   // Filtrado de activos
@@ -120,7 +125,9 @@ const TableComponentDocente: React.FC = () => {
               value={selectedUbicacion || ''}
               onChange={handleUbicacionSelect}
             >
-              <option value="" disabled>-- Seleccione --</option>
+              <option value="" disabled>
+                -- Seleccione --
+              </option>
               {ubicaciones.map((ubicacion) => (
                 <option key={ubicacion.id} value={ubicacion.id}>
                   {ubicacion.nombre}
@@ -279,10 +286,7 @@ const TableComponentDocente: React.FC = () => {
                 placeholder="Página"
                 className="border p-1 rounded w-16 text-sm"
               />
-              <button
-                onClick={handlePageSearch}
-                className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm"
-              >
+              <button onClick={handlePageSearch} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">
                 Ir
               </button>
             </div>
@@ -294,7 +298,10 @@ const TableComponentDocente: React.FC = () => {
       {isModalOpen && selectedActivo && (
         <DetalleActivoDocente
           activo={selectedActivo}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            onDetailToggle(false);
+          }}
         />
       )}
     </div>

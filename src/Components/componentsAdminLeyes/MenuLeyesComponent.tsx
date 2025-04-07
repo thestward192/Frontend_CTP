@@ -7,10 +7,23 @@ import { Menu, X } from 'lucide-react';
 
 const MenuLeyes: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isAddingLey, setIsAddingLey] = useState(false);
+
+  // Callback para iniciar o cerrar el flujo de "Agregar Ley"
+  const handleAddLey = (isAdding: boolean) => {
+    setIsAddingLey(isAdding);
+    if (isAdding) {
+      // Al iniciar, ocultamos el sidebar para que el contenido se expanda
+      setIsSidebarOpen(false);
+    } else {
+      // Al cerrar el formulario, volvemos a mostrar el sidebar
+      setIsSidebarOpen(true);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Botón toggle, siempre visible, posicionado un poco más abajo */}
+      {/* Botón toggle */}
       <button
         className="absolute top-16 left-4 z-50 p-1 bg-gray-800 text-white rounded-full shadow-lg"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -18,7 +31,7 @@ const MenuLeyes: React.FC = () => {
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <div
         className={`
           fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
@@ -36,7 +49,7 @@ const MenuLeyes: React.FC = () => {
         ></div>
       )}
 
-      {/* Contenido principal: aplica margen izquierdo solo en desktop cuando el sidebar está abierto */}
+      {/* Contenido principal */}
       <div
         className="flex-1 relative z-10 bg-gray-100 overflow-hidden transition-all duration-300"
         style={{ marginLeft: isSidebarOpen ? '16rem' : '0' }}
@@ -54,9 +67,10 @@ const MenuLeyes: React.FC = () => {
             <SearchBarComponent />
           </div>
 
-          {/* Contenedor de LeyesComponent (sin modificar su posición) */}
+          {/* Contenedor de LeyesComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <LeyesComponent />
+            {/* Se pasa el callback para el flujo de agregar ley */}
+            <LeyesComponent onAddLey={handleAddLey} />
           </div>
         </div>
       </div>

@@ -6,7 +6,11 @@ import DetailLey from './DetailLey';
 import EditLeyForm from './EditLey';
 import { Ley } from '../../types/ley';
 
-const LeyesComponent: React.FC = () => {
+interface LeyesComponentProps {
+  onAddLey: (isAdding: boolean) => void;
+}
+
+const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
   // Estados modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -23,7 +27,6 @@ const LeyesComponent: React.FC = () => {
 
   const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
 
-  // Notificaciones de acción completada
   const handleLeyCreated = () => {
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -34,16 +37,13 @@ const LeyesComponent: React.FC = () => {
     setTimeout(() => setShowCompletedMessage(false), 3000);
   };
 
-  // Actualiza la disponibilidad de la Ley
   const handleUpdateDisponibilidad = async (id: number) => {
     const ley = leyes.find((ley) => ley.id === id);
-
     if (ley && ley.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
       return;
-    } 
-
+    }
     await updateDisponibilidadLeyMutation.mutate(id);
     setShowCompletedMessage(true);
     setTimeout(() => setShowCompletedMessage(false), 3000);
@@ -84,7 +84,6 @@ const LeyesComponent: React.FC = () => {
   // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedLeyes.length / itemsPerPage);
 
-  // Si la página actual es mayor al total, se ajusta
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages || 1);
@@ -116,7 +115,6 @@ const LeyesComponent: React.FC = () => {
     return pages;
   };
 
-  // Handlers para la búsqueda de página
   const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
     setPageInput(e.target.value);
   };
@@ -129,10 +127,6 @@ const LeyesComponent: React.FC = () => {
     setPageInput('');
   };
 
-  // Cálculo para mostrar el rango de entradas
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + currentLeyes.length, sortedLeyes.length);
-
   return (
     <div className="w-full flex justify-center py-10">
       <div
@@ -143,7 +137,10 @@ const LeyesComponent: React.FC = () => {
           <h2 className="text-3xl font-bold">Gestión de Leyes</h2>
           <button
             className="bg-blue-600 text-white py-1 px-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center space-x-1 text-sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              onAddLey(true);
+              setIsModalOpen(true);
+            }}
           >
             <FaPlus />
             <span>Agregar Ley</span>
@@ -270,11 +267,20 @@ const LeyesComponent: React.FC = () => {
             </div>
           </div>
         </div>
-        
       </div>
 
       {isModalOpen && (
-        <FormularioLey onClose={() => setIsModalOpen(false)} onLeyCreated={handleLeyCreated} />
+        <FormularioLey 
+          onClose={() => {
+            setIsModalOpen(false);
+            onAddLey(false);
+          }} 
+          onLeyCreated={(ley) => {
+            handleLeyCreated();
+            setIsModalOpen(false);
+            onAddLey(false);
+          }} 
+        />
       )}
 
       {detailModalOpen && selectedLey && (
