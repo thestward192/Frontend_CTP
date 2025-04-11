@@ -40,6 +40,7 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
         <h2 className="text-xl font-bold mb-4">Editar Ley</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Número de Ley */}
           <div className="mb-4">
             <label className="block mb-1">
               Número de Ley <span className="text-red-500">*</span>
@@ -47,7 +48,10 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
             <Controller
               name="numLey"
               control={control}
-              rules={{ required: 'El número de ley es obligatorio' }}
+              rules={{
+                required: 'El número de ley es obligatorio',
+                maxLength: { value: 50, message: 'El número de ley no puede tener más de 50 caracteres' }
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -60,6 +64,8 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
               <p className="text-red-500 text-sm mt-1">{errors.numLey.message}</p>
             )}
           </div>
+
+          {/* Nombre */}
           <div className="mb-4">
             <label className="block mb-1">
               Nombre <span className="text-red-500">*</span>
@@ -67,7 +73,10 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
             <Controller
               name="nombre"
               control={control}
-              rules={{ required: 'El nombre es obligatorio' }}
+              rules={{
+                required: 'El nombre es obligatorio',
+                maxLength: { value: 100, message: 'El nombre no puede tener más de 100 caracteres' }
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -80,28 +89,40 @@ const EditLey: React.FC<EditLeyFormProps> = ({ ley, onSave, onCancel }) => {
               <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>
             )}
           </div>
+
+          {/* Detalle */}
           <div className="mb-4">
-            <label className="block mb-1">Detalle</label>
+            <label className="block mb-1">
+              Detalle <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="detalle"
               control={control}
+              rules={{
+                required: 'El detalle de ley es obligatorio'
+                // Si querés agregar un límite de caracteres para "detalle", descomenta la siguiente línea:
+                // maxLength: { value: 1000, message: 'El detalle no puede tener más de 1000 caracteres' }
+              }}
               render={({ field }) => (
                 <textarea
                   {...field}
-                  className="w-full border p-2 rounded-md"
+                  className={`w-full border p-2 rounded-md ${errors.detalle ? 'border-red-500' : ''}`}
                   placeholder="Detalle"
                   rows={4}
                 />
               )}
             />
+            {errors.detalle && (
+              <p className="text-red-500 text-sm mt-1">{errors.detalle.message}</p>
+            )}
           </div>
+
+          {/* Botones */}
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>

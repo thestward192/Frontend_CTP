@@ -64,7 +64,10 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             <Controller
               name="nombre"
               control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
+              rules={{
+                required: 'Este campo es obligatorio',
+                maxLength: { value: 100, message: 'El nombre no puede tener más de 100 caracteres' },
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -104,7 +107,10 @@ const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave
             <Controller
               name="codigoLicencia"
               control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
+              rules={{
+                required: 'Este campo es obligatorio',
+                maxLength: { value: 50, message: 'El código no puede tener más de 50 caracteres' },
+              }}
               render={({ field }) => (
                 <input
                   {...field}

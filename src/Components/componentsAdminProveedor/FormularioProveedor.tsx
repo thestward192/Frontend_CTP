@@ -65,7 +65,10 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
             </label>
             <input
               type="text"
-              {...register('vendedor', { required: 'Este campo es obligatorio' })}
+              {...register('vendedor', { 
+                required: 'Este campo es obligatorio', 
+                maxLength: { value: 100, message: 'El nombre del proveedor no puede tener más de 100 caracteres' }
+              })}
               className="w-full border p-2 rounded-md"
               placeholder="Nombre del Proveedor"
             />
@@ -80,7 +83,10 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
             </label>
             <input
               type="text"
-              {...register('nombreEmpresa', { required: 'Este campo es obligatorio' })}
+              {...register('nombreEmpresa', { 
+                required: 'Este campo es obligatorio',
+                maxLength: { value: 100, message: 'El nombre de la empresa no puede tener más de 100 caracteres' }
+              })}
               className="w-full border p-2 rounded-md"
               placeholder="Nombre de la Empresa"
             />
@@ -101,6 +107,7 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
                   value: /^\d{4}-\d{4}$/,
                   message: 'El teléfono debe tener el formato ####-####',
                 },
+                maxLength: { value: 9, message: 'El teléfono no puede tener más de 8 caracteres' }
               })}
               className="w-full border p-2 rounded-md"
               placeholder="####-####"
@@ -123,6 +130,7 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
                   value: /^\d{4}-\d{4}$/,
                   message: 'El teléfono debe tener el formato ####-####',
                 },
+                maxLength: { value: 9, message: 'El teléfono no puede tener más de 8 caracteres' }
               })}
               className="w-full border p-2 rounded-md"
               placeholder="####-####"

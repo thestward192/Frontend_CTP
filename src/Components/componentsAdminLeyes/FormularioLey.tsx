@@ -44,7 +44,10 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             <Controller
               name="numLey"
               control={control}
-              rules={{ required: 'El número de ley es obligatorio' }}
+              rules={{
+                required: 'El número de ley es obligatorio',
+                maxLength: { value: 50, message: 'El número de ley no puede tener más de 50 caracteres' }
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -65,7 +68,10 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             <Controller
               name="nombre"
               control={control}
-              rules={{ required: 'El nombre es obligatorio' }}
+              rules={{
+                required: 'El nombre es obligatorio',
+                maxLength: { value: 100, message: 'El nombre no puede tener más de 100 caracteres' }
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -86,7 +92,11 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             <Controller
               name="detalle"
               control={control}
-              rules={{ required: 'El detalle de ley es obligatorio' }}
+              rules={{
+                required: 'El detalle de ley es obligatorio'
+                // Si quisieras agregar un límite de caracteres, por ejemplo:
+                // maxLength: { value: 1000, message: 'El detalle no puede tener más de 1000 caracteres' }
+              }}
               render={({ field }) => (
                 <textarea
                   {...field}
@@ -101,13 +111,11 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
             )}
           </div>
 
-
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>

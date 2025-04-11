@@ -26,10 +26,10 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
       descripcion: licencia.descripcion,
       codigoLicencia: licencia.codigoLicencia,
       modoAdquisicion: licencia.modoAdquisicion,
-      // Convertimos el id a string, tal como estaba en el defaultValues original
+      // Convertimos el id a string, para que coincida con el valor del select
       licitacionId: licencia.licitacion ? licencia.licitacion.id.toString() : '',
-      vigenciaFin: licencia.vigenciaFin,
       vigenciaInicio: licencia.vigenciaInicio,
+      vigenciaFin: licencia.vigenciaFin,
     },
   });
 
@@ -61,11 +61,14 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Nombre de la Licencia */}
           <div className="mb-4">
-            <label className="block mb-1">Nombre de la Licencia</label>
+            <label className="block mb-1">Nombre de la Licencia <span className="text-red-500">*</span></label>
             <Controller
               name="nombre"
               control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
+              rules={{
+                required: 'Este campo es obligatorio',
+                maxLength: { value: 100, message: 'El nombre no puede tener más de 100 caracteres' }
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -79,7 +82,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           {/* Descripción */}
           <div className="mb-4">
-            <label className="block mb-1">Descripción</label>
+            <label className="block mb-1">Descripción <span className="text-red-500">*</span></label>
             <Controller
               name="descripcion"
               control={control}
@@ -97,11 +100,14 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           {/* Código de la Licencia */}
           <div className="mb-4">
-            <label className="block mb-1">Código de la Licencia</label>
+            <label className="block mb-1">Código de la Licencia <span className="text-red-500">*</span></label>
             <Controller
               name="codigoLicencia"
               control={control}
-              rules={{ required: 'Este campo es obligatorio' }}
+              rules={{
+                required: 'Este campo es obligatorio',
+                maxLength: { value: 50, message: 'El código no puede tener más de 50 caracteres' }
+              }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -115,10 +121,11 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           {/* Modo de Adquisición */}
           <div className="mb-4">
-            <label className="block mb-1">Modo de Adquisición</label>
+            <label className="block mb-1">Modo de Adquisición <span className="text-red-500">*</span></label>
             <Controller
               name="modoAdquisicion"
               control={control}
+              rules={{ required: 'Este campo es obligatorio' }}
               render={({ field }) => (
                 <select
                   {...field}
@@ -135,13 +142,12 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
           {/* Campo de Licitación solo si el modo es "Ley" */}
           {modoAdquisicion === 'Ley' && (
             <div className="mb-4">
-              <label className="block mb-1">Licitación</label>
+              <label className="block mb-1">Licitación <span className="text-red-500">*</span></label>
               <Controller
                 name="licitacionId"
                 control={control}
                 rules={{ required: 'Debe seleccionar una licitación' }}
                 render={({ field, fieldState: { error } }) => {
-                  // Convertir el valor a número para buscar la opción
                   const currentValue = field.value ? Number(field.value) : undefined;
                   return (
                     <>
@@ -150,17 +156,16 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
                         options={licitacionOptions}
                         placeholder="Seleccione una Licitación"
                         value={licitacionOptions.find(option => option.value === currentValue) || null}
-                        onChange={(selectedOption: SingleValue<OptionType>) => {
-                          field.onChange(selectedOption ? selectedOption.value : undefined);
-                        }}
+                        onChange={(selectedOption: SingleValue<OptionType>) =>
+                          field.onChange(selectedOption ? selectedOption.value : undefined)
+                        }
                         isDisabled={licitacionesLoading || licitacionesError !== null}
-                        // Renderiza el menú dentro del modal (sin portal) para evitar doble scroll
                         menuPortalTarget={undefined}
                         menuPlacement="auto"
                         styles={{
                           menu: (provided) => ({
                             ...provided,
-                            backgroundColor: 'white', // Fondo sólido
+                            backgroundColor: 'white',
                             maxHeight: 200,
                           }),
                           menuList: (provided) => ({
@@ -186,7 +191,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           {/* Vigencia de Inicio */}
           <div className="mb-4">
-            <label className="block mb-1">Vigencia de Inicio</label>
+            <label className="block mb-1">Vigencia de Inicio <span className="text-red-500">*</span></label>
             <Controller
               name="vigenciaInicio"
               control={control}
@@ -205,7 +210,7 @@ const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
 
           {/* Vigencia de Fin */}
           <div className="mb-4">
-            <label className="block mb-1">Vigencia de Fin</label>
+            <label className="block mb-1">Vigencia de Fin <span className="text-red-500">*</span></label>
             <Controller
               name="vigenciaFin"
               control={control}
