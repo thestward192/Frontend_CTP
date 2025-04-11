@@ -80,28 +80,34 @@ const FormularioLey: React.FC<FormularioLeyProps> = ({ onClose, onLeyCreated }) 
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1">Detalle</label>
+            <label className="block mb-1">
+              Detalle <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="detalle"
               control={control}
+              rules={{ required: 'El detalle de ley es obligatorio' }}
               render={({ field }) => (
                 <textarea
                   {...field}
+                  className={`w-full border p-2 rounded-md ${errors.detalle ? 'border-red-500' : ''}`}
                   placeholder="Detalle"
                   rows={4}
-                  className="w-full border p-2 rounded-md"
                 />
               )}
             />
+            {errors.detalle && (
+              <p className="text-red-500 text-sm mt-1">{errors.detalle.message}</p>
+            )}
           </div>
+
 
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>

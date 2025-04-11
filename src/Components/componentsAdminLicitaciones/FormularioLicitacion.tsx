@@ -175,7 +175,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
 
           {/* Selección de Ley */}
           <div className="form-group">
-            <label htmlFor="ley" className="block text-sm font-medium text-gray-700">Ley</label>
+            <label htmlFor="ley" className="block text-sm font-medium text-gray-700"> Ley <span className="text-red-500">*</span></label>
             <Controller
               control={control}
               name="idLey"
@@ -208,7 +208,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
 
           {/* Selección de Proveedor */}
           <div className="form-group">
-            <label htmlFor="proveedor" className="block text-sm font-medium text-gray-700">Proveedor</label>
+            <label htmlFor="proveedor" className="block text-sm font-medium text-gray-700"> Proveedor <span className="text-red-500">*</span></label>
             <Controller
               control={control}
               name="idProveedor"

@@ -56,58 +56,63 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
-        <h2 className="text-lg font-bold mb-4">Editar Licitación</h2>
+        <h2 className="text-xl font-bold mb-4">Editar Licitación</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
           {/* Número de Acta */}
-          <div className="mb-4">
-            <label className="block mb-1">
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Número de Acta <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               {...register('numActa', { required: 'El número de acta es requerido' })}
-              className="w-full border p-2 rounded-md"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
+              placeholder="Ingrese número de acta"
             />
             {errors.numActa && <span className="text-red-500 text-sm">{errors.numActa.message}</span>}
           </div>
+
           {/* Número de Licitación */}
-          <div className="mb-4">
-            <label className="block mb-1">
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Número de Licitación <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
               {...register('numLicitacion', { required: 'El número de licitación es requerido' })}
-              className="w-full border p-2 rounded-md"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
+              placeholder="Ingrese número de licitación"
             />
             {errors.numLicitacion && <span className="text-red-500 text-sm">{errors.numLicitacion.message}</span>}
           </div>
+
           {/* Nombre */}
-          <div className="mb-4">
-            <label className="block mb-1">
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Nombre <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               {...register('nombre', { required: 'El nombre es requerido' })}
-              className="w-full border p-2 rounded-md"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
+              placeholder="Ingrese nombre"
             />
             {errors.nombre && <span className="text-red-500 text-sm">{errors.nombre.message}</span>}
           </div>
+
           {/* Monto */}
-          <div className="mb-4">
-            <label className="block mb-1">
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Monto ({moneda === Moneda.COLON ? "₡" : "$"}) <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center space-x-2">
               <input
                 type="number"
                 step={0.01}
-                id="monto"
                 {...register("monto", { required: "El monto es requerido" })}
-                className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                className="mt-2 block w-full border p-2 rounded-md shadow-sm"
                 placeholder="Ingrese monto"
               />
               <button
@@ -120,96 +125,105 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             </div>
             {errors.monto && <span className="text-red-500 text-sm">{errors.monto.message}</span>}
           </div>
+
           {/* Descripción */}
-          <div className="col-span-2 mb-4">
-            <label className="block mb-1">
+          <div className="form-group col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
               Descripción <span className="text-red-500">*</span>
             </label>
             <textarea
               {...register('descripcion', { required: 'La descripción es requerida' })}
-              className="w-full border p-2 rounded-md"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
+              placeholder="Ingrese descripción"
             />
             {errors.descripcion && <span className="text-red-500 text-sm">{errors.descripcion.message}</span>}
           </div>
+
           {/* Fecha */}
-          <div className="mb-4">
-            <label className="block mb-1">
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Fecha <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               {...register('fecha', { required: 'La fecha es requerida' })}
-              className="w-full border p-2 rounded-md"
+              className="mt-2 block w-full border p-2 rounded-md shadow-sm"
             />
             {errors.fecha && <span className="text-red-500 text-sm">{errors.fecha.message}</span>}
           </div>
-          {/* Ley Asociada con react-select */}
-          <div className="mb-4">
-            <label className="block mb-1">
+
+          {/* Ley Asociada */}
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Ley Asociada <span className="text-red-500">*</span>
             </label>
             <Controller
               control={control}
               name="idLey"
-              render={({ field }) => {
+              rules={{ required: 'Debe seleccionar una ley' }}
+              render={({ field, fieldState: { error } }) => {
                 const options = (leyes || []).map((ley) => ({
                   value: ley.id,
                   label: ley.nombre,
                 }));
                 const selectedOption = options.find(option => option.value === field.value) || null;
                 return (
-                  <Select
-                    {...field}
-                    options={options}
-                    value={selectedOption}
-                    onChange={(option) => field.onChange(option.value)}
-                    isLoading={leyesLoading}
-                    placeholder="Seleccionar Ley"
-                    classNamePrefix="react-select"
-                  />
+                  <>
+                    <Select
+                      {...field}
+                      options={options}
+                      value={selectedOption}
+                      onChange={(option) => field.onChange(option?.value ?? 0)}
+                      isLoading={leyesLoading}
+                      placeholder="Seleccionar Ley"
+                      classNamePrefix="react-select"
+                    />
+                    {error && <span className="text-red-500 text-sm">{error.message}</span>}
+                  </>
                 );
               }}
             />
-            {errors.idLey && <span className="text-red-500 text-sm">{errors.idLey.message}</span>}
           </div>
-          {/* Proveedor Asociado con react-select */}
-          <div className="mb-4">
-            <label className="block mb-1">
+
+          {/* Proveedor Asociado */}
+          <div className="form-group">
+            <label className="block text-sm font-medium text-gray-700">
               Proveedor Asociado <span className="text-red-500">*</span>
             </label>
             <Controller
               control={control}
               name="idProveedor"
-              render={({ field }) => {
+              rules={{ required: 'Debe seleccionar un proveedor' }}
+              render={({ field, fieldState: { error } }) => {
                 const options = (proveedores || []).map((proveedor) => ({
                   value: proveedor.id,
                   label: proveedor.vendedor,
                 }));
                 const selectedOption = options.find(option => option.value === field.value) || null;
                 return (
-                  <Select
-                    {...field}
-                    options={options}
-                    value={selectedOption}
-                    onChange={(option) => field.onChange(option.value)}
-                    isLoading={proveedoresLoading}
-                    placeholder="Seleccionar Proveedor"
-                    classNamePrefix="react-select"
-                  />
+                  <>
+                    <Select
+                      {...field}
+                      options={options}
+                      value={selectedOption}
+                      onChange={(option) => field.onChange(option?.value ?? 0)}
+                      isLoading={proveedoresLoading}
+                      placeholder="Seleccionar Proveedor"
+                      classNamePrefix="react-select"
+                    />
+                    {error && <span className="text-red-500 text-sm">{error.message}</span>}
+                  </>
                 );
               }}
             />
-            {errors.idProveedor && <span className="text-red-500 text-sm">{errors.idProveedor.message}</span>}
           </div>
 
           {/* Botones de Acción */}
-          <div className="col-span-2 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end col-span-2 mt-4 space-y-4 sm:space-y-0 sm:space-x-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
