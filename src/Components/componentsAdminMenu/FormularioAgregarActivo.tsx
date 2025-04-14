@@ -1,100 +1,125 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import Select, { SingleValue } from 'react-select';
 import { Activo } from '../../types/activo';
+import { Licitacion } from '../../types/licitacion';
+import { Ubicacion } from '../../types/ubicacion';
 import { Moneda } from '../../types/moneda';
-import { useUbicacion } from '../../hooks/useUbicacion';
-import { useLicitaciones } from '../../hooks/useLicitacion';
+import { getUbicaciones } from '../../Services/ubicacionService';
+import { getLicitaciones } from '../../Services/licitacionService';
+import { useActivos } from '../../hooks/useActivo';
 import ImageUploader from './ImageUploader';
 import { FaCheckCircle } from 'react-icons/fa';
 
-interface FormularioEditarActivoProps {
-  asset: Activo;
+interface FormularioAgregarActivoProps {
   onClose: () => void;
-  onSave: (updatedData: Partial<Activo>) => void;
+  modoAdquisicion: string;
 }
 
-interface OptionType {
-  value: string;
-  label: string;
-}
-
-const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
-  asset,
-  onClose,
-  onSave,
-}) => {
+const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
   const {
     register,
     handleSubmit,
     control,
     setValue,
-    formState: { errors },
     reset,
+    formState: { errors },
   } = useForm<Omit<Activo, 'id' | 'numPlaca'>>({
+    // CAMBIO: Se utiliza reValidateMode: 'onChange' para revalidar al modificar el input.
+    reValidateMode: 'onChange',
     defaultValues: {
-      nombre: asset.nombre,
-      descripcion: asset.descripcion,
-      marca: asset.marca,
-      serie: asset.serie,
-      estado: asset.estado,
-      disponibilidad: asset.disponibilidad,
-      modelo: asset.modelo,
-      foto: asset.foto,
-      precio: asset.precio,
-      observacion: asset.observacion,
-      ubicacionId: asset.ubicacion ? asset.ubicacion.id.toString() : '',
-      modoAdquisicion: asset.modoAdquisicion || 'Donación',
-      licitacionId: asset.licitacion ? asset.licitacion.id.toString() : '',
-      moneda: asset.moneda || Moneda.COLON,
+      nombre: '',
+      descripcion: '',
+      marca: '',
+      serie: '',
+      estado: 'Bueno',
+      disponibilidad: 'Activo',
+      modelo: '',
+      foto: '',
+      precio: undefined,
+      observacion: '',
+      ubicacionId: '',
+      modoAdquisicion: modoAdquisicion,
+      licitacionId: '',
+      moneda: Moneda.COLON,
     },
   });
+  const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
+  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
+  const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { handleCreateActivo, loading } = useActivos();
 
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
-  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
-
-  // Si la disponibilidad es "Dado de Baja", forzamos que el estado sea "Malo"
+  // Cargar ubicaciones y licitaciones
   useEffect(() => {
-    if (asset.disponibilidad === 'Dado de Baja') {
-      setValue('estado', 'Malo');
+    const fetchData = async () => {
+      try {
+        const [ubicacionesData, licitacionesData] = await Promise.all([
+          getUbicaciones(),
+          getLicitaciones(),
+        ]);
+        setUbicaciones(ubicacionesData);
+        setLicitaciones(licitacionesData);
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Configurar modoAdquisicion y si es Donación, setear precio en 0; también actualizar moneda
+  useEffect(() => {
+    if (modoAdquisicion === 'Donación') {
+      setValue('precio', 0);
     }
-  }, [asset.disponibilidad, setValue]);
+    setValue('modoAdquisicion', modoAdquisicion);
+    setValue('moneda', moneda);
+  }, [modoAdquisicion, moneda, setValue]);
 
-  // Opciones para react‑select (usamos strings para value)
-  const ubicacionOptions: OptionType[] = (ubicaciones || []).map((ubicacion) => ({
-    value: ubicacion.id.toString(),
-    label: ubicacion.nombre,
-  }));
+  const handleButtonMonedaSwitch = () => {
+    const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+    setMoneda(nuevaMoneda);
+    setValue('moneda', nuevaMoneda);
+  };
 
-  const licitacionOptions: OptionType[] = (licitaciones || []).map((licitacion) => ({
-    value: licitacion.id.toString(),
-    label: licitacion.nombre,
-  }));
+  // Función para subir imagen y asignar la URL al campo 'foto'
+  const onUpload = (url: string) => {
+    setValue('foto', url);
+  };
 
   const onSubmitHandler: SubmitHandler<Omit<Activo, 'id' | 'numPlaca'>> = async (data) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      onSave(data);
-      setSuccessMessage('Activo actualizado exitosamente');
+      console.log('Datos enviados al servidor:', data);
+      await handleCreateActivo(data);
+      setSuccessMessage('Activo creado exitosamente');
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
         reset();
       }, 1000);
     } catch (error) {
-      console.error('Error al actualizar el activo:', error);
+      console.error('Error al crear el activo:', error);
+      setIsSubmitting(false);
     }
   };
 
-  if (ubicacionesLoading || licitacionesLoading) {
-    return <p>Cargando ubicaciones y licitaciones...</p>;
-  }
-  if (ubicacionesError || licitacionesError) {
-    return <p>Error al cargar los datos.</p>;
-  }
+  // Opciones para react‑select (convirtiendo id a string)
+  const ubicacionOptions = ubicaciones.map((ubicacion) => ({
+    value: ubicacion.id.toString(),
+    label: ubicacion.nombre,
+  }));
+
+  const licitacionOptions = licitaciones.map((licitacion) => ({
+    value: licitacion.id.toString(),
+    label: licitacion.nombre,
+  }));
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      {/* CAMBIO: El contenedor principal se hace más ancho con max-w-4xl */}
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
@@ -102,7 +127,8 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
             {successMessage}
           </div>
         )}
-        <h2 className="text-xl font-bold mb-4">Editar Activo</h2>
+        <h2 className="text-xl font-bold mb-4">Agregar Activo</h2>
+        {/* CAMBIO: Se agrega contenedor con scroll interno */}
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,83 +208,52 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                 {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
               </div>
 
-              {/* Precio + Moneda (solo si no es Donación) */}
-              {asset.modoAdquisicion !== 'Donación' && (
-                <div className="flex items-center space-x-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Precio ({(asset.moneda || Moneda.COLON) === Moneda.COLON ? '₡' : '$'})
+              {/* Precio + Moneda (solo si modoAdquisicion no es "Donación") */}
+              {modoAdquisicion !== 'Donación' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Precio ({moneda === Moneda.COLON ? '₡' : '$'})
                   </label>
-                  <input
-                    type="number"
-                    step={0.01}
-                    {...register('precio', { valueAsNumber: true })}
-                    className="w-full border border-gray-300 p-2 rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setValue(
-                        'moneda',
-                        (asset.moneda || Moneda.COLON) === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON
-                      )
-                    }
-                    className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
-                  >
-                    {(asset.moneda || Moneda.COLON) === Moneda.COLON ? 'CRC' : 'USD'}
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      step={0.01}
+                      min="0"
+                      {...register('precio', {
+                        valueAsNumber: true,
+                        validate: (value) => {
+                          const numberValue = Number(value);
+                          return (!isNaN(numberValue) && numberValue >= 0) || 'No se permiten montos negativos';
+                        },
+                      })}
+                      className={`w-full border border-gray-300 p-2 rounded-lg ${
+                        errors.precio ? 'border-red-500' : ''
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleButtonMonedaSwitch}
+                      className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
+                    >
+                      {moneda === Moneda.COLON ? 'CRC' : 'USD'}
+                    </button>
+                  </div>
+                  {errors.precio && <p className="text-red-600 text-xs mt-1">{errors.precio.message}</p>}
                 </div>
               )}
 
-              {/* Estado */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Estado <span className="text-red-500">*</span>
-                </label>
-                <select
-                  {...register('estado', { required: 'El campo Estado es obligatorio' })}
-                  className={`mt-2 block w-full border border-gray-300 p-2 rounded-md ${
-                    errors.estado ? 'border-red-500' : ''
-                  }`}
-                  disabled={asset.disponibilidad === 'Dado de Baja'}
-                >
-                  <option value="Bueno">Bueno</option>
-                  <option value="Regular">Regular</option>
-                  <option value="Malo">Malo</option>
-                </select>
-                {errors.estado && <span className="text-red-600 text-xs">{errors.estado.message}</span>}
-              </div>
-
-              {/* Disponibilidad */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Disponibilidad <span className="text-red-500">*</span>
-                </label>
-                <select
-                  {...register('disponibilidad', { required: 'El campo Disponibilidad es obligatorio' })}
-                  className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Dado de Baja">Dado de Baja</option>
-                </select>
-                {errors.disponibilidad && (
-                  <span className="text-red-600 text-xs">{errors.disponibilidad.message}</span>
-                )}
-              </div>
-
               {/* Descripción */}
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea
                   placeholder="Ingrese descripción"
                   {...register('descripcion')}
-                  className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                  className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                 />
-                {errors.descripcion && (
-                  <span className="text-red-600 text-xs">{errors.descripcion.message}</span>
-                )}
+                {errors.descripcion && <span className="text-red-600 text-xs">{errors.descripcion.message}</span>}
               </div>
 
-              {/* Ubicación con react‑select */}
+              {/* Ubicación con react-select */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Ubicación <span className="text-red-500">*</span>
@@ -266,11 +261,10 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                 <Controller
                   control={control}
                   name="ubicacionId"
+                  defaultValue=""
                   rules={{ required: 'El campo Ubicación es obligatorio' }}
                   render={({ field }) => {
-                    const selectedOption = ubicacionOptions.find(
-                      (option) => option.value === field.value
-                    ) || null;
+                    const selectedOption = ubicacionOptions.find((option) => option.value === field.value) || null;
                     return (
                       <Select
                         {...field}
@@ -285,13 +279,11 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                     );
                   }}
                 />
-                {errors.ubicacionId && (
-                  <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>
-                )}
+                {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
               </div>
 
-              {/* Licitación con react‑select (solo si modoAdquisicion es "Ley") */}
-              {asset.modoAdquisicion === 'Ley' && (
+              {/* Licitación con react-select (solo si modoAdquisicion es "Ley") */}
+              {modoAdquisicion === 'Ley' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Licitación <span className="text-red-500">*</span>
@@ -299,12 +291,10 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   <Controller
                     control={control}
                     name="licitacionId"
-                    rules={{ required: 'El campo Licitación es obligatorio' }}
                     defaultValue=""
+                    rules={{ required: 'El campo Licitación es obligatorio' }}
                     render={({ field }) => {
-                      const selectedOption = licitacionOptions.find(
-                        (option) => option.value === field.value
-                      ) || null;
+                      const selectedOption = licitacionOptions.find((option) => option.value === field.value) || null;
                       return (
                         <Select
                           {...field}
@@ -319,39 +309,23 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                       );
                     }}
                   />
-                  {errors.licitacionId && (
-                    <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>
-                  )}
+                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
                 </div>
               )}
 
               {/* Observaciones */}
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea
                   placeholder="Ingrese observaciones"
                   {...register('observacion')}
-                  className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
+                  className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                 />
-                {errors.observacion && (
-                  <span className="text-red-600 text-xs">{errors.observacion.message}</span>
-                )}
+                {errors.observacion && <span className="text-red-600 text-xs">{errors.observacion.message}</span>}
               </div>
 
-              {/* Imagen */}
+              {/* Subida de imagen */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Imagen</label>
-                {asset.foto ? (
-                  <img
-                    src={asset.foto}
-                    alt="Activo"
-                    className="w-32 h-32 object-cover mt-2 rounded border"
-                  />
-                ) : (
-                  <div className="w-32 h-32 bg-gray-200 mt-2 rounded flex items-center justify-center text-gray-500">
-                    Sin imagen
-                  </div>
-                )}
                 <ImageUploader onUpload={(url) => setValue('foto', url)} />
               </div>
             </div>
@@ -360,10 +334,13 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
             <div className="flex flex-col sm:flex-row justify-end space-x-4 mt-4">
               <button
                 type="submit"
-                disabled={false}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                onClick={handleSubmit(onSubmitHandler)}
+                disabled={loading || isSubmitting}
+                className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Guardar Cambios
+                {loading || isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
               </button>
               <button
                 type="button"
@@ -380,4 +357,4 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
   );
 };
 
-export default FormularioEditarActivo;
+export default FormularioAgregarActivo;
