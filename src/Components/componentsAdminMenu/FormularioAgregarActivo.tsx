@@ -1,95 +1,97 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import Select, { SingleValue } from 'react-select';
 import { Activo } from '../../types/activo';
-import { Licitacion } from '../../types/licitacion';
-import { Ubicacion } from '../../types/ubicacion';
 import { Moneda } from '../../types/moneda';
-import { getUbicaciones } from '../../Services/ubicacionService';
-import { getLicitaciones } from '../../Services/licitacionService';
-import { useActivos } from '../../hooks/useActivo';
+import { useUbicacion } from '../../hooks/useUbicacion';
+import { useLicitaciones } from '../../hooks/useLicitacion';
 import ImageUploader from './ImageUploader';
 import { FaCheckCircle } from 'react-icons/fa';
 
-interface FormularioAgregarActivoProps {
+interface FormularioEditarActivoProps {
+  asset: Activo;
   onClose: () => void;
-  modoAdquisicion: string;
+  onSave: (updatedData: Partial<Activo>) => void;
 }
 
-const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
-  const { register, handleSubmit, control, setValue, reset, formState: { errors } } = useForm<Omit<Activo, 'id'>>();
-  const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
-  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
-  const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
+interface OptionType {
+  value: string;
+  label: string;
+}
+
+const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
+  asset,
+  onClose,
+  onSave,
+}) => {
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors },
+    reset,
+  } = useForm<Omit<Activo, 'id' | 'numPlaca'>>({
+    defaultValues: {
+      nombre: asset.nombre,
+      descripcion: asset.descripcion,
+      marca: asset.marca,
+      serie: asset.serie,
+      estado: asset.estado,
+      disponibilidad: asset.disponibilidad,
+      modelo: asset.modelo,
+      foto: asset.foto,
+      precio: asset.precio,
+      observacion: asset.observacion,
+      ubicacionId: asset.ubicacion ? asset.ubicacion.id.toString() : '',
+      modoAdquisicion: asset.modoAdquisicion || 'Donación',
+      licitacionId: asset.licitacion ? asset.licitacion.id.toString() : '',
+      moneda: asset.moneda || Moneda.COLON,
+    },
+  });
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { handleCreateActivo, loading } = useActivos();
 
-  // Cargar datos de ubicaciones y licitaciones
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [ubicacionesData, licitacionesData] = await Promise.all([
-          getUbicaciones(),
-          getLicitaciones(),
-        ]);
-        setUbicaciones(ubicacionesData);
-        setLicitaciones(licitacionesData);
-      } catch (error) {
-        console.error('Error al cargar datos:', error);
-      }
-    };
-    fetchData();
-  }, []);
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
 
-  // Configurar modoAdquisicion y precio (si es Donación, precio = 0)
+  // Si la disponibilidad es "Dado de Baja", forzamos que el estado sea "Malo"
   useEffect(() => {
-    if (modoAdquisicion === 'Donación') {
-      setValue('precio', 0);
+    if (asset.disponibilidad === 'Dado de Baja') {
+      setValue('estado', 'Malo');
     }
-    setValue('modoAdquisicion', modoAdquisicion);
-    setValue('moneda', moneda);
-  }, [modoAdquisicion, moneda, setValue]);
+  }, [asset.disponibilidad, setValue]);
 
-  const handleButtonMonedaSwitch = () => {
-    const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
-    setMoneda(nuevaMoneda);
-    setValue("moneda", nuevaMoneda);
-  };
+  // Opciones para react‑select (usamos strings para value)
+  const ubicacionOptions: OptionType[] = (ubicaciones || []).map((ubicacion) => ({
+    value: ubicacion.id.toString(),
+    label: ubicacion.nombre,
+  }));
 
-  // Función para subir imagen y asignar la URL al campo 'foto'
-  const onUpload = (url: string) => {
-    setValue('foto', url);
-  };
+  const licitacionOptions: OptionType[] = (licitaciones || []).map((licitacion) => ({
+    value: licitacion.id.toString(),
+    label: licitacion.nombre,
+  }));
 
-  const onSubmitHandler: SubmitHandler<Omit<Activo, 'id'>> = async (data) => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
+  const onSubmitHandler: SubmitHandler<Omit<Activo, 'id' | 'numPlaca'>> = async (data) => {
     try {
-      console.log('Datos enviados al servidor:', data);
-      await handleCreateActivo(data);
-      setSuccessMessage('Activo creado exitosamente');
+      onSave(data);
+      setSuccessMessage('Activo actualizado exitosamente');
       setTimeout(() => {
         setSuccessMessage(null);
         onClose();
         reset();
       }, 1000);
     } catch (error) {
-      console.error('Error al crear el activo:', error);
-      setIsSubmitting(false);
+      console.error('Error al actualizar el activo:', error);
     }
   };
 
-  // Generar opciones para Ubicación y Licitación en formato react-select
-  const ubicacionOptions = ubicaciones.map((ubicacion) => ({
-    value: ubicacion.id.toString(),
-    label: ubicacion.nombre,
-  }));
-
-  const licitacionOptions = licitaciones.map((licitacion) => ({
-    value: licitacion.id.toString(),
-    label: licitacion.nombre,
-  }));
+  if (ubicacionesLoading || licitacionesLoading) {
+    return <p>Cargando ubicaciones y licitaciones...</p>;
+  }
+  if (ubicacionesError || licitacionesError) {
+    return <p>Error al cargar los datos.</p>;
+  }
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -100,7 +102,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
             {successMessage}
           </div>
         )}
-        <h2 className="text-xl font-bold mb-4">Agregar Activo</h2>
+        <h2 className="text-xl font-bold mb-4">Editar Activo</h2>
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,8 +114,13 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 <input
                   type="text"
                   placeholder="Ingrese nombre"
-                  {...register('nombre', { required: 'El campo Nombre es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.nombre ? 'border-red-500' : ''}`}
+                  {...register('nombre', {
+                    required: 'El campo Nombre es obligatorio',
+                    maxLength: { value: 100, message: 'El nombre no debe superar 100 caracteres' },
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.nombre ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
               </div>
@@ -126,8 +133,13 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 <input
                   type="text"
                   placeholder="Ingrese marca"
-                  {...register('marca', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.marca ? 'border-red-500' : ''}`}
+                  {...register('marca', {
+                    required: 'El campo Marca es obligatorio',
+                    maxLength: { value: 50, message: 'La marca no debe superar 50 caracteres' },
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.marca ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.marca && <span className="text-red-600 text-xs">{errors.marca.message}</span>}
               </div>
@@ -140,8 +152,13 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 <input
                   type="text"
                   placeholder="Ingrese modelo"
-                  {...register('modelo', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.modelo ? 'border-red-500' : ''}`}
+                  {...register('modelo', {
+                    required: 'El campo Modelo es obligatorio',
+                    maxLength: { value: 50, message: 'El modelo no debe superar 50 caracteres' },
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.modelo ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.modelo && <span className="text-red-600 text-xs">{errors.modelo.message}</span>}
               </div>
@@ -154,17 +171,22 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 <input
                   type="text"
                   placeholder="Ingrese serie"
-                  {...register('serie', { required: 'Este campo es obligatorio' })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.serie ? 'border-red-500' : ''}`}
+                  {...register('serie', {
+                    required: 'El campo Serie es obligatorio',
+                    maxLength: { value: 50, message: 'La serie no debe superar 50 caracteres' },
+                  })}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.serie ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
               </div>
 
-              {/* Precio (solo si no es Donación) */}
-              {modoAdquisicion !== 'Donación' && (
+              {/* Precio + Moneda (solo si no es Donación) */}
+              {asset.modoAdquisicion !== 'Donación' && (
                 <div className="flex items-center space-x-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Precio ({moneda === Moneda.COLON ? "₡" : "$"})
+                    Precio ({(asset.moneda || Moneda.COLON) === Moneda.COLON ? '₡' : '$'})
                   </label>
                   <input
                     type="number"
@@ -174,27 +196,69 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                   />
                   <button
                     type="button"
-                    onClick={handleButtonMonedaSwitch}
+                    onClick={() =>
+                      setValue(
+                        'moneda',
+                        (asset.moneda || Moneda.COLON) === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON
+                      )
+                    }
                     className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
                   >
-                    {moneda === Moneda.COLON ? "CRC" : "USD"}
+                    {(asset.moneda || Moneda.COLON) === Moneda.COLON ? 'CRC' : 'USD'}
                   </button>
                 </div>
               )}
 
-              {/* Descripción */}
-              <div className="md:col-span-2">
+              {/* Estado */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Descripción
+                  Estado <span className="text-red-500">*</span>
                 </label>
+                <select
+                  {...register('estado', { required: 'El campo Estado es obligatorio' })}
+                  className={`mt-2 block w-full border border-gray-300 p-2 rounded-md ${
+                    errors.estado ? 'border-red-500' : ''
+                  }`}
+                  disabled={asset.disponibilidad === 'Dado de Baja'}
+                >
+                  <option value="Bueno">Bueno</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Malo">Malo</option>
+                </select>
+                {errors.estado && <span className="text-red-600 text-xs">{errors.estado.message}</span>}
+              </div>
+
+              {/* Disponibilidad */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Disponibilidad <span className="text-red-500">*</span>
+                </label>
+                <select
+                  {...register('disponibilidad', { required: 'El campo Disponibilidad es obligatorio' })}
+                  className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
+                >
+                  <option value="Activo">Activo</option>
+                  <option value="Dado de Baja">Dado de Baja</option>
+                </select>
+                {errors.disponibilidad && (
+                  <span className="text-red-600 text-xs">{errors.disponibilidad.message}</span>
+                )}
+              </div>
+
+              {/* Descripción */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea
                   placeholder="Ingrese descripción"
                   {...register('descripcion')}
                   className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
                 />
+                {errors.descripcion && (
+                  <span className="text-red-600 text-xs">{errors.descripcion.message}</span>
+                )}
               </div>
 
-              {/* Ubicación con react-select */}
+              {/* Ubicación con react‑select */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Ubicación <span className="text-red-500">*</span>
@@ -202,17 +266,18 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 <Controller
                   control={control}
                   name="ubicacionId"
-                  defaultValue=""
-                  rules={{ required: 'Este campo es obligatorio' }}
+                  rules={{ required: 'El campo Ubicación es obligatorio' }}
                   render={({ field }) => {
-                    const selectedOption = ubicacionOptions.find(option => option.value === field.value) || null;
+                    const selectedOption = ubicacionOptions.find(
+                      (option) => option.value === field.value
+                    ) || null;
                     return (
                       <Select
                         {...field}
                         options={ubicacionOptions}
                         value={selectedOption}
-                        onChange={(option: SingleValue<{ value: string; label: string }>) =>
-                          field.onChange(option?.value || '')
+                        onChange={(option: SingleValue<OptionType>) =>
+                          field.onChange(option ? option.value : '')
                         }
                         placeholder="Seleccione una Ubicación"
                         classNamePrefix="react-select"
@@ -220,11 +285,13 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                     );
                   }}
                 />
-                {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
+                {errors.ubicacionId && (
+                  <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>
+                )}
               </div>
 
-              {/* Licitación con react-select (solo si modoAdquisicion es 'Ley') */}
-              {modoAdquisicion === 'Ley' && (
+              {/* Licitación con react‑select (solo si modoAdquisicion es "Ley") */}
+              {asset.modoAdquisicion === 'Ley' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Licitación <span className="text-red-500">*</span>
@@ -232,17 +299,19 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                   <Controller
                     control={control}
                     name="licitacionId"
-                    defaultValue={0}
-                    rules={{ required: 'Este campo es obligatorio' }}
+                    rules={{ required: 'El campo Licitación es obligatorio' }}
+                    defaultValue=""
                     render={({ field }) => {
-                      const selectedOption = licitacionOptions.find(option => option.value === field.value) || null;
+                      const selectedOption = licitacionOptions.find(
+                        (option) => option.value === field.value
+                      ) || null;
                       return (
                         <Select
                           {...field}
                           options={licitacionOptions}
                           value={selectedOption}
-                          onChange={(option: SingleValue<{ value: string; label: string }>) =>
-                            field.onChange(option?.value || '')
+                          onChange={(option: SingleValue<OptionType>) =>
+                            field.onChange(option ? option.value : '')
                           }
                           placeholder="Seleccione una Licitación"
                           classNamePrefix="react-select"
@@ -250,36 +319,51 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       );
                     }}
                   />
-                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
+                  {errors.licitacionId && (
+                    <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>
+                  )}
                 </div>
               )}
 
               {/* Observaciones */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Observaciones
-                </label>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea
                   placeholder="Ingrese observaciones"
                   {...register('observacion')}
                   className="mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2"
                 />
+                {errors.observacion && (
+                  <span className="text-red-600 text-xs">{errors.observacion.message}</span>
+                )}
               </div>
 
-              {/* Subida de imagen */}
+              {/* Imagen */}
               <div className="md:col-span-2">
-                <ImageUploader onUpload={onUpload} />
+                <label className="block text-sm font-medium text-gray-700">Imagen</label>
+                {asset.foto ? (
+                  <img
+                    src={asset.foto}
+                    alt="Activo"
+                    className="w-32 h-32 object-cover mt-2 rounded border"
+                  />
+                ) : (
+                  <div className="w-32 h-32 bg-gray-200 mt-2 rounded flex items-center justify-center text-gray-500">
+                    Sin imagen
+                  </div>
+                )}
+                <ImageUploader onUpload={(url) => setValue('foto', url)} />
               </div>
             </div>
 
             {/* Botones de acción */}
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+            <div className="flex flex-col sm:flex-row justify-end space-x-4 mt-4">
               <button
                 type="submit"
-                disabled={loading || isSubmitting}
-                className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={false}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
               >
-                {loading || isSubmitting ? 'Guardando...' : 'Crear Activo'}
+                Guardar Cambios
               </button>
               <button
                 type="button"
@@ -296,4 +380,4 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
   );
 };
 
-export default FormularioAgregarActivo;
+export default FormularioEditarActivo;
