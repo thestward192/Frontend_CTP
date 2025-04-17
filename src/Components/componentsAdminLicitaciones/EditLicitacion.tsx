@@ -129,10 +129,10 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
           {/* Descripción */}
           <div className="form-group col-span-2">
             <label className="block text-sm font-medium text-gray-700">
-              Descripción <span className="text-red-500">*</span>
+              Descripción
             </label>
             <textarea
-              {...register('descripcion', { required: 'La descripción es requerida' })}
+              {...register('descripcion')}
               className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese descripción"
             />
