@@ -16,8 +16,8 @@ interface FormularioLicitacionProps {
 interface FormData extends Omit<Licitacion, 'id'> {}
 
 const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, onSubmit, onLicitacionCreated }) => {
-  const { leyes, loading: leyesLoading } = useLeyes();
-  const { proveedores, loading: proveedoresLoading } = useProveedores();
+  const { leyes, loading: leyesLoading } = useLeyes('En Servicio');
+  const { proveedores, loading: proveedoresLoading } = useProveedores('En Servicio');
   const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

@@ -7,9 +7,10 @@ import { Ley } from '../types/ley';
 const API_URL = 'http://localhost:3000';
 
 // Obtener todas las leyes
-export const getLeyes = async (): Promise<Ley[]> => {
+export const getLeyes = async (disponibilidad?: string): Promise<Ley[]> => {
   try {
-    const response = await axios.get(`${API_URL}/ley`);
+    const params = disponibilidad ? { disponibilidad } : {};
+    const response = await axios.get(`${API_URL}/ley`, { params });
     return response.data;
   } catch (error) {
     console.error('Error al obtener las leyes:', error);

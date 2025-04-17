@@ -3,14 +3,17 @@ import { getLeyes, createLey, getLeyById, updateLey, updateDisponibilidadLey } f
 import { Ley } from '../types/ley';
 import { useState } from 'react';
 
-export const useLeyes = () => {
+export const useLeyes = (disponibilidad?: string) => {
   const queryClient = useQueryClient();
   const [selectedLey, setSelectedLey] = useState<Ley | null>(null);
   
   // Obtener todas las leyes usando useQuery
   const { data: leyes, isLoading: loading, error } = useQuery<Ley[], Error>(
-    'leyes',
-    getLeyes
+   {
+      queryKey: ['leyes', disponibilidad],
+      queryFn: () => getLeyes(disponibilidad),
+      
+   }
   );
 
   // Crear una nueva ley

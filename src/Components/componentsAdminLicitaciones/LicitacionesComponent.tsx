@@ -5,6 +5,7 @@ import DetailLicitacion from './DetailLicitacion';
 import EditLicitacion from './EditLicitacion';
 import FormularioLicitacion from './FormularioLicitacion';
 import { Licitacion } from '../../types/licitacion';
+import FiltroLicitacion from './FiltroLicitacion';
 
 interface LicitacionesComponentProps {
   onAddLicitacion: (isAdding: boolean) => void;
@@ -17,6 +18,8 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
   const [showCompletedMessage, setShowCompletedMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+  const [filterEstado, setFilterEstado] = useState('');
 
   // Estados de paginación y ordenamiento
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,6 +92,19 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
     setIsEditing(false);
     setDetailModalOpen(false);
   };
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    if (filterName === 'disponibilidad') {
+      setFilterEstado(value);
+    }
+  };
+
+  const filteredData = licitaciones.filter((licitacion) => {
+    const matchesEstado = !filterEstado || licitacion.disponibilidad === filterEstado;
+    return matchesEstado 
+  });
+
+  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Ordenamiento y paginación
   const sortedLicitaciones = useMemo(() => {
@@ -164,7 +180,12 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
         {loading ? (
           <p>Cargando licitaciones...</p>
         ) : (
-          <div className="flex-grow overflow-y-auto">
+          <>
+          <FiltroLicitacion 
+            onFilterChange={handleFilterChange} 
+          />
+
+          <div className="flex-grow overflow-y-auto mt-4">
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
@@ -176,7 +197,7 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
                 </tr>
               </thead>
               <tbody>
-                {currentLicitaciones.map((licitacion) => (
+                {paginatedData.map((licitacion) => (
                   <tr key={licitacion.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">
                       {new Date(licitacion.fecha).toLocaleDateString()}
@@ -214,6 +235,7 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Controles de paginación y filtros */}

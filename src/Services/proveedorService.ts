@@ -5,9 +5,10 @@ import { CreateProveedor, Proveedor } from '../types/proveedor';
 
 const API_URL = 'http://localhost:3000';
 
-export const getProveedores = async (): Promise<Proveedor[]> => {
+export const getProveedores = async (disponibilidad?: string): Promise<Proveedor[]> => {
   try {
-    const response = await axios.get(`${API_URL}/proveedor`); // Ajusta la ruta de tu backend
+    const params = disponibilidad ? { disponibilidad } : {};
+    const response = await axios.get(`${API_URL}/proveedor`, { params });
     return response.data;
   } catch (error) {
     console.error('Error al obtener los proveedores:', error);

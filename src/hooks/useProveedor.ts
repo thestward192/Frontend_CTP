@@ -3,14 +3,16 @@ import { getProveedores, createProveedor, getProveedorById, updateProveedor, upd
 import { CreateProveedor, Proveedor } from '../types/proveedor';
 import { useState } from 'react';
 
-export const useProveedores = () => {
+export const useProveedores = (disponibilidad?: string) => {
   const queryClient = useQueryClient();
   const [selectedProveedor, setSelectedProveedor] = useState<Proveedor | null>(null);
 
   // Obtener todos los proveedores usando useQuery
   const { data: proveedores, isLoading: loading, error } = useQuery<Proveedor[], Error>(
-    'proveedores',
-    getProveedores
+    {
+      queryKey: ['proveedores', disponibilidad],
+      queryFn: () => getProveedores(disponibilidad),
+    }
   );
 
 const handleSubmitProveedor = useMutation(
