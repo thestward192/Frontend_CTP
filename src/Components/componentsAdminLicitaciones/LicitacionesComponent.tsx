@@ -156,6 +156,8 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
     setPageInput('');
   };
 
+
+  
   return (
     <div className="w-full flex justify-center py-10">
       <div
@@ -206,7 +208,7 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
                     <td className="px-4 py-2 text-sm">{licitacion.numLicitacion}</td>
                     <td className="px-4 py-2 text-sm">
                       {licitacion.moneda === 'CRC' ? '₡' : '$'}
-                      {licitacion.monto.toLocaleString('es-CR', { minimumFractionDigits: 2 })}
+                      {Number(licitacion.monto).toLocaleString('es-CR', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-2 text-sm">
                       <div className="flex space-x-2">
