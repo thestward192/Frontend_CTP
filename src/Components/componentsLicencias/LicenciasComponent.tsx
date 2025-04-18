@@ -5,6 +5,7 @@ import FormularioLicencia from './FormularioLicencia';
 import DetailLicencia from './DetailLicencia';
 import EditLicencia from './EditLicencia';
 import { CreateLicenciaDTO, Licencia } from '../../types/licencia';
+import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface LicenciasComponentProps {
   onAddLicencia: (isAdding: boolean) => void;
@@ -35,12 +36,18 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
-  // Ordenamos las licencias (por ejemplo, por "id")
+  const [filtroDisp, setFiltroDisp] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
+   
+  // Filtrar + ordenar antes de paginar
   const sortedLicencias = useMemo(() => {
-    return [...(licencias || [])].sort((a, b) =>
-      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-    );
-  }, [licencias, sortOrder]);
+    return [...(licencias || [])]
+      .filter(lic =>
+        filtroDisp === 'Todos' || lic.disponibilidad === filtroDisp
+      )
+      .sort((a, b) =>
+        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+      );
+  }, [licencias, sortOrder, filtroDisp]);
 
   const totalPages = Math.ceil(sortedLicencias.length / itemsPerPage);
 
@@ -148,6 +155,8 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
             <span>Agregar Licencia</span>
           </button>
         </div>
+
+        <FilterDisponibilidad value={filtroDisp} onChange={setFiltroDisp} />
 
         {error && <p className="text-red-500">Error al cargar licencias.</p>}
         {loading ? (

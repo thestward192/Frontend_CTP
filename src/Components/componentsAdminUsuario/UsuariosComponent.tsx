@@ -5,6 +5,7 @@ import FormularioEditarUsuario from './FormularioEditarUsuario';
 import DetailUsuario from './DetailUsuario';
 import { User } from '../../types/user';
 import { useUsers } from '../../hooks/useUser';
+import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface UsuariosComponentProps {
   onAddUser: (isAdding: boolean) => void;
@@ -25,10 +26,18 @@ const UsuariosComponent: React.FC<UsuariosComponentProps> = ({ onAddUser }) => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
-  const sortedUsers = useMemo(() => {
-    return [...users].sort((a, b) => (sortOrder === 'asc' ? a.id - b.id : b.id - a.id));
-  }, [users, sortOrder]);
+  const [filtroDisp, setFiltroDisp] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
 
+  const sortedUsers = useMemo(() => {
+    return [...users]
+      .filter(u =>
+        filtroDisp === 'Todos' ||
+        u.disponibilidad === filtroDisp
+      )
+      .sort((a, b) =>
+        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+      );
+  }, [users, sortOrder, filtroDisp]);
   const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
 
   useEffect(() => {
@@ -122,6 +131,8 @@ const UsuariosComponent: React.FC<UsuariosComponentProps> = ({ onAddUser }) => {
             <span>Agregar Usuario</span>
           </button>
         </div>
+
+        <FilterDisponibilidad value={filtroDisp} onChange={setFiltroDisp} />
 
         {loading ? (
           <div>Cargando usuarios...</div>

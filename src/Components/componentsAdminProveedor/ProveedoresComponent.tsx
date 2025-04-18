@@ -5,6 +5,7 @@ import FormularioProveedor from './FormularioProveedor';
 import DetailProveedor from './DetailProveedor';
 import EditProveedorForm from './EditProveedorForm';
 import { Proveedor } from '../../types/proveedor';
+import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface ProveedoresComponentProps {
   onAddProveedor: (isAdding: boolean) => void;
@@ -25,14 +26,23 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
+  const [filtroDisp, setFiltroDisp] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
+
   const { proveedores, loading, error, getProveedorDetails, selectedProveedor, editProveedor, updateDisponibilidadProveedorMutation } = useProveedores();
 
-  // Ordenamos los proveedores según "id"
+  // Ordenamos y filtramos los proveedores según disponibilidad y id
   const sortedProveedores = useMemo(() => {
-    return [...(proveedores || [])].sort((a, b) =>
-      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-    );
-  }, [proveedores, sortOrder]);
+    return [...(proveedores || [])]
+      // APLICAMOS FILTRO de disponibilidad
+      .filter(prov =>
+        filtroDisp === 'Todos' ||
+        prov.disponibilidad === filtroDisp
+      )
+      // LUEGO ordenamos por id
+      .sort((a, b) =>
+        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+      );
+  }, [proveedores, sortOrder, filtroDisp]);
 
   // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedProveedores.length / itemsPerPage);
@@ -140,6 +150,8 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
             <span>Agregar Proveedor</span>
           </button>
         </div>
+
+        <FilterDisponibilidad value={filtroDisp} onChange={setFiltroDisp} />
 
         {error && <p className="text-red-500">Error al cargar proveedores.</p>}
         {loading ? (

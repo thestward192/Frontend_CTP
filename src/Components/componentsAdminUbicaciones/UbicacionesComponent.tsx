@@ -4,6 +4,7 @@ import FormularioUbicacion from './FormularioUbicacion';
 import DetailUbicacion from './DetailUbicacion';
 import EditUbicacionForm from './EditUbicacion';
 import { useUbicacion } from '../../hooks/useUbicacion';
+import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface UbicacionesComponentProps {
   onAddUbicacion: (isAdding: boolean) => void;
@@ -33,12 +34,18 @@ const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicac
   const [itemsPerPage, setItemsPerPage] = useState(33);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
+  const [filtroDisp, setFiltroDisp] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
 
   const sortedUbicaciones = useMemo(() => {
-    return [...(ubicaciones || [])].sort((a, b) =>
-      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-    );
-  }, [ubicaciones, sortOrder]);
+    return [...(ubicaciones || [])]
+      .filter(u =>
+        filtroDisp === 'Todos' ||
+        u.disponibilidad === filtroDisp
+      )
+      .sort((a, b) =>
+        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+      );
+  }, [ubicaciones, sortOrder, filtroDisp]);
 
   const totalPages = Math.ceil(sortedUbicaciones.length / itemsPerPage);
 
@@ -153,6 +160,8 @@ const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicac
           </button>
         </div>
 
+        <FilterDisponibilidad value={filtroDisp} onChange={setFiltroDisp} />
+
         {error && <p className="text-red-500">Error al cargar ubicaciones</p>}
 
         {loading ? (
@@ -249,9 +258,8 @@ const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicac
               <button
                 key={index}
                 onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
-                }`}
+                className={`px-3 py-1 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
               >
                 {page}
               </button>

@@ -5,6 +5,7 @@ import { useLeyes } from '../../hooks/useLey';
 import DetailLey from './DetailLey';
 import EditLeyForm from './EditLey';
 import { Ley } from '../../types/ley';
+import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface LeyesComponentProps {
   onAddLey: (isAdding: boolean) => void;
@@ -24,6 +25,8 @@ const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
+
+  const [filtroDisp, setFiltroDisp] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
 
   const { leyes, loading, error, getLeyDetails, selectedLey, editLey, updateDisponibilidadLeyMutation } = useLeyes();
 
@@ -74,12 +77,18 @@ const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
     setDetailModalOpen(false);
   };
 
-  // Ordenamos las leyes según el id
+  // Genera la lista filtrada + ordenada
   const sortedLeyes = useMemo(() => {
-    return [...(leyes || [])].sort((a, b) =>
-      sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-    );
-  }, [leyes, sortOrder]);
+    return [...(leyes || [])]
+      // 1) filtramos
+      .filter(ley =>
+        filtroDisp === 'Todos' || ley.disponibilidad === filtroDisp
+      )
+      // 2) ordenamos por id
+      .sort((a, b) =>
+        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
+      );
+  }, [leyes, sortOrder, filtroDisp]);
 
   // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedLeyes.length / itemsPerPage);
@@ -146,6 +155,8 @@ const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
             <span>Agregar Ley</span>
           </button>
         </div>
+
+        <FilterDisponibilidad value={filtroDisp} onChange={setFiltroDisp} />
 
         {error && <p className="text-red-500">Error al cargar leyes.</p>}
         {loading ? (

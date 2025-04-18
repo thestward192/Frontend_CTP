@@ -33,7 +33,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
       marca: '',
       serie: '',
       estado: 'Bueno',
-      disponibilidad: 'Activo',
+      disponibilidad: 'En Servicio',
       modelo: '',
       foto: '',
       precio: undefined,
