@@ -67,7 +67,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             </label>
             <input
               type="text"
-              {...register('numActa', { required: 'El número de acta es requerido' })}
+              {...register('numActa')}
               className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese número de acta"
             />
@@ -81,7 +81,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             </label>
             <input
               type="number"
-              {...register('numLicitacion', { required: 'El número de licitación es requerido' })}
+              {...register('numLicitacion')}
               className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese número de licitación"
             />
@@ -95,7 +95,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             </label>
             <input
               type="text"
-              {...register('nombre', { required: 'El nombre es requerido' })}
+              {...register('nombre')}
               className="mt-2 block w-full border p-2 rounded-md shadow-sm"
               placeholder="Ingrese nombre"
             />
@@ -111,7 +111,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
               <input
                 type="number"
                 step={0.01}
-                {...register("monto", { required: "El monto es requerido" })}
+                {...register("monto")}
                 className="mt-2 block w-full border p-2 rounded-md shadow-sm"
                 placeholder="Ingrese monto"
               />
@@ -146,7 +146,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             </label>
             <input
               type="date"
-              {...register('fecha', { required: 'La fecha es requerida' })}
+              {...register('fecha')}
               className="mt-2 block w-full border p-2 rounded-md shadow-sm"
             />
             {errors.fecha && <span className="text-red-500 text-sm">{errors.fecha.message}</span>}
@@ -160,7 +160,6 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             <Controller
               control={control}
               name="idLey"
-              rules={{ required: 'Debe seleccionar una ley' }}
               render={({ field, fieldState: { error } }) => {
                 const options = (leyes || []).map((ley) => ({
                   value: ley.id,
@@ -193,7 +192,6 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             <Controller
               control={control}
               name="idProveedor"
-              rules={{ required: 'Debe seleccionar un proveedor' }}
               render={({ field, fieldState: { error } }) => {
                 const options = (proveedores || []).map((proveedor) => ({
                   value: proveedor.id,

@@ -1,25 +1,13 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Activo } from '../types/activo';
-import { createActivo, getActivos, updateActivo, deleteActivo, getActivosByUbicacion } from '../Services/activoService';
+import { createActivo, getActivos, updateActivo, getActivosByUbicacion, updateDisponibilidadActivo } from '../Services/activoService';
 
 export const useActivos = () => {
-  const queryClient = useQueryClient();
-  const [activosFiltrados, setActivosFiltrados] = useState<Activo[]>([]);
 
+  const queryClient = useQueryClient();
 
   // Obtener todos los activos
   const { data: activos = [], isLoading: loading, error } = useQuery<Activo[], Error>(['activos'], getActivos);
-
-  const fetchActivosByUbicacion = async (ubicacionId: number) => {
-    try {
-      const data = await getActivosByUbicacion(ubicacionId);
-      setActivosFiltrados(data);  // Actualiza el estado local con los activos filtrados
-    } catch (error) {
-      console.error('Error al obtener activos por ubicación:', error);
-      throw error;
-    }
-  };
 
   // Crear un nuevo activo
   const { mutate: handleCreateActivo, isLoading: creating, error: createError } = useMutation<
@@ -62,32 +50,25 @@ export const useActivos = () => {
     }
   );
 
-  // Eliminar un activo existente
-  const { mutate: handleDeleteActivo, isLoading: deleting, error: deleteError } = useMutation<
-    void,
-    Error,
-    number
-  >(
-    (id) => deleteActivo(id),
+  const updateDisponibilidadActivoMutation = useMutation(
+    (id: number) => updateDisponibilidadActivo(id),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['activos']);
-        queryClient.invalidateQueries(['activosByUbicacion']);  // Invalida la cache de activos por ubicación
+        queryClient.invalidateQueries('activos');
+        queryClient.invalidateQueries('activosByUbicacion');
       },
     }
   );
 
   return {
     activos,
-    activosFiltrados,
     loading,
-    error: error || createError || updateError || deleteError,
+    error: error || createError || updateError,
     creating,
     updating,
-    deleting,
     handleCreateActivo,
     handleUpdateActivo,
-    handleDeleteActivo,
+    updateDisponibilidadActivoMutation,
     useActivosByUbicacion,
   };
 };

@@ -151,7 +151,6 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register('contraseña', {
-                    required: 'La contraseña es obligatoria',
                     minLength: { value: 6, message: 'Debe tener al menos 6 caracteres' },
                   })}
                   placeholder="Escribe la contraseña"
@@ -175,7 +174,6 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register('confirmarContraseña', {
-                    required: 'Confirma la contraseña',
                     validate: (value) => value === watch('contraseña') || 'Las contraseñas no coinciden',
                   })}
                   placeholder="Confirma tu contraseña"

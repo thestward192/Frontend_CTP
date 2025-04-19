@@ -22,9 +22,12 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   const [showProveedorModal, setShowProveedorModal] = useState(false);
 
   // Eliminado showSticker y su función para generarlo.
-  const { handleDeleteActivo, handleUpdateActivo } = useActivos();
+  const { handleDeleteActivo, handleUpdateActivo, updateDisponibilidadActivoMutation } = useActivos();
   const { barcodeUrl, loading, error } = useBarcode(asset.numPlaca.toString());
   const { exportToExcel } = useExportToExcel();
+
+  const [showCompletedMessage, setShowCompletedMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   const handleDownloadBarcode = async () => {
     const element = document.getElementById('barcode-container');
@@ -37,12 +40,20 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
     link.click();
   };
 
-  const handleEliminar = async (id: number) => {
+  const handleUpdateDisponibilidad = async (id: number) => {
+    if (asset.disponibilidad === 'Fuera de Servicio') {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+      return;
+    }
     try {
-      await handleDeleteActivo(id);
-      onBack();
-    } catch (error) {
-      console.error('Error al eliminar el activo:', error);
+      await updateDisponibilidadActivoMutation.mutateAsync(id);
+      setShowCompletedMessage(true);
+      setTimeout(() => setShowCompletedMessage(false), 3000);
+      setShowDeleteConfirmation(false);
+    } catch {
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
     }
   };
 
@@ -88,21 +99,19 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
       <div className="border-b pb-2 mb-2">
         <nav className="flex space-x-4">
           <button
-            className={`px-3 py-1 font-bold text-sm transition-colors duration-300 ${
-              activeTab === 'detalle'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-blue-600'
-            }`}
+            className={`px-3 py-1 font-bold text-sm transition-colors duration-300 ${activeTab === 'detalle'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-blue-600'
+              }`}
             onClick={() => setActiveTab('detalle')}
           >
             Detalle
           </button>
           <button
-            className={`px-3 py-1 font-bold text-sm transition-colors duration-300 ${
-              activeTab === 'historial'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-blue-600'
-            }`}
+            className={`px-3 py-1 font-bold text-sm transition-colors duration-300 ${activeTab === 'historial'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-blue-600'
+              }`}
             onClick={() => setActiveTab('historial')}
           >
             Historial de Préstamos
@@ -132,12 +141,11 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
             >
               <FaFilePdf className="mr-1" /> Acta
             </button>
-            {/* Eliminado el botón de Generar Sticker */}
             <button
               onClick={() => setShowDeleteConfirmation(true)}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-md flex items-center text-sm transition-all duration-300"
+              className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-md flex items-center text-sm"
             >
-              <FaTrash className="mr-1" /> Eliminar
+              <FaTrash className="mr-1" /> Dar de baja
             </button>
           </div>
 
@@ -186,12 +194,13 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
                   <div>
                     <p className="text-xs font-medium text-gray-600">Precio</p>
                     <p className="text-gray-800">
-                  {asset?.precio == 0 
-                    ? 'Donación' 
-                    : (asset.moneda === "CRC" ? "₡" : "$") + asset.precio.toLocaleString("es-CR", { 
-                      style: "currency", 
-                      currency: asset.moneda === "CRC" ? "CRC" : "USD" })}
-                </p>
+                      {asset?.precio == 0
+                        ? 'Donación'
+                        : (asset.moneda === "CRC" ? "₡" : "$") + asset.precio.toLocaleString("es-CR", {
+                          style: "currency",
+                          currency: asset.moneda === "CRC" ? "CRC" : "USD"
+                        })}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -306,28 +315,40 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
         </div>
       )}
 
-      {/* Confirmación de Eliminación */}
       {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-30">
-          <div className="bg-white p-6 rounded-md shadow-lg z-40 w-80">
-            <h2 className="text-sm font-semibold text-gray-800 mb-4">
-              ¿Deseas eliminar este activo?
-            </h2>
-            <div className="flex justify-between">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Dar de baja el Activo</h2>
+            <p>¿Seguro quieres marcar este activo como "Fuera de Servicio"?</p>
+            <div className="flex justify-end space-x-4 mt-6">
               <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleUpdateDisponibilidad(asset.id!)}
+              >
+                Confirmar
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
                 onClick={() => setShowDeleteConfirmation(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-1 px-3 rounded-md transition-all duration-300 text-xs"
               >
                 Cancelar
               </button>
-              <button
-                onClick={() => handleEliminar(asset.id!)}
-                className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md transition-all duration-300 text-xs"
-              >
-                Eliminar
-              </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 7) Toast de éxito */}
+      {showCompletedMessage && (
+        <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
+          Activo marcado como Fuera de Servicio.
+        </div>
+      )}
+
+      {/* 8) Toast de error */}
+      {showErrorMessage && (
+        <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
+          El Activo ya está Fuera de Servicio.
         </div>
       )}
 

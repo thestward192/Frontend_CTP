@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Activo } from '../types/activo';
 
- const API_URL = 'https://backendcontrolactivos-2.onrender.com';
+//  const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
-//const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:3000';
 
 // Obtener todos los activos
 export const getActivos = async (): Promise<Activo[]> => {
@@ -60,17 +60,14 @@ export const updateActivo = async (id: number, activoData: Partial<Activo>): Pro
   }
 };
 
-// Eliminar un activo
-export const deleteActivo = async (id: number): Promise<void> => {
+export const updateDisponibilidadActivo = async (id: number): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/activo/${id}`);
+    await axios.patch(`${API_URL}/activo/${id}/disponibilidad`);
   } catch (error) {
-    console.error(`Error al eliminar el activo con ID ${id}:`, error);
+    console.error(`Error al actualizar la disponibilidad del activo con ID ${id}:`, error);
     throw error;
   }
 };
-
-
 
 // Obtener código de barras para un activo dado su número de placa
 export const getBarcode = async (numPlaca: string): Promise<Blob> => {
