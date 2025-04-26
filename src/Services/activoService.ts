@@ -5,10 +5,10 @@ import { Activo } from '../types/activo';
 
 const API_URL = 'http://localhost:3000';
 
-// Obtener todos los activos
-export const getActivos = async (): Promise<Activo[]> => {
+export const getActivos = async (disponibilidad?: string): Promise<Activo[]> => {
   try {
-    const response = await axios.get(`${API_URL}/activo`);
+    const params = disponibilidad ? { disponibilidad } : {};
+    const response = await axios.get(`${API_URL}/activo`, { params });
     return response.data;
   } catch (error) {
     console.error('Error al obtener los activos:', error);

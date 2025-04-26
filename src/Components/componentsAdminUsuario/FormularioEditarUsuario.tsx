@@ -20,7 +20,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   const [showPassword, setShowPassword] = useState(false);
 
   // Para manejar las ubicaciones del usuario
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion('En Servicio');
 
   // Función para actualizar una ubicación específica
   const handleUbicacionChange = (index: number, selectedOption: SingleValue<OptionType>) => {

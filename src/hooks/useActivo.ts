@@ -1,14 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Activo } from '../types/activo';
 import { createActivo, getActivos, updateActivo, getActivosByUbicacion, updateDisponibilidadActivo } from '../Services/activoService';
+import { useState } from 'react';
 
 export const useActivos = () => {
 
   const queryClient = useQueryClient();
 
-  // Obtener todos los activos
-  const { data: activos = [], isLoading: loading, error } = useQuery<Activo[], Error>(['activos'], getActivos);
+  const [disponibilidad, setDisponibilidad] = useState<string>();
 
+  // Luego en tu hook/useQuery:
+  const { data: activos = [], isLoading: loading, error } =
+    useQuery<Activo[], Error>(
+      ['activos', disponibilidad],
+      () => getActivos(disponibilidad),
+    );
   // Crear un nuevo activo
   const { mutate: handleCreateActivo, isLoading: creating, error: createError } = useMutation<
     Activo,

@@ -11,7 +11,7 @@ interface FormularioLicenciaProps {
 }
 
 const FormularioLicencia: React.FC<FormularioLicenciaProps> = ({ onClose, onSave }) => {
-  const { licitaciones, error, loading } = useLicitaciones();
+  const { licitaciones, error, loading } = useLicitaciones('En Servicio');
 
   const { handleSubmit, control, formState: { errors } } = useForm<CreateLicenciaDTO>({
     defaultValues: {
