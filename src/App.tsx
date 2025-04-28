@@ -3,33 +3,39 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './Components/componentsPages/Login';
 import Register from './Components/componentsPages/Register';
+import ForgotPassword from './Components/componentsPages/ForgotPassword';
+import ResetPassword from './Components/componentsPages/ResetPassword';
+
 import MenuAdminComponent from './Components/componentsAdminMenu/MenuAdminComponent';
 import MenuAdminProveedores from './Components/componentsAdminProveedor/MenuProveedoresComponent';
 import MenuLicitaciones from './Components/componentsAdminLicitaciones/MenuLicitaciones';
 import MenuLeyes from './Components/componentsAdminLeyes/MenuLeyesComponent';
 import MenuUbicacion from './Components/componentsAdminUbicaciones/MenuUbicacionesComponent';
-import MenuDocenteAdmin from './Components/componentsAdminUsuario/MenuDocentesComponent';
-import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
-import ProtectedRoute from './hooks/ProtectedRoute';
-import { AuthProvider } from './hooks/AuthContext';
 import MenuAdminLicencias from './Components/componentsLicencias/MenuAdminLicencias';
-import MenuPrestamosDocente from './ComponentsDocente/componentsPrestamoDocente/MenuPrestamosDocente';
-import MenuInventarioDocente from './ComponentsDocente/componentsInventarioDocente/MenuInventarioDocente';
-import ForgotPassword from './Components/componentsPages/ForgotPassword';
-import ResetPassword from './Components/componentsPages/ResetPassword';
 import MenuReportesPrestamos from './Components/componentsAdminReportes/MenuReportesPrestamos';
 import MenuReportesInventario from './Components/componentsAdminReportes/MenuReportesInventario';
+
+import MenuDocenteAdmin from './Components/componentsAdminUsuario/MenuDocentesComponent';
+import MenuDocente from './ComponentsDocente/componentsMenuDocente/MenuDocente';
+import MenuPrestamosDocente from './ComponentsDocente/componentsPrestamoDocente/MenuPrestamosDocente';
+import MenuInventarioDocente from './ComponentsDocente/componentsInventarioDocente/MenuInventarioDocente';
+
+import ProtectedRoute from './hooks/ProtectedRoute';
+import { AuthProvider } from './hooks/AuthContext';
+import MenuImportAssets from './Components/ComponentsAdminImportAssets/MenuImportAssets';
 
 const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-        <Route path="/" element={<Login />} />
+          {/* Public */}
+          <Route path="/" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/Register" element={<Register />} />
-          
+
+          {/* Administrador */}
           <Route
             path="/MenuAdmin"
             element={
@@ -71,6 +77,42 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/Licencias"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuAdminLicencias />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ReportesPrestamos"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuReportesPrestamos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ReportesInventario"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuReportesInventario />
+              </ProtectedRoute>
+            }
+          />
+
+          {/*Importar Activos */}
+          <Route
+            path="/ImportarActivos"
+            element={
+              <ProtectedRoute roles={['Administrador']}>
+                <MenuImportAssets />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Docente */}
+          <Route
             path="/DocentesAdmin"
             element={
               <ProtectedRoute roles={['Administrador']}>
@@ -78,14 +120,6 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/Licencias"
-            element={
-              <ProtectedRoute roles={['Administrador']}>
-                <MenuAdminLicencias />
-              </ProtectedRoute>
-            }
-            />
           <Route
             path="/MenuDocente"
             element={
@@ -102,8 +136,6 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/ReportesPrestamos" element={<ProtectedRoute roles={['Administrador']}><MenuReportesPrestamos /></ProtectedRoute>} />
-          <Route path="/ReportesInventario" element={<ProtectedRoute roles={['Administrador']}><MenuReportesInventario /></ProtectedRoute>} />
           <Route
             path="/InventarioDocente"
             element={
