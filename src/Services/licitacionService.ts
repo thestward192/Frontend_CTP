@@ -2,15 +2,16 @@ import axios from 'axios';
 import { Licitacion, UpdateLicitacionDTO } from '../types/licitacion';
 
 
-//const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
+// const API_URL = 'https://backendcontrolactivos-2.onrender.com/licitacion';
 
 const API_URL = 'http://localhost:3000/licitacion';
 
-// Servicio para obtener todas las licitaciones
-export const getLicitaciones = async (): Promise<Licitacion[]> => {
-    const response = await axios.get(API_URL);
-    return response.data;
+export const getLicitaciones = async (disponibilidad?: string) => {
+  const params = disponibilidad ? { disponibilidad } : {};
+  const { data } = await axios.get(`${API_URL}`, { params });
+  return data as Licitacion[];
 };
+
 
 // Servicio para obtener una licitación por su ID
 export const getLicitacionById = async (id: number): Promise<Licitacion> => {

@@ -56,8 +56,8 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     const fetchData = async () => {
       try {
         const [ubicacionesData, licitacionesData] = await Promise.all([
-          getUbicaciones(),
-          getLicitaciones(),
+          getUbicaciones('En Servicio'),
+          getLicitaciones('En Servicio'),
         ]);
         setUbicaciones(ubicacionesData);
         setLicitaciones(licitacionesData);

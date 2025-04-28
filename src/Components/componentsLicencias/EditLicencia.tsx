@@ -17,7 +17,7 @@ interface OptionType {
 
 const EditLicencia: React.FC<EditLicenciaProps> = ({ licencia, onClose }) => {
   const { updateLicencia } = useLicencias();
-  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones('En Servicio');
 
   const { handleSubmit, control, formState: { errors } } = useForm<Licencia>({
     defaultValues: {

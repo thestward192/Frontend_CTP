@@ -3,12 +3,15 @@ import { useState } from 'react';
 import { createUbicacion, getUbicaciones, updateUbicacion, getUbicacionById, updateDisponibilidadUbicacion } from '../Services/ubicacionService';
 import { Ubicacion } from '../types/ubicacion';
 
-export const useUbicacion = () => {
+export const useUbicacion = (disponibilidad?: string) => {
   const queryClient = useQueryClient();
   const [selectedUbicacion, setSelectedUbicacion] = useState<Ubicacion | null>(null); // ✅ Estado para almacenar la ubicación seleccionada
 
   // Fetch all ubicaciones
-  const { data: ubicaciones = [], isLoading: loading, error } = useQuery('ubicaciones', getUbicaciones);
+  const { data: ubicaciones = [], isLoading: loading, error } = useQuery<Ubicacion[], Error>(
+    ['ubicaciones', disponibilidad],
+    () => getUbicaciones(disponibilidad),
+  );
 
   // Crear una nueva ubicación usando useMutation
   const {

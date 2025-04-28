@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { CreateLicenciaDTO, Licencia } from '../types/licencia';
 
-//const API_URL = 'https://backendcontrolactivos-2.onrender.com/licencia';
+// const API_URL = 'https://backendcontrolactivos-2.onrender.com/licencia';
 
 const API_URL = 'http://localhost:3000/licencia';
 

@@ -25,7 +25,7 @@ interface FormData {
 const FormularioUsuario: React.FC<FormularioDocenteProps> = ({ onClose }) => {
   const { addUserMutation } = useUsers();
   const { roles, loading: rolesLoading } = useRoles();
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion('En Servicio');
   const [ubicacionFields, setUbicacionFields] = useState<number[]>([0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

@@ -9,7 +9,7 @@ import {
   updateDisponibilidadLicitacion // Nuevo servicio
 } from '../Services/licitacionService';
 
-export const useLicitaciones = () => {
+export const useLicitaciones = (disponibilidad?: string) => {
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,20 +17,20 @@ export const useLicitaciones = () => {
   const [showCompletedMessage, setShowCompletedMessage] = useState(false); // Mensaje de éxito
   const [showErrorMessage, setShowErrorMessage] = useState(false); // Mensaje de error
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getLicitaciones();
-        setLicitaciones(data);
-      } catch (error) {
-        setError('Error al cargar las licitaciones.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await getLicitaciones(disponibilidad);
+      setLicitaciones(data);
+    } catch (err) {
+      setError('Error al cargar las licitaciones.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchData();
+}, [disponibilidad]);
 
   const fetchLicitacionById = async (id: number) => {
     try {
