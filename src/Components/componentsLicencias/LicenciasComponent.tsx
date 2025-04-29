@@ -11,11 +11,9 @@ interface LicenciasComponentProps {
   onAddLicencia: (isAdding: boolean) => void;
 }
 
-// Función para recortar el texto de la descripción.
+// Recorta la descripción si supera cierto largo
 function getShortDescription(description: string, maxLength = 80) {
   if (!description) return '';
-  // Si la descripción es más corta o igual al máximo, se muestra completa.
-  // De lo contrario, se recorta y se añade '...'
   return description.length <= maxLength
     ? description
     : description.slice(0, maxLength) + '...';
@@ -30,24 +28,30 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Estados de paginación y ordenamiento
+  // Paginación y orden
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(33);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [pageInput, setPageInput] = useState('');
 
+  // Filtros
   const [filtroDisp, setFiltroDisp] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
-   
+  const [searchIdentificador, setSearchIdentificador] = useState('');
+
   // Filtrar + ordenar antes de paginar
   const sortedLicencias = useMemo(() => {
     return [...(licencias || [])]
       .filter(lic =>
-        filtroDisp === 'Todos' || lic.disponibilidad === filtroDisp
+        (filtroDisp === 'Todos' || lic.disponibilidad === filtroDisp) &&
+        lic.numeroIdentificador
+          .toString()
+          .toLowerCase()
+          .includes(searchIdentificador.trim().toLowerCase())
       )
       .sort((a, b) =>
         sortOrder === 'asc' ? a.id - b.id : b.id - a.id
       );
-  }, [licencias, sortOrder, filtroDisp]);
+  }, [licencias, sortOrder, filtroDisp, searchIdentificador]);
 
   const totalPages = Math.ceil(sortedLicencias.length / itemsPerPage);
 
@@ -68,14 +72,12 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
+    } else if (currentPage <= 3) {
+      pages = [1, 2, 3, 4, 5];
+    } else if (currentPage >= totalPages - 2) {
+      pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
     } else {
-      if (currentPage <= 3) {
-        pages = [1, 2, 3, 4, 5];
-      } else if (currentPage >= totalPages - 2) {
-        pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-      } else {
-        pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
-      }
+      pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
     }
     return pages;
   };
@@ -92,7 +94,6 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
     setPageInput('');
   };
 
-  // Handlers para ver detalles, editar y actualizar disponibilidad
   const handleViewDetails = (licencia: Licencia) => {
     setSelectedLicencia(licencia);
   };
@@ -129,7 +130,6 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
     try {
       await addLicencia(licencia);
       setIsModalOpen(false);
-      // Al cerrar el modal, se vuelve a notificar al padre para mostrar el sidebar
       onAddLicencia(false);
     } catch (error) {
       console.error("Error al agregar la licencia:", error);
@@ -156,7 +156,20 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
           </button>
         </div>
 
-        <FilterDisponibilidad value={filtroDisp} onChange={setFiltroDisp} />
+       {/* filtro de disponibilidad a la izquierda y Nº Identificador a la derecha */}
+<div className="flex justify-between items-center mb-6">
+  <FilterDisponibilidad
+    value={filtroDisp}
+    onChange={setFiltroDisp}
+  />
+  <input
+    type="text"
+    value={searchIdentificador}
+    onChange={e => setSearchIdentificador(e.target.value)}
+    placeholder="Nº Identificador"
+    className="h-8 w-40 px-3 text-sm border border-gray-200 rounded shadow focus:outline-none focus:ring-1 focus:ring-blue-500"
+  />
+</div>
 
         {error && <p className="text-red-500">Error al cargar licencias.</p>}
         {loading ? (
@@ -179,12 +192,9 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
                   <tr key={row.id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-2 text-sm">{row.numeroIdentificador}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
-
-                    {/* Mostrar solo las primeras 'maxLength' letras de la descripción */}
                     <td className="px-4 py-2 text-sm">
                       {getShortDescription(row.descripcion, 80)}
                     </td>
-
                     <td className="px-4 py-2 text-sm">{row.codigoLicencia}</td>
                     <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
@@ -307,15 +317,9 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
 
       {selectedLicencia && (
         isEditing ? (
-          <EditLicencia
-            licencia={selectedLicencia}
-            onClose={handleCloseDetail}
-          />
+          <EditLicencia licencia={selectedLicencia} onClose={handleCloseDetail} />
         ) : (
-          <DetailLicencia
-            licencia={selectedLicencia}
-            onClose={handleCloseDetail}
-          />
+          <DetailLicencia licencia={selectedLicencia} onClose={handleCloseDetail} />
         )
       )}
 

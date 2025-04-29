@@ -16,6 +16,8 @@ interface FormularioAgregarActivoProps {
   modoAdquisicion: string;
 }
 
+type OptionType = { value: string; label: string };
+
 const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
   const {
     register,
@@ -25,7 +27,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     reset,
     formState: { errors },
   } = useForm<Omit<Activo, 'id' | 'numPlaca'>>({
-    // CAMBIO: Se utiliza reValidateMode: 'onChange' para revalidar al modificar el input.
     reValidateMode: 'onChange',
     defaultValues: {
       nombre: '',
@@ -44,6 +45,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
       moneda: Moneda.COLON,
     },
   });
+
   const [licitaciones, setLicitaciones] = useState<Licitacion[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [moneda, setMoneda] = useState<Moneda>(Moneda.COLON);
@@ -51,7 +53,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleCreateActivo, loading } = useActivos();
 
-  // Cargar ubicaciones y licitaciones
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -68,7 +69,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     fetchData();
   }, []);
 
-  // Configurar modoAdquisicion y si es Donación, setear precio en 0; también actualizar moneda
   useEffect(() => {
     if (modoAdquisicion === 'Donación') {
       setValue('precio', 0);
@@ -81,11 +81,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
     setMoneda(nuevaMoneda);
     setValue('moneda', nuevaMoneda);
-  };
-
-  // Función para subir imagen y asignar la URL al campo 'foto'
-  const onUpload = (url: string) => {
-    setValue('foto', url);
   };
 
   const onSubmitHandler: SubmitHandler<Omit<Activo, 'id' | 'numPlaca'>> = async (data) => {
@@ -106,7 +101,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     }
   };
 
-  // Opciones para react‑select (convirtiendo id a string)
   const ubicacionOptions = ubicaciones.map((ubicacion) => ({
     value: ubicacion.id.toString(),
     label: ubicacion.nombre,
@@ -119,7 +113,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
-      {/* CAMBIO: El contenedor principal se hace más ancho con max-w-4xl */}
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
@@ -128,7 +121,6 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
           </div>
         )}
         <h2 className="text-xl font-bold mb-4">Agregar Activo</h2>
-        {/* CAMBIO: Se agrega contenedor con scroll interno */}
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -223,7 +215,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                         valueAsNumber: true,
                         validate: (value) => {
                           const numberValue = Number(value);
-                          return (!isNaN(numberValue) && numberValue >= 0) || 'No se permiten montos negativos';
+                          return (!isNaN(numberValue) && numberValue > 0) || 'El precio debe ser mayor que cero';
                         },
                       })}
                       className={`w-full border border-gray-300 p-2 rounded-lg ${
@@ -264,7 +256,8 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                   defaultValue=""
                   rules={{ required: 'El campo Ubicación es obligatorio' }}
                   render={({ field }) => {
-                    const selectedOption = ubicacionOptions.find((option) => option.value === field.value) || null;
+                    const selectedOption =
+                      ubicacionOptions.find((option) => option.value === field.value) || null;
                     return (
                       <Select
                         {...field}
@@ -279,7 +272,9 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                     );
                   }}
                 />
-                {errors.ubicacionId && <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>}
+                {errors.ubicacionId && (
+                  <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>
+                )}
               </div>
 
               {/* Licitación con react-select (solo si modoAdquisicion es "Ley") */}
@@ -294,7 +289,8 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                     defaultValue=""
                     rules={{ required: 'El campo Licitación es obligatorio' }}
                     render={({ field }) => {
-                      const selectedOption = licitacionOptions.find((option) => option.value === field.value) || null;
+                      const selectedOption =
+                        licitacionOptions.find((option) => option.value === field.value) || null;
                       return (
                         <Select
                           {...field}
@@ -309,7 +305,9 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       );
                     }}
                   />
-                  {errors.licitacionId && <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>}
+                  {errors.licitacionId && (
+                    <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>
+                  )}
                 </div>
               )}
 
@@ -321,7 +319,9 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                   {...register('observacion')}
                   className="mt-2 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                 />
-                {errors.observacion && <span className="text-red-600 text-xs">{errors.observacion.message}</span>}
+                {errors.observacion && (
+                  <span className="text-red-600 text-xs">{errors.observacion.message}</span>
+                )}
               </div>
 
               {/* Subida de imagen */}
