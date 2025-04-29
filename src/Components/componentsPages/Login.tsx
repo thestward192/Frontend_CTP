@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import logo from '../../assets/images-removebg-preview (1).png';
 import backgroundPattern from '../../assets/Opera Captura de pantalla_2024-09-04_125315_www.figma.com.png';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/AuthContext';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -17,6 +17,8 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     try {
       setError('');
+
+      // Validar campos
       if (!email || !password) {
         setError('Por favor, completa todos los campos');
         return;
@@ -26,50 +28,52 @@ const Login: React.FC = () => {
         return;
       }
 
-      //const API_URL = 'https://backendcontrolactivos-2.onrender.com/auth/login';
-      //const API_URL = 'http://localhost:3000/auth/login';
-
+      // Llamada al backend
       const response = await fetch('http://localhost:3000/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          email: email,
+          email,
           contraseña: password,
           recaptchaToken,
         }),
       });
 
+      // Si falla, extraer mensaje de error del servidor
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Credenciales inválidas');
-        } else {
-          throw new Error(`Error en el servidor: ${response.statusText}`);
+        let serverMsg = `Error en el servidor: ${response.statusText}`;
+        try {
+          const errBody = await response.json();
+          if (errBody.message) {
+            serverMsg = Array.isArray(errBody.message)
+              ? errBody.message.join(', ')
+              : errBody.message;
+          }
+        } catch {
+          // si no viene JSON, mantenemos serverMsg
         }
+        throw new Error(serverMsg);
       }
 
+      // Procesar éxito
       const data = await response.json();
       if (!data.access_token) {
         throw new Error('No se recibió el token de autenticación');
       }
 
+      // Guardar token y redirigir según rol
       login(data.access_token);
-
-      try {
-        const payload = JSON.parse(atob(data.access_token.split('.')[1]));
-        if (payload.role === 'Administrador') {
-          navigate('/MenuAdmin');
-        } else if (payload.role === 'Docente') {
-          navigate('/MenuDocente');
-        } else {
-          setError('No tienes permisos para acceder a esta área.');
-          localStorage.removeItem('token');
-        }
-      } catch (err) {
-        throw new Error('Error al decodificar el token');
+      const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+      if (payload.role === 'Administrador') {
+        navigate('/MenuAdmin');
+      } else if (payload.role === 'Docente') {
+        navigate('/MenuDocente');
+      } else {
+        setError('No tienes permisos para acceder a esta área.');
+        localStorage.removeItem('token');
       }
+
     } catch (err: any) {
       console.error('Error durante el inicio de sesión:', err);
       setError(err.message || 'Credenciales inválidas o error en el servidor');
@@ -92,11 +96,7 @@ const Login: React.FC = () => {
 
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <img
-              className="w-48 h-auto"
-              src={logo}
-              alt="Logo CTP Hojancha"
-            />
+            <img className="w-48 h-auto" src={logo} alt="Logo CTP Hojancha" />
           </div>
 
           {/* Campo: Correo */}
@@ -146,7 +146,7 @@ const Login: React.FC = () => {
             Entrar
           </button>
 
-          {/* Mensaje de error (si aplica) */}
+          {/* Mensaje de error */}
           {error && <div className="text-red-500 mt-4">{error}</div>}
         </div>
       </div>
