@@ -40,41 +40,36 @@ const EditUbicacion: React.FC<EditUbicacionFormProps> = ({ ubicacion, onSave, on
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md font-['DM Sans']">
         <h2 className="text-lg font-bold mb-4">Editar Ubicación</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Nombre */}
           <div className="mb-4">
             <label className="block mb-1">
               Nombre <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              {...register('nombre', { required: 'El nombre es obligatorio' })}
-              className="w-full border p-2 rounded-md"
+              {...register('nombre', {
+                required: 'El nombre es obligatorio',
+                validate: (value) =>
+                  value.length <= 50 || 'Máximo 50 caracteres permitidos',
+              })}
+              className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="Nombre de la Ubicación"
             />
             {errors.nombre && (
               <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>
             )}
           </div>
-          <div className="mb-4">
-            <label className="block mb-1">
-              Pabellón <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              {...register('pabellon', { required: 'El pabellón es obligatorio' })}
-              className="w-full border p-2 rounded-md"
-              placeholder="Pabellón de la Ubicación"
-            />
-            {errors.pabellon && (
-              <p className="text-red-500 text-sm mt-1">{errors.pabellon.message}</p>
-            )}
-          </div>
+
+          {/* Descripción */}
           <div className="mb-4">
             <label className="block mb-1">
               Descripción <span className="text-red-500">*</span>
             </label>
             <textarea
-              {...register('descripcion', { required: 'La descripción es obligatoria' })}
-              className="w-full border p-2 rounded-md"
+              {...register('descripcion', {
+                required: 'La descripción es obligatoria',
+              })}
+              className={`w-full border p-2 rounded-md ${errors.descripcion ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="Descripción de la Ubicación"
               rows={4}
             />
@@ -82,13 +77,34 @@ const EditUbicacion: React.FC<EditUbicacionFormProps> = ({ ubicacion, onSave, on
               <p className="text-red-500 text-sm mt-1">{errors.descripcion.message}</p>
             )}
           </div>
+
+          {/* Pabellón */}
+          <div className="mb-4">
+            <label className="block mb-1">
+              Pabellón <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              {...register('pabellon', {
+                required: 'El pabellón es obligatorio',
+                validate: (value) =>
+                  value.length <= 50 || 'Máximo 50 caracteres permitidos',
+              })}
+              className={`w-full border p-2 rounded-md ${errors.pabellon ? 'border-red-500' : 'border-gray-300'}`}
+              placeholder="Pabellón de la Ubicación"
+            />
+            {errors.pabellon && (
+              <p className="text-red-500 text-sm mt-1">{errors.pabellon.message}</p>
+            )}
+          </div>
+
+          {/* Botones */}
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>

@@ -53,8 +53,8 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
-  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones();
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion('En Servicio');
+  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones('En Servicio');
 
   // Si la disponibilidad es "Dado de Baja", forzamos que el estado sea "Malo"
   useEffect(() => {
@@ -264,14 +264,14 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
               {/* Disponibilidad */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Disponibilidad <span className="text-red-500">*</span>
+                  Disponibilidad <span className="text-red-500"></span>
                 </label>
                 <select
-                  {...register('disponibilidad', { required: 'El campo Disponibilidad es obligatorio' })}
+                  {...register('disponibilidad')}
                   className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 >
-                  <option value="Activo">Activo</option>
-                  <option value="Dado de Baja">Dado de Baja</option>
+                  <option value="En Servicio">En Servicio</option>
+                  <option value="Fuera de Servicio">Fuera de Servicio</option>
                 </select>
                 {errors.disponibilidad && (
                   <span className="text-red-600 text-xs">{errors.disponibilidad.message}</span>

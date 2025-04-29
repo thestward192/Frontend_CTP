@@ -20,7 +20,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
   const [showPassword, setShowPassword] = useState(false);
 
   // Para manejar las ubicaciones del usuario
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion();
+  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion('En Servicio');
 
   // Función para actualizar una ubicación específica
   const handleUbicacionChange = (index: number, selectedOption: SingleValue<OptionType>) => {
@@ -100,33 +100,48 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
                 Nombre <span className="text-red-500">*</span>
               </label>
               <input
-                {...register('nombre', { required: 'El nombre es obligatorio' })}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                {...register('nombre', {
+                  required: 'El nombre es obligatorio',
+                  validate: (value) =>
+                    (value && value.length <= 50) || 'Máximo 50 caracteres permitidos',
+                })}
+                className={`w-full border p-2 rounded-lg ${errors.nombre ? 'border-red-500' : 'border-gray-300'}`}
               />
               {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message}</p>}
             </div>
+
             {/* Primer Apellido */}
             <div className="mb-4">
               <label className="block text-gray-700">
                 Primer Apellido <span className="text-red-500">*</span>
               </label>
               <input
-                {...register('apellido_1', { required: 'El primer apellido es obligatorio' })}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                {...register('apellido_1', {
+                  required: 'El primer apellido es obligatorio',
+                  validate: (value) =>
+                    (value && value.length <= 50) || 'Máximo 50 caracteres permitidos',
+                })}
+                className={`w-full border p-2 rounded-lg ${errors.apellido_1 ? 'border-red-500' : 'border-gray-300'}`}
               />
               {errors.apellido_1 && <p className="text-red-500 text-sm">{errors.apellido_1.message}</p>}
             </div>
+
             {/* Segundo Apellido */}
             <div className="mb-4">
               <label className="block text-gray-700">
                 Segundo Apellido <span className="text-red-500">*</span>
               </label>
               <input
-                {...register('apellido_2', { required: 'El segundo apellido es obligatorio' })}
-                className="w-full border border-gray-300 p-2 rounded-lg"
+                {...register('apellido_2', {
+                  required: 'El segundo apellido es obligatorio',
+                  validate: (value) =>
+                    (value && value.length <= 50) || 'Máximo 50 caracteres permitidos',
+                })}
+                className={`w-full border p-2 rounded-lg ${errors.apellido_2 ? 'border-red-500' : 'border-gray-300'}`}
               />
               {errors.apellido_2 && <p className="text-red-500 text-sm">{errors.apellido_2.message}</p>}
             </div>
+
             {/* Email */}
             <div className="mb-4">
               <label className="block text-gray-700">
@@ -143,6 +158,7 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
 
           {/* Contraseña y Confirmar Contraseña */}
           <div className="grid grid-cols-2 gap-4 mb-4">
+            {/* Contraseña */}
             <div>
               <label className="block text-gray-700">
                 Contraseña <span className="text-red-500">*</span>
@@ -166,26 +182,21 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
               </div>
               {errors.contraseña && <p className="text-red-500 text-sm">{errors.contraseña.message}</p>}
             </div>
+
+            {/* Confirmar Contraseña */}
             <div>
               <label className="block text-gray-700">
                 Confirmar Contraseña <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="password" // Siempre password aquí
                   {...register('confirmarContraseña', {
                     validate: (value) => value === watch('contraseña') || 'Las contraseñas no coinciden',
                   })}
                   placeholder="Confirma tu contraseña"
                   className="w-full border border-gray-300 p-2 rounded-lg"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-600"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
               </div>
               {errors.confirmarContraseña && (
                 <p className="text-red-500 text-sm">{errors.confirmarContraseña.message}</p>
@@ -239,9 +250,8 @@ const FormularioEditarUsuario: React.FC<FormularioEditarUsuarioProps> = ({ userI
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>

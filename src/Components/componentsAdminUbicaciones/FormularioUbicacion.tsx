@@ -56,16 +56,18 @@ const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose, onUb
             </label>
             <input
               type="text"
-              {...register('nombre', { required: 'El nombre es obligatorio' })}
-              className="w-full border p-2 rounded-md"
+              {...register('nombre', {
+                required: 'El nombre es obligatorio',
+                validate: (value) => value.length <= 50 || 'Máximo 50 caracteres permitidos',
+              })}
               placeholder="Nombre de la Ubicación"
+              className={`w-full border p-2 rounded-md ${errors.nombre ? 'border-red-500' : 'border-gray-300'}`}
               disabled={isLoading || isSubmitting}
             />
             {errors.nombre && (
               <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>
             )}
           </div>
-
           {/* Descripción */}
           <div className="mb-4">
             <label className="block mb-1">
@@ -90,9 +92,12 @@ const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose, onUb
             </label>
             <input
               type="text"
-              {...register('pabellon', { required: 'El pabellón es obligatorio' })}
-              className="w-full border p-2 rounded-md"
+              {...register('pabellon', {
+                required: 'El pabellón es obligatorio',
+                validate: (value) => value.length <= 50 || 'Máximo 50 caracteres permitidos',
+              })}
               placeholder="Pabellón de la Ubicación"
+              className={`w-full border p-2 rounded-md ${errors.pabellon ? 'border-red-500' : 'border-gray-300'}`}
               disabled={isLoading || isSubmitting}
             />
             {errors.pabellon && (
@@ -100,20 +105,13 @@ const FormularioUbicacion: React.FC<FormularioUbicacionProps> = ({ onClose, onUb
             )}
           </div>
 
-          {isError && (
-            <div className="text-red-500 mb-4">
-              Error al crear la ubicación. Intenta de nuevo.
-            </div>
-          )}
-
           {/* Botones de Acción */}
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               type="submit"
               disabled={isLoading || isSubmitting}
-              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${
-                isLoading || isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors ${isLoading || isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {isLoading || isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>

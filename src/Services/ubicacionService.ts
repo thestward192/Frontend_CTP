@@ -2,9 +2,9 @@
 import axios from 'axios';
 import { CreateUbicacion, Ubicacion } from '../types/ubicacion';
 
-const API_URL = 'https://backendcontrolactivos-2.onrender.com';
+// const API_URL = 'https://backendcontrolactivos-2.onrender.com';
 
-//const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:3000';
 
 export const createUbicacion = async (ubicacionData: CreateUbicacion): Promise<Ubicacion> => {
   try {
@@ -16,9 +16,12 @@ export const createUbicacion = async (ubicacionData: CreateUbicacion): Promise<U
   }
 };
 
-export const getUbicaciones = async (): Promise<Ubicacion[]> => {
+export const getUbicaciones = async (
+  disponibilidad?: string
+): Promise<Ubicacion[]> => {
   try {
-    const response = await axios.get(`${API_URL}/ubicacion`);
+    const params = disponibilidad ? { disponibilidad } : {};
+    const response = await axios.get(`${API_URL}/ubicacion`, { params });
     return response.data;
   } catch (error) {
     console.error('Error al obtener las ubicaciones:', error);
