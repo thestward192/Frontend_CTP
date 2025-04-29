@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { CreateLicenciaDTO, Licencia } from '../types/licencia';
 
-// const API_URL = 'https://backendcontrolactivos-2.onrender.com/licencia';
+ const API_URL = 'https://backendcontrolactivos-2.onrender.com/licencia';
 
-const API_URL = 'http://localhost:3000/licencia';
+//const API_URL = 'http://localhost:3000/licencia';
 
 export const getLicencias = async (): Promise<Licencia[]> => {
   const response = await axios.get(API_URL);
