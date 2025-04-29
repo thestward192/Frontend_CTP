@@ -143,7 +143,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
               </div>
 
-              {/* Marca */}
+              {/* Marcaaa */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Marca <span className="text-red-500">*</span>
