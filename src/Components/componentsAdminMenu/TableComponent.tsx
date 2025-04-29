@@ -8,6 +8,7 @@ import { useExportToExcel } from '../../hooks/useExportToExcel';  // Hook para e
 import { Activo } from '../../types/activo';
 import FormularioAgregarActivo from './FormularioAgregarActivo';
 import ConfiguracionExportacionModal from '../../Components/ComponentsAdminConfig/ConfiguracionExportacionModal';
+import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface TableComponentProps {
   onAssetSelect: (isSelected: boolean) => void;
@@ -33,6 +34,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
   const [filterNumPlaca, setFilterNumPlaca] = useState('');
+  const [filterDisponibilidad, setFilterDisponibilidad] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
 
   const { activos, loading, error } = useActivos();
   const { exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
@@ -80,7 +82,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
     const matchesEstado = !filterEstado || activo.estado === filterEstado;
     const matchesNumPlaca = filterNumPlaca === '' || (activo.numPlaca && activo.numPlaca.toLowerCase().includes(filterNumPlaca.toLowerCase()));
-    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado && matchesNumPlaca;
+    const matchesDisponibilidad = filterDisponibilidad === 'Todos' || activo.disponibilidad === filterDisponibilidad;
+
+    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado && matchesNumPlaca && matchesDisponibilidad;
   });
 
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -225,9 +229,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                     onClick={() => {
                       exportToExcel(selectedActivos);
                     }}
-                    className={`${
-                      selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
-                    } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    className={`${selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+                      } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
                     disabled={selectedItems.length === 0}
                   >
                     Exportar
@@ -243,7 +246,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             </div>
           </div>
 
-          <Filters onFilterChange={handleFilterChange} />
+
+          <div className="mb-4 flex items-center space-x-4">
+            <Filters onFilterChange={handleFilterChange} />
+            <FilterDisponibilidad value={filterDisponibilidad} onChange={setFilterDisponibilidad} />
+          </div>
 
           <div className="flex-grow overflow-y-auto">
             <table className="min-w-full table-auto border-collapse">
