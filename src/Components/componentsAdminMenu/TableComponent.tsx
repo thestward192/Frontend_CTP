@@ -160,6 +160,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     onAddAsset(false);
   };
 
+
+
   // Manejo de selección de activos
   const toggleSelectItem = (id: string) => {
     setSelectedItems((prev) =>
@@ -189,6 +191,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   if (error) {
     return <p>Error al cargar los activos: {error}</p>;
   }
+
+  const handleCloseSelection = () => {
+    setIsModalOpen(false);
+    onAddAsset(false);
+  };
 
   return (
     <div className="w-full flex justify-center py-10 relative">
@@ -383,7 +390,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             <SelectionModal
               onSelectLey={handleSelectLey}
               onSelectDonacion={handleSelectDonacion}
-              onClose={() => setIsModalOpen(false)}
+              onClose={handleCloseSelection}   // ahora restablece el sidebar
             />
           )}
         </div>
