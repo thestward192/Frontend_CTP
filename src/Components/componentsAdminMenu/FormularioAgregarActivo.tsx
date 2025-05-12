@@ -311,7 +311,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                 </div>
               )}
 
-              {/* Observaciones */}
+              {/* Observacione */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea
