@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import DetalleComponent from './DetalleActivo';
 import Filters from './Filters';
@@ -19,16 +19,19 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal para selección (ley/donación)
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [modoAdquisicion, setModoAdquisicion] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Activo | null>(null);
-  const [isAddingActivo, setIsAddingActivo] = useState(false); // Controla la apertura del formulario
+  const [isAddingActivo, setIsAddingActivo] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const [pageInput, setPageInput] = useState('');
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false); // Estado para el modal de configuración
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
-  // Estados para filtros
+  // Nueva lógica para ordenamiento
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Filtros
   const [filterNombre, setFilterNombre] = useState('');
   const [filterUbicacion, setFilterUbicacion] = useState('');
   const [filterModoAdquisicion, setFilterModoAdquisicion] = useState('');
@@ -37,9 +40,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [filterDisponibilidad, setFilterDisponibilidad] = useState<'Todos' | 'En Servicio' | 'Fuera de Servicio'>('Todos');
 
   const { activos, loading, error } = useActivos();
-  const { exportToExcel } = useExportToExcel(); // Usamos el hook de exportación
+  const { exportToExcel } = useExportToExcel();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsAllSelected(activos.length > 0 && selectedItems.length === activos.length);
   }, [activos, selectedItems]);
 
@@ -63,19 +66,26 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   };
 
   const handleFilterChange = (filterName: string, value: string) => {
-    if (filterName === 'nombre') {
-      setFilterNombre(value);
-    } else if (filterName === 'ubicacion') {
-      setFilterUbicacion(value);
-    } else if (filterName === 'modoAdquisicion') {
-      setFilterModoAdquisicion(value);
-    } else if (filterName === 'estado') {
-      setFilterEstado(value);
-    } else if (filterName === 'numPlaca') {
-      setFilterNumPlaca(value);
+    switch (filterName) {
+      case 'nombre':
+        setFilterNombre(value);
+        break;
+      case 'ubicacion':
+        setFilterUbicacion(value);
+        break;
+      case 'modoAdquisicion':
+        setFilterModoAdquisicion(value);
+        break;
+      case 'estado':
+        setFilterEstado(value);
+        break;
+      case 'numPlaca':
+        setFilterNumPlaca(value);
+        break;
     }
   };
 
+  // Aplicar filtros
   const filteredData = activos.filter((activo) => {
     const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
     const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
@@ -83,39 +93,33 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     const matchesEstado = !filterEstado || activo.estado === filterEstado;
     const matchesNumPlaca = filterNumPlaca === '' || (activo.numPlaca && activo.numPlaca.toLowerCase().includes(filterNumPlaca.toLowerCase()));
     const matchesDisponibilidad = filterDisponibilidad === 'Todos' || activo.disponibilidad === filterDisponibilidad;
-
     return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado && matchesNumPlaca && matchesDisponibilidad;
   });
 
-  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  // Ordenar según sortOrder y numPlaca
+  const sortedData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      const aVal = a.numPlaca || '';
+      const bVal = b.numPlaca || '';
+      return sortOrder === 'asc'
+        ? aVal.localeCompare(bVal, undefined, { numeric: true })
+        : bVal.localeCompare(aVal, undefined, { numeric: true });
+    });
+  }, [filteredData, sortOrder]);
 
-  // Función para obtener los números de página a mostrar (máximo 5 visibles)
+  // Paginación sobre datos ordenados
+  const paginatedData = sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const getPageNumbers = () => {
-    let pages: number[] = [];
+    const pages: number[] = [];
     if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, 5);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
     } else {
-      if (currentPage <= 3) {
-        pages = [1, 2, 3, 4, 5];
-      } else if (currentPage >= totalPages - 2) {
-        pages = [
-          totalPages - 4,
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages,
-        ];
-      } else {
-        pages = [
-          currentPage - 2,
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          currentPage + 2,
-        ];
-      }
+      pages.push(currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2);
     }
     return pages;
   };
@@ -133,10 +137,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
   const handleSelectAsset = (asset: Activo) => {
     setSelectedAsset(asset);
-    onAssetSelect(true); // Notifica que se ha seleccionado un activo
+    onAssetSelect(true);
   };
 
-  // Modificamos handleAddActivo para invocar el callback inmediatamente
   const handleAddActivo = () => {
     onAddAsset(true);
     setIsModalOpen(true);
@@ -145,22 +148,21 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const handleSelectLey = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Ley');
-    setIsAddingActivo(true); // Abrir formulario para agregar activo
+    setIsAddingActivo(true);
   };
 
   const handleSelectDonacion = () => {
     setIsModalOpen(false);
     setModoAdquisicion('Donación');
-    setIsAddingActivo(true); // Abrir formulario para agregar activo
+    setIsAddingActivo(true);
   };
 
   const handleCloseForm = () => {
-    setIsAddingActivo(false); // Cerrar formulario
+    setIsAddingActivo(false);
     setModoAdquisicion(null);
     onAddAsset(false);
   };
 
-  // Manejo de selección de activos
   const toggleSelectItem = (id: string) => {
     setSelectedItems((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
@@ -169,26 +171,19 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
 
   const toggleSelectAll = () => {
     if (isAllSelected) {
-      setSelectedItems([]); // Deselecciona todo
+      setSelectedItems([]);
     } else {
-      const allIds = activos.map((activo) => activo.id?.toString() || '');
-      setSelectedItems(allIds);
+      setSelectedItems(activos.map((activo) => activo.id?.toString() || ''));
     }
     setIsAllSelected(!isAllSelected);
   };
 
-  // Filtrar activos seleccionados
   const selectedActivos = activos.filter((activo) =>
     selectedItems.includes(activo.id?.toString() || '')
   );
 
-  if (loading) {
-    return <p>Cargando activos...</p>;
-  }
-
-  if (error) {
-    return <p>Error al cargar los activos: {error}</p>;
-  }
+  if (loading) return <p>Cargando activos...</p>;
+  if (error) return <p>Error al cargar los activos: {error}</p>;
 
   return (
     <div className="w-full flex justify-center py-10 relative">
@@ -218,7 +213,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                 </button>
               ) : (
                 <div className="flex space-x-4">
-                  {/* Botón para abrir el modal de configuración */}
                   <button
                     onClick={() => setIsConfigModalOpen(true)}
                     className="bg-yellow-600 text-white px-3 py-1 rounded-lg shadow hover:bg-yellow-700 transition text-sm"
@@ -226,11 +220,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                     Configurar exportación
                   </button>
                   <button
-                    onClick={() => {
-                      exportToExcel(selectedActivos);
-                    }}
-                    className={`${selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
-                      } text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
+                    onClick={() => exportToExcel(selectedActivos)}
+                    className={`${selectedItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'} text-white px-3 py-1 rounded-lg shadow hover:bg-green-700 transition text-sm`}
                     disabled={selectedItems.length === 0}
                   >
                     Exportar
@@ -245,7 +236,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               )}
             </div>
           </div>
-
 
           <div className="mb-4 flex items-center space-x-4">
             <Filters onFilterChange={handleFilterChange} />
@@ -276,7 +266,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               <tbody>
                 {paginatedData.map((row) => (
                   <tr
-                    key={row.id ? row.id : `row-${Math.random()}`}
+                    key={row.id ?? `row-${Math.random()}`}
                     className="border-b hover:bg-gray-100 cursor-pointer"
                     onClick={() => !isSelectionMode && row.id && handleSelectAsset(row)}
                   >
@@ -308,7 +298,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
                     <td className="px-4 py-2 text-sm">{row.ubicacion?.nombre || 'Ubicación desconocida'}</td>
                     <td className="px-4 py-2 text-sm">{row.modoAdquisicion}</td>
                     <td className="px-4 py-2 text-sm">
-                      <span className={`px-3 py-1 rounded-md text-sm ${row.estado === 'Bueno' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      <span
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          row.estado === 'Bueno'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {row.estado}
                       </span>
                     </td>
@@ -318,10 +314,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             </table>
           </div>
 
-          {/* Sección de paginación completa con máximo 5 páginas visibles */}
+          {/* Controles de paginación y orden */}
           <div className="flex justify-between items-center mt-4">
-            <div>
+            <div className="flex items-center space-x-4">
               <p className="text-sm text-gray-600">Total de Activos: {activos.length}</p>
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="px-3 py-1 border rounded text-sm"
+              >
+                Orden: {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+              </button>
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -338,11 +340,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               >
                 {"<"}
               </button>
-              {getPageNumbers().map((page, index) => (
+              {getPageNumbers().map((page) => (
                 <button
-                  key={index}
+                  key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                  }`}
                 >
                   {page}
                 </button>
@@ -378,14 +382,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               </div>
             </div>
           </div>
-
-          {isModalOpen && (
-            <SelectionModal
-              onSelectLey={handleSelectLey}
-              onSelectDonacion={handleSelectDonacion}
-              onClose={() => setIsModalOpen(false)}
-            />
-          )}
         </div>
       ) : modoAdquisicion ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -401,7 +397,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
         />
       ) : null}
 
-      {/* Modal de Configuración de Exportación */}
+      {isModalOpen && (
+        <SelectionModal
+          onSelectLey={handleSelectLey}
+          onSelectDonacion={handleSelectDonacion}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
       {isConfigModalOpen && (
         <ConfiguracionExportacionModal onClose={() => setIsConfigModalOpen(false)} />
       )}
