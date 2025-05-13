@@ -170,6 +170,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     onAddAsset(false);
   };
 
+
+
+  // Manejo de selección de activos
   const toggleSelectItem = (id: string) => {
     setSelectedItems((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
@@ -189,8 +192,18 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     selectedItems.includes(activo.id?.toString() || '')
   );
 
-  if (loading) return <p>Cargando activos...</p>;
-  if (error) return <p>Error al cargar los activos: {error}</p>;
+  if (loading) {
+    return <p>Cargando activos...</p>;
+  }
+
+  if (error) {
+    return <p>Error al cargar los activos: {error}</p>;
+  }
+
+  const handleCloseSelection = () => {
+    setIsModalOpen(false);
+    onAddAsset(false);
+  };
 
   return (
     <div className="w-full flex justify-center py-10 relative">
@@ -389,6 +402,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
               </div>
             </div>
           </div>
+
+          {isModalOpen && (
+            <SelectionModal
+              onSelectLey={handleSelectLey}
+              onSelectDonacion={handleSelectDonacion}
+              onClose={handleCloseSelection}   // ahora restablece el sidebar
+            />
+          )}
         </div>
       ) : modoAdquisicion ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
