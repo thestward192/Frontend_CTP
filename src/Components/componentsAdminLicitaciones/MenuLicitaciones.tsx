@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react';
 const MenuLicitaciones: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAddingLicitacion, setIsAddingLicitacion] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Callback para iniciar o cerrar el flujo de "Agregar Licitación"
   const handleAddLicitacion = (isAdding: boolean) => {
@@ -63,15 +64,14 @@ const MenuLicitaciones: React.FC = () => {
         />
 
         <div className="relative z-10">
-          {/* Sección de búsqueda */}
-          <div className="pt-[40px] px-10">
-            <SearchBarComponent />
+          {/* Sección de búsqueda */}          <div className="pt-[40px] px-10">
+            <SearchBarComponent onSearch={setSearchTerm} />
           </div>
 
           {/* Contenedor de LicitacionesComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
             {/* Se pasa el callback para el flujo de agregar licitación */}
-            <LicitacionesComponent onAddLicitacion={handleAddLicitacion} />
+            <LicitacionesComponent onAddLicitacion={handleAddLicitacion} searchTerm={searchTerm} />
           </div>
         </div>
       </div>

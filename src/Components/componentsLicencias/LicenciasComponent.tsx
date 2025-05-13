@@ -9,6 +9,7 @@ import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface LicenciasComponentProps {
   onAddLicencia: (isAdding: boolean) => void;
+  searchTerm?: string;
 }
 
 // Recorta la descripción si supera cierto largo
@@ -19,7 +20,7 @@ function getShortDescription(description: string, maxLength = 80) {
     : description.slice(0, maxLength) + '...';
 }
 
-const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }) => {
+const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia, searchTerm = '' }) => {
   const { licencias, loading, error, addLicencia, updateDisponibilidadLicenciaMutation } = useLicencias();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLicencia, setSelectedLicencia] = useState<Licencia | null>(null);
@@ -41,17 +42,17 @@ const LicenciasComponent: React.FC<LicenciasComponentProps> = ({ onAddLicencia }
   // Filtrar + ordenar antes de paginar
   const sortedLicencias = useMemo(() => {
     return [...(licencias || [])]
-      .filter(lic =>
-        (filtroDisp === 'Todos' || lic.disponibilidad === filtroDisp) &&
-        lic.numeroIdentificador
-          .toString()
-          .toLowerCase()
-          .includes(searchIdentificador.trim().toLowerCase())
-      )
+      .filter(lic => {
+        const matchesDisp = filtroDisp === 'Todos' || lic.disponibilidad === filtroDisp;
+        const matchesSearch = !searchTerm || 
+          lic.numeroIdentificador.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          lic.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesDisp && matchesSearch;
+      })
       .sort((a, b) =>
         sortOrder === 'asc' ? a.id - b.id : b.id - a.id
       );
-  }, [licencias, sortOrder, filtroDisp, searchIdentificador]);
+  }, [licencias, sortOrder, filtroDisp, searchTerm]);
 
   const totalPages = Math.ceil(sortedLicencias.length / itemsPerPage);
 

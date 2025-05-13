@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react';
 const MenuUbicacion: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAddingUbicacion, setIsAddingUbicacion] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Callback para iniciar o cerrar el flujo de "Agregar Ubicación"
   const handleAddUbicacion = (isAdding: boolean) => {
@@ -66,12 +67,15 @@ const MenuUbicacion: React.FC = () => {
         <div className="relative z-10">
           {/* Sección de búsqueda */}
           <div className="pt-[40px] px-10">
-            <SearchBarComponent />
+            <SearchBarComponent 
+              onSearch={setSearchTerm} 
+              placeholder="Buscar por nombre de ubicación" 
+            />
           </div>
 
           {/* Contenedor de UbicacionesComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <UbicacionesComponent onAddUbicacion={handleAddUbicacion} />
+            <UbicacionesComponent onAddUbicacion={handleAddUbicacion} searchTerm={searchTerm} />
           </div>
         </div>
       </div>

@@ -5,9 +5,10 @@ import LicenciasComponent from './LicenciasComponent';
 import SearchBarComponent from '../componentsAdminMenu/SearchBarComponent';
 import { Menu, X } from 'lucide-react';
 
-const MenuLeyes: React.FC = () => {
+const MenuLicencias: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAddingLicencia, setIsAddingLicencia] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Esta función se invoca desde LicenciasComponent cuando se activa o cierra el flujo de "Agregar Licencia"
   const handleAddLicencia = (isAdding: boolean) => {
@@ -64,12 +65,18 @@ const MenuLeyes: React.FC = () => {
         <div className="relative z-10">
           {/* Sección de búsqueda */}
           <div className="pt-[40px] px-10">
-            <SearchBarComponent />
+            <SearchBarComponent 
+              onSearch={setSearchTerm}
+              placeholder="Buscar por No. Identificador o Nombre..."
+            />
           </div>
 
           {/* Contenedor de LicenciasComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <LicenciasComponent onAddLicencia={handleAddLicencia} />
+            <LicenciasComponent 
+              onAddLicencia={handleAddLicencia}
+              searchTerm={searchTerm}
+            />
           </div>
         </div>
       </div>
@@ -77,4 +84,4 @@ const MenuLeyes: React.FC = () => {
   );
 };
 
-export default MenuLeyes;
+export default MenuLicencias;

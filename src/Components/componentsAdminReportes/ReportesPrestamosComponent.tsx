@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import { usePrestamo } from '../../hooks/usePrestamo';
+import { Prestamo } from '../../types/prestamo';
 
-const ReportesPrestamosComponent: React.FC = () => {
+interface ReportesPrestamosComponentProps {
+  searchTerm: string;
+}
+
+const ReportesPrestamosComponent: React.FC<ReportesPrestamosComponentProps> = ({ searchTerm }) => {
   const { prestamos, loading, error } = usePrestamo();
   
   // Estados de filtrado
@@ -16,38 +21,42 @@ const ReportesPrestamosComponent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(33);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [pageInput, setPageInput] = useState('');
-
-  // Actualiza los préstamos filtrados cuando se cambia algún filtro o los préstamos originales
+  const [pageInput, setPageInput] = useState('');  // Actualiza los préstamos filtrados cuando se cambia algún filtro o los préstamos originales
   useEffect(() => {
     let prestamosFiltrados = prestamos || [];
     
+    // Filtrar por término de búsqueda (activo)
+    if (searchTerm) {
+      prestamosFiltrados = prestamosFiltrados.filter((prestamo: Prestamo) =>
+        prestamo.activo?.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
     // Filtrar por nombre (prestado por o prestado a)
     if (filterNombre) {
-      prestamosFiltrados = prestamosFiltrados.filter((prestamo) =>
-        `${prestamo.prestadoPor.nombre} ${prestamo.prestadoPor.apellido_1}`.toLowerCase().includes(filterNombre.toLowerCase()) ||
-        `${prestamo.prestadoA.nombre} ${prestamo.prestadoA.apellido_1}`.toLowerCase().includes(filterNombre.toLowerCase())
+      prestamosFiltrados = prestamosFiltrados.filter((prestamo: Prestamo) =>
+        prestamo.prestadoPor?.nombre?.toLowerCase().includes(filterNombre.toLowerCase()) ||
+        prestamo.prestadoA?.nombre?.toLowerCase().includes(filterNombre.toLowerCase())
       );
     }
     
     // Filtrar por número de placa del activo
     if (filterPlaca) {
-      prestamosFiltrados = prestamosFiltrados.filter((prestamo) =>
-        prestamo.activo.numPlaca?.toLowerCase().includes(filterPlaca.toLowerCase())
+      prestamosFiltrados = prestamosFiltrados.filter((prestamo: Prestamo) =>
+        prestamo.activo?.numPlaca?.toLowerCase().includes(filterPlaca.toLowerCase())
       );
     }
-    
+
     // Filtrar por ubicación (ubicación actual o nueva)
     if (filterUbicacion) {
-      prestamosFiltrados = prestamosFiltrados.filter((prestamo) =>
-        prestamo.ubicacion.nombre.toLowerCase().includes(filterUbicacion.toLowerCase()) ||
-        prestamo.ubicacionActual.nombre.toLowerCase().includes(filterUbicacion.toLowerCase())
+      prestamosFiltrados = prestamosFiltrados.filter((prestamo: Prestamo) =>
+        prestamo.ubicacion?.nombre?.toLowerCase().includes(filterUbicacion.toLowerCase()) ||
+        prestamo.ubicacionActual?.nombre?.toLowerCase().includes(filterUbicacion.toLowerCase())
       );
     }
-    
-    setFilteredPrestamos(prestamosFiltrados);
+      setFilteredPrestamos(prestamosFiltrados);
     setCurrentPage(1);
-  }, [filterNombre, filterPlaca, filterUbicacion, prestamos]);
+  }, [filterNombre, filterPlaca, filterUbicacion, prestamos, searchTerm]);
 
   // Ordena los préstamos filtrados según el campo "id"
   const sortedFilteredPrestamos = useMemo(() => {

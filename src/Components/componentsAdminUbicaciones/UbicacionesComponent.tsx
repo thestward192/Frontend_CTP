@@ -8,9 +8,10 @@ import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface UbicacionesComponentProps {
   onAddUbicacion: (isAdding: boolean) => void;
+  searchTerm?: string;
 }
 
-const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicacion }) => {
+const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicacion, searchTerm = '' }) => {
   // Estados de modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
@@ -38,14 +39,16 @@ const UbicacionesComponent: React.FC<UbicacionesComponentProps> = ({ onAddUbicac
 
   const sortedUbicaciones = useMemo(() => {
     return [...(ubicaciones || [])]
-      .filter(u =>
-        filtroDisp === 'Todos' ||
-        u.disponibilidad === filtroDisp
-      )
+      .filter(u => {
+        const matchesDisp = filtroDisp === 'Todos' || u.disponibilidad === filtroDisp;
+        const matchesSearch = !searchTerm || 
+          u.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesDisp && matchesSearch;
+      })
       .sort((a, b) =>
         sortOrder === 'asc' ? a.id - b.id : b.id - a.id
       );
-  }, [ubicaciones, sortOrder, filtroDisp]);
+  }, [ubicaciones, sortOrder, filtroDisp, searchTerm]);
 
   const totalPages = Math.ceil(sortedUbicaciones.length / itemsPerPage);
 

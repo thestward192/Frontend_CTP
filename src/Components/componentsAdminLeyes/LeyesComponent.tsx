@@ -9,9 +9,10 @@ import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface LeyesComponentProps {
   onAddLey: (isAdding: boolean) => void;
+  searchTerm?: string;
 }
 
-const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
+const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey, searchTerm }) => {
   // Estados modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -80,15 +81,15 @@ const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
   // Genera la lista filtrada + ordenada
   const sortedLeyes = useMemo(() => {
     return [...(leyes || [])]
-      // 1) filtramos
-      .filter(ley =>
-        filtroDisp === 'Todos' || ley.disponibilidad === filtroDisp
-      )
-      // 2) ordenamos por id
-      .sort((a, b) =>
-        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-      );
-  }, [leyes, sortOrder, filtroDisp]);
+      .filter(ley => {
+        const matchesDisp = filtroDisp === 'Todos' || ley.disponibilidad === filtroDisp;
+        const matchesSearch = !searchTerm || 
+          ley.nombre.toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+          ley.numLey.toLowerCase().includes((searchTerm || '').toLowerCase());
+        return matchesDisp && matchesSearch;
+      })
+      .sort((a, b) => sortOrder === 'asc' ? a.id - b.id : b.id - a.id);
+  }, [leyes, sortOrder, filtroDisp, searchTerm]);
 
   // Calculamos el total de páginas
   const totalPages = Math.ceil(sortedLeyes.length / itemsPerPage);
@@ -278,15 +279,13 @@ const LeyesComponent: React.FC<LeyesComponentProps> = ({ onAddLey }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {isModalOpen && (
+      </div>      {isModalOpen && (
         <FormularioLey 
           onClose={() => {
             setIsModalOpen(false);
             onAddLey(false);
           }} 
-          onLeyCreated={(ley) => {
+          onLeyCreated={() => {
             handleLeyCreated();
             setIsModalOpen(false);
             onAddLey(false);

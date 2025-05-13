@@ -5,9 +5,10 @@ import { CreateProveedor } from '../../types/proveedor';
 
 interface FormularioProveedorProps {
   onClose: () => void;
+  onProveedorCreated: () => void;
 }
 
-const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) => {
+const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose, onProveedorCreated }) => {
   const { handleSubmitProveedor } = useProveedores();
   const {
     handleSubmit,
@@ -34,9 +35,9 @@ const FormularioProveedor: React.FC<FormularioProveedorProps> = ({ onClose }) =>
     try {
       await handleSubmitProveedor.mutateAsync(data);
       setAlertaVisible(true);
-      setTimeout(() => {
-        setAlertaVisible(false);
+      setTimeout(() => {        setAlertaVisible(false);
         reset();
+        onProveedorCreated();
         onClose();
       }, 1000);
     } catch (error: any) {

@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react';
 const MenuLeyes: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAddingLey, setIsAddingLey] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Callback para iniciar o cerrar el flujo de "Agregar Ley"
   const handleAddLey = (isAdding: boolean) => {
@@ -19,6 +20,10 @@ const MenuLeyes: React.FC = () => {
       // Al cerrar el formulario, volvemos a mostrar el sidebar
       setIsSidebarOpen(true);
     }
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
   };
 
   return (
@@ -64,13 +69,13 @@ const MenuLeyes: React.FC = () => {
         <div className="relative z-10">
           {/* Sección de búsqueda */}
           <div className="pt-[40px] px-10">
-            <SearchBarComponent />
+            <SearchBarComponent onSearch={handleSearch} />
           </div>
 
           {/* Contenedor de LeyesComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
             {/* Se pasa el callback para el flujo de agregar ley */}
-            <LeyesComponent onAddLey={handleAddLey} />
+            <LeyesComponent onAddLey={handleAddLey} searchTerm={searchTerm} />
           </div>
         </div>
       </div>

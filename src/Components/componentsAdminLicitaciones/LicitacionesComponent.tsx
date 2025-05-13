@@ -9,9 +9,10 @@ import FiltroLicitacion from './FiltroLicitacion';
 
 interface LicitacionesComponentProps {
   onAddLicitacion: (isAdding: boolean) => void;
+  searchTerm?: string;
 }
 
-const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLicitacion }) => {
+const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLicitacion, searchTerm }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -98,10 +99,11 @@ const LicitacionesComponent: React.FC<LicitacionesComponentProps> = ({ onAddLici
       setFilterEstado(value);
     }
   };
-
   const filteredData = licitaciones.filter((licitacion) => {
     const matchesEstado = !filterEstado || licitacion.disponibilidad === filterEstado;
-    return matchesEstado 
+    const matchesSearch = !searchTerm || 
+      licitacion.numLicitacion.toString().toLowerCase().includes((searchTerm || '').toLowerCase());
+    return matchesEstado && matchesSearch;
   });
 
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);

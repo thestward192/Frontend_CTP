@@ -9,9 +9,10 @@ import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface ProveedoresComponentProps {
   onAddProveedor: (isAdding: boolean) => void;
+  searchTerm?: string;
 }
 
-const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProveedor }) => {
+const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProveedor, searchTerm }) => {
   // Estados para modales y mensajes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<number | null>(null);
@@ -30,22 +31,21 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
 
   const { proveedores, loading, error, getProveedorDetails, selectedProveedor, editProveedor, updateDisponibilidadProveedorMutation } = useProveedores();
 
-  // Ordenamos y filtramos los proveedores según disponibilidad y id
+  // Ordenamos y filtramos los proveedores según disponibilidad y búsqueda
   const sortedProveedores = useMemo(() => {
     return [...(proveedores || [])]
-      // APLICAMOS FILTRO de disponibilidad
-      .filter(prov =>
-        filtroDisp === 'Todos' ||
-        prov.disponibilidad === filtroDisp
-      )
-      // LUEGO ordenamos por id
-      .sort((a, b) =>
-        sortOrder === 'asc' ? a.id - b.id : b.id - a.id
-      );
-  }, [proveedores, sortOrder, filtroDisp]);
+      .filter(prov => {
+        const matchesDisp = filtroDisp === 'Todos' || prov.disponibilidad === filtroDisp;
+        const matchesSearch = !searchTerm || 
+          prov.vendedor.toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+          prov.nombreEmpresa.toLowerCase().includes((searchTerm || '').toLowerCase());
+        return matchesDisp && matchesSearch;
+      })
+      .sort((a, b) => sortOrder === 'asc' ? a.id - b.id : b.id - a.id);
+  }, [proveedores, sortOrder, filtroDisp, searchTerm]);
 
   // Calculamos el total de páginas
-  const totalPages = Math.ceil(sortedProveedores.length / itemsPerPage);
+  const totalPages = Math.ceil((sortedProveedores?.length || 0) / itemsPerPage);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -59,7 +59,7 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
     return sortedProveedores.slice(start, start + itemsPerPage);
   }, [sortedProveedores, currentPage, itemsPerPage]);
 
-  // Función para generar números de página (mostrar siempre 5 páginas consecutivas)
+  // Función para generar números de página
   const getPageNumbers = () => {
     let pages: number[] = [];
     if (totalPages <= 5) {
@@ -91,7 +91,7 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
   };
 
   const handleUpdateDisponibilidad = async (id: number) => {
-    const proveedor = proveedores.find((prov) => prov.id === id);
+    const proveedor = proveedores?.find((prov) => prov.id === id);
     if (proveedor && proveedor.disponibilidad === 'Fuera de Servicio') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
@@ -207,7 +207,6 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
         {/* Controles de paginación y filtros */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-8">
           <div className="flex items-center space-x-4 mb-2 md:mb-0">
-            {/* Selector de cantidad de entradas */}
             <div>
               <label className="text-sm text-gray-600 mr-2">Mostrar</label>
               <select
@@ -224,7 +223,6 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
               </select>
               <span className="text-sm text-gray-600 ml-2">entradas</span>
             </div>
-            {/* Botón para cambiar el orden */}
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               className="px-3 py-1 border rounded text-sm"
@@ -234,24 +232,19 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
           </div>
 
           <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(1)}
-              className="px-3 py-1 bg-gray-200 rounded-md"
-              disabled={currentPage === 1}
-            >
+            <button onClick={() => setCurrentPage(1)} className="px-3 py-1 bg-gray-200 rounded-md">
               {"<<"}
             </button>
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               className="px-3 py-1 bg-gray-200 rounded-md"
-              disabled={currentPage === 1}
             >
               {"<"}
             </button>
             {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentPage(page as number)}
+                onClick={() => setCurrentPage(page)}
                 className={`px-3 py-1 rounded-md ${
                   currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200'
                 }`}
@@ -262,15 +255,10 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               className="px-3 py-1 bg-gray-200 rounded-md"
-              disabled={currentPage === totalPages}
             >
               {">"}
             </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              className="px-3 py-1 bg-gray-200 rounded-md"
-              disabled={currentPage === totalPages}
-            >
+            <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded-md">
               {">>"}
             </button>
             <div className="flex items-center space-x-1">
@@ -325,7 +313,7 @@ const ProveedoresComponent: React.FC<ProveedoresComponentProps> = ({ onAddProvee
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleUpdateDisponibilidad(deleteModalOpen!)}
+                onClick={() => handleUpdateDisponibilidad(deleteModalOpen)}
               >
                 Confirmar
               </button>

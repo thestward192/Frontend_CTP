@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react';
 const MenuAdminProveedores: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAddingProveedor, setIsAddingProveedor] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleAddProveedor = (isAdding: boolean) => {
     setIsAddingProveedor(isAdding);
@@ -60,14 +61,13 @@ const MenuAdminProveedores: React.FC = () => {
         />
 
         <div className="relative z-10">
-          {/* Sección de búsqueda */}
-          <div className="pt-[40px] px-10">
-            <SearchBarComponent />
+          {/* Sección de búsqueda */}          <div className="pt-[40px] px-10">
+            <SearchBarComponent onSearch={setSearchTerm} />
           </div>
 
           {/* Contenedor de ProveedoresComponent */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            <ProveedoresComponent onAddProveedor={handleAddProveedor} />
+            <ProveedoresComponent onAddProveedor={handleAddProveedor} searchTerm={searchTerm} />
           </div>
         </div>
       </div>
