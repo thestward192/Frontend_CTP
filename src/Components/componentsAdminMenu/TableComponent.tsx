@@ -13,9 +13,10 @@ import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 interface TableComponentProps {
   onAssetSelect: (isSelected: boolean) => void;
   onAddAsset: (isAdding: boolean) => void;
+  searchTerm: string;
 }
 
-const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAsset, searchTerm }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -47,7 +48,52 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   }, [activos, selectedItems]);
 
   const itemsPerPage = 33;
-  const totalPages = Math.ceil(activos.length / itemsPerPage);
+
+  // Aplicar filtros incluyendo el término de búsqueda
+  const filteredData = useMemo(() => {
+    return activos.filter((activo) => {
+      const matchesNombre = activo.nombre.toLowerCase().includes((searchTerm || filterNombre).toLowerCase());
+      const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
+      const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
+      const matchesEstado = !filterEstado || activo.estado === filterEstado;
+      const matchesNumPlaca = filterNumPlaca === '' || (activo.numPlaca && activo.numPlaca.toLowerCase().includes(filterNumPlaca.toLowerCase()));
+      const matchesDisponibilidad = filterDisponibilidad === 'Todos' || activo.disponibilidad === filterDisponibilidad;
+      return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado && matchesNumPlaca && matchesDisponibilidad;
+    });
+  }, [activos, searchTerm, filterNombre, filterUbicacion, filterModoAdquisicion, filterEstado, filterNumPlaca, filterDisponibilidad]);
+
+  // Ordenar según sortOrder y numPlaca
+  const sortedData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      const aVal = a.numPlaca || '';
+      const bVal = b.numPlaca || '';
+      return sortOrder === 'asc'
+        ? aVal.localeCompare(bVal, undefined, { numeric: true })
+        : bVal.localeCompare(aVal, undefined, { numeric: true });
+    });
+  }, [filteredData, sortOrder]);
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+
+  // Paginación sobre datos ordenados
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sortedData.slice(start, start + itemsPerPage);
+  }, [sortedData, currentPage]);
+
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, 5);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push(currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2);
+    }
+    return pages;
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -83,45 +129,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
         setFilterNumPlaca(value);
         break;
     }
-  };
-
-  // Aplicar filtros
-  const filteredData = activos.filter((activo) => {
-    const matchesNombre = activo.nombre.toLowerCase().includes(filterNombre.toLowerCase());
-    const matchesUbicacion = activo.ubicacion?.nombre.toLowerCase().includes(filterUbicacion.toLowerCase());
-    const matchesModoAdquisicion = !filterModoAdquisicion || activo.modoAdquisicion === filterModoAdquisicion;
-    const matchesEstado = !filterEstado || activo.estado === filterEstado;
-    const matchesNumPlaca = filterNumPlaca === '' || (activo.numPlaca && activo.numPlaca.toLowerCase().includes(filterNumPlaca.toLowerCase()));
-    const matchesDisponibilidad = filterDisponibilidad === 'Todos' || activo.disponibilidad === filterDisponibilidad;
-    return matchesNombre && matchesUbicacion && matchesModoAdquisicion && matchesEstado && matchesNumPlaca && matchesDisponibilidad;
-  });
-
-  // Ordenar según sortOrder y numPlaca
-  const sortedData = useMemo(() => {
-    return [...filteredData].sort((a, b) => {
-      const aVal = a.numPlaca || '';
-      const bVal = b.numPlaca || '';
-      return sortOrder === 'asc'
-        ? aVal.localeCompare(bVal, undefined, { numeric: true })
-        : bVal.localeCompare(aVal, undefined, { numeric: true });
-    });
-  }, [filteredData, sortOrder]);
-
-  // Paginación sobre datos ordenados
-  const paginatedData = sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const getPageNumbers = () => {
-    const pages: number[] = [];
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else if (currentPage <= 3) {
-      pages.push(1, 2, 3, 4, 5);
-    } else if (currentPage >= totalPages - 2) {
-      pages.push(totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    } else {
-      pages.push(currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2);
-    }
-    return pages;
   };
 
   const enableSelectionMode = () => {

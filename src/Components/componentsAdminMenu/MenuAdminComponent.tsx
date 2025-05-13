@@ -8,19 +8,20 @@ import { Menu, X } from 'lucide-react';
 const MenuAdminComponent: React.FC = () => {
   const [isAssetSelected, setIsAssetSelected] = useState(false);
   const [isAddingAsset, setIsAddingAsset] = useState(false);
-  // Sidebar toggle: inicialmente abierto
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Callback que se invoca al iniciar o cerrar el flujo de "Agregar Activo"
   const handleAddAsset = (isAdding: boolean) => {
     setIsAddingAsset(isAdding);
     if (isAdding) {
-      // Oculta el dashboard al iniciar el formulario
       setIsSidebarOpen(false);
     } else {
-      // Al cerrar el formulario, vuelve a mostrar el dashboard
       setIsSidebarOpen(true);
     }
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
   };
 
   return (
@@ -68,7 +69,7 @@ const MenuAdminComponent: React.FC = () => {
           {!isAssetSelected && (
             <>
               <div className="pt-[40px] px-10">
-                <SearchBarComponent />
+                <SearchBarComponent onSearch={handleSearch} />
               </div>
             </>
           )}
@@ -78,6 +79,7 @@ const MenuAdminComponent: React.FC = () => {
             <TableComponent
               onAssetSelect={setIsAssetSelected}
               onAddAsset={handleAddAsset}
+              searchTerm={searchTerm}
             />
           </div>
         </div>
