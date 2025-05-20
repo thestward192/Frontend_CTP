@@ -13,7 +13,7 @@ interface FormularioLicitacionProps {
   onSubmit: (licitacion: Omit<Licitacion, 'id'>) => void;
 }
 
-interface FormData extends Omit<Licitacion, 'id'> {}
+interface FormData extends Omit<Licitacion, 'id'> { }
 
 const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, onSubmit, onLicitacionCreated }) => {
   const { leyes, loading: leyesLoading } = useLeyes('En Servicio');
@@ -126,9 +126,18 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
               <input
                 type="number"
                 step={0.01}
+                min="0"
                 id="monto"
-                {...register("monto", { required: "El monto es requerido" })}
-                className="mt-2 block w-full border p-2 rounded-md shadow-sm"
+                {...register("monto", {
+                  valueAsNumber: true,
+                  required: "El monto es requerido",
+                  validate: (value) => {
+                    const numberValue = Number(value);
+                    return (!isNaN(numberValue) && numberValue > 0) || "El monto debe ser mayor que cero";
+                  },
+                })}
+                className={`mt-2 block w-full border p-2 rounded-md shadow-sm ${errors.monto ? 'border-red-500' : ''
+                  }`}
                 placeholder="Ingrese monto"
               />
               <button
@@ -141,6 +150,7 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             </div>
             {errors.monto && <span className="text-red-500 text-sm">{errors.monto.message}</span>}
           </div>
+
 
           {/* Campo oculto para la moneda */}
           <input type="hidden" {...register("moneda")} value={moneda} />
@@ -240,9 +250,8 @@ const FormularioLicitacion: React.FC<FormularioLicitacionProps> = ({ onClose, on
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
