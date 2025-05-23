@@ -111,8 +111,17 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
               <input
                 type="number"
                 step={0.01}
-                {...register("monto")}
-                className="mt-2 block w-full border p-2 rounded-md shadow-sm"
+                min="0"
+                {...register("monto", {
+                  valueAsNumber: true,
+                  required: "El monto es requerido",
+                  validate: (value) => {
+                    const numberValue = Number(value);
+                    return (!isNaN(numberValue) && numberValue > 0) || "El monto debe ser mayor que cero";
+                  },
+                })}
+                className={`mt-2 block w-full border p-2 rounded-md shadow-sm ${errors.monto ? "border-red-500" : ""
+                  }`}
                 placeholder="Ingrese monto"
               />
               <button
@@ -125,6 +134,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
             </div>
             {errors.monto && <span className="text-red-500 text-sm">{errors.monto.message}</span>}
           </div>
+
 
           {/* Descripción */}
           <div className="form-group col-span-2">
