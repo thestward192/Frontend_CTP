@@ -3,7 +3,7 @@ import { Licitacion } from "./licitacion"; // Importamos el tipo Licitacion
 import { Moneda } from "./moneda";
 
 export interface Activo {
-    id?: number; // ID opcional
+    id?: number; // ID opcionaal
     nombre: string;
     descripcion: string;
     marca: string;
