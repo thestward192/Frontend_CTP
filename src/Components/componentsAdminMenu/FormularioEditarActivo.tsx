@@ -56,13 +56,6 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
   const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion('En Servicio');
   const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones('En Servicio');
 
-  // Si la disponibilidad es "Dado de Baja", forzamos que el estado sea "Malo"
-  useEffect(() => {
-    if (asset.disponibilidad === 'Dado de Baja') {
-      setValue('estado', 'Malo');
-    }
-  }, [asset.disponibilidad, setValue]);
-
   // Si asset.licitacion existe, asignamos modo "Ley"; caso contrario "Donación"
   useEffect(() => {
     if (asset.licitacion && asset.licitacion.id) {
@@ -247,10 +240,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   Estado <span className="text-red-500">*</span>
                 </label>
                 <select
-                  {...register('estado', { required: 'El campo Estado es obligatorio' })}
+                  {...register('estado')}
                   className={`mt-2 block w-full border border-gray-300 p-2 rounded-md ${errors.estado ? 'border-red-500' : ''
                     }`}
-                  disabled={asset.disponibilidad === 'Dado de Baja'}
                 >
                   <option value="Bueno">Bueno</option>
                   <option value="Regular">Regular</option>
@@ -271,7 +263,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   className="mt-2 block w-full border border-gray-300 p-2 rounded-md"
                 >
                   <option value="En Servicio">En Servicio</option>
-                  <option value="Fuera de Servicio">Fuera de Servicio</option>
+                  <option value="Dado de Baja">Dado de Baja</option>
                 </select>
                 {errors.disponibilidad && (
                   <span className="text-red-600 text-xs">{errors.disponibilidad.message}</span>
@@ -301,7 +293,6 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                 <Controller
                   control={control}
                   name="ubicacionId"
-                  rules={{ required: 'El campo Ubicación es obligatorio' }}
                   render={({ field }) => {
                     const selectedOption = ubicacionOptions.find((option) => option.value === field.value) || null;
                     return (
