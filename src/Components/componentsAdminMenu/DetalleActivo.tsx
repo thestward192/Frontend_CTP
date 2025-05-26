@@ -41,7 +41,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
   };
 
   const handleUpdateDisponibilidad = async (id: number) => {
-    if (asset.disponibilidad === 'Fuera de Servicio') {
+    if (asset.disponibilidad === 'Dado de Baja') {
       setShowErrorMessage(true);
       setTimeout(() => setShowErrorMessage(false), 3000);
       return;
@@ -318,8 +318,8 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
       {showDeleteConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
-            <h2 className="text-lg font-bold mb-4">Dar de baja el Activo</h2>
-            <p>¿Seguro quieres marcar este activo como "Fuera de Servicio"?</p>
+            <h2 className="text-lg font-bold mb-4">Dar de Baja el Activo</h2>
+            <p>¿Seguro quieres marcar este activo como "Dado de baja"?</p>
             <div className="flex justify-end space-x-4 mt-6">
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
@@ -341,14 +341,14 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
       {/* 7) Toast de éxito */}
       {showCompletedMessage && (
         <div className="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulse">
-          Activo marcado como Fuera de Servicio.
+          Activo marcado como Dado de baja.
         </div>
       )}
 
       {/* 8) Toast de error */}
       {showErrorMessage && (
         <div className="fixed top-10 right-10 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg animate-slideInOutAndPulseError">
-          El Activo ya está Fuera de Servicio.
+          El Activo ya está Dado de baja.
         </div>
       )}
 
