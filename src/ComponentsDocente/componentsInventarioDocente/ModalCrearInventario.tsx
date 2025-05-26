@@ -25,8 +25,7 @@ const ModalCrearInventario: React.FC<ModalCrearInventarioProps> = ({ onClose, on
       setSelectedUbicacion(ubicaciones[0].id);
     }
   }, [ubicaciones]);
-
-  const itemsPerPage = 5;
+  const itemsPerPage = 33;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedActivos = activos.slice(startIndex, startIndex + itemsPerPage);
 
@@ -62,17 +61,20 @@ const ModalCrearInventario: React.FC<ModalCrearInventarioProps> = ({ onClose, on
     }
   };
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Crear Inventario</h2>
-          <button onClick={onClose} className="text-red-600 font-bold">X</button>
+  return (    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Crear Inventario</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div className="mb-4 flex items-center">
-          <label className="mr-2">Ubicación:</label>
+        <div className="mb-6 flex items-center bg-gray-50 p-4 rounded-lg">
+          <label className="text-gray-700 font-medium mr-4">Ubicación:</label>
           <select
-            className="py-2 px-4 rounded-lg border"
+            className="py-2 px-4 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             value={selectedUbicacion || ''}
             onChange={handleUbicacionSelect}
           >
@@ -81,35 +83,55 @@ const ModalCrearInventario: React.FC<ModalCrearInventarioProps> = ({ onClose, on
               <option key={u.id} value={u.id}>{u.nombre}</option>
             ))}
           </select>
-        </div>
-        <div className="overflow-y-auto" style={{ maxHeight: '300px' }}>
+        </div>        <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 300px)' }}>
           {isLoading ? (
-            <div>Cargando activos...</div>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-gray-500">Cargando activos...</div>
+            </div>
           ) : (
-            <table className="min-w-full table-auto border-collapse">
-              <thead>
+            <table className="min-w-full table-auto border-collapse bg-white"><thead className="sticky top-0 bg-white shadow-sm">
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-2">No. Identificador</th>
-                  <th className="px-4 py-2">Nombre</th>
-                  <th className="px-4 py-2">Marca</th>
-                  <th className="px-4 py-2">Serie</th>
-                  <th className="px-4 py-2">Estado Inventario</th>
+                  <th className="px-4 py-3 text-left text-gray-600">Imagen</th>
+                  <th className="px-4 py-3 text-left text-gray-600">No. Identificador</th>
+                  <th className="px-4 py-3 text-left text-gray-600">Nombre</th>
+                  <th className="px-4 py-3 text-left text-gray-600">Marca</th>
+                  <th className="px-4 py-3 text-left text-gray-600">Serie</th>
+                  <th className="px-4 py-3 text-left text-gray-600">Estado Inventario</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {paginatedActivos.map((activo) => {
                   const detalle = inventarioDetalles.find(d => d.activoId === activo.id);
                   return (
                     <tr
                       key={activo.id}
-                      className="border-b hover:bg-gray-100 cursor-pointer"
+                      className="border-b hover:bg-gray-100 cursor-pointer transition-colors"
                       onClick={() => handleRowClick(activo)}
                     >
-                      <td className="px-4 py-2">{activo.numPlaca}</td>
-                      <td className="px-4 py-2">{activo.nombre}</td>
-                      <td className="px-4 py-2">{activo.marca}</td>
-                      <td className="px-4 py-2">{activo.serie}</td>
-                      <td className="px-4 py-2">{detalle ? detalle.estadoProvisional : 'No asignado'}</td>
+                      <td className="px-4 py-3">
+                        {activo.foto ? (
+                          <img
+                            src={activo.foto}
+                            alt={activo.nombre}
+                            className="w-12 h-12 object-cover rounded-md border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                            Sin imagen
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">{activo.numPlaca}</td>
+                      <td className="px-4 py-3">{activo.nombre}</td>
+                      <td className="px-4 py-3">{activo.marca}</td>
+                      <td className="px-4 py-3">{activo.serie}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          detalle ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {detalle ? detalle.estadoProvisional : 'No asignado'}
+                        </span>
+                      </td>
                     </tr>
                   );
                 })}
@@ -146,10 +168,18 @@ const ModalCrearInventario: React.FC<ModalCrearInventarioProps> = ({ onClose, on
               &gt;
             </button>
           </div>
-        </div>
-        <div className="mt-4">
-          <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded">
+        </div>        <div className="mt-6 flex justify-between">
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
             Guardar Inventario
+          </button>
+          <button
+            onClick={onClose}
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Cancelar
           </button>
         </div>
         {selectedActivo && (

@@ -60,9 +60,9 @@ const TablePrestamosDocente: React.FC = () => {
           {loading ? (
             <div>Cargando préstamos...</div>
           ) : activeTab === 'hechos' ? (
-            <table className="min-w-full table-auto border-collapse">
-              <thead>
+            <table className="min-w-full table-auto border-collapse">              <thead>
                 <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Activo</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Prestado A</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Fecha de Préstamo</th>
@@ -73,6 +73,19 @@ const TablePrestamosDocente: React.FC = () => {
               <tbody>
                 {prestamos.map((prestamo) => (
                   <tr key={prestamo.id} className="border-b hover:bg-gray-100">
+                    <td className="px-4 py-2 text-sm">
+                      {prestamo.activo?.foto ? (
+                        <img
+                          src={prestamo.activo.foto}
+                          alt={prestamo.activo.nombre}
+                          className="w-12 h-12 object-cover rounded-md border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                          Sin imagen
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-sm">{prestamo.activo?.nombre || 'Sin nombre'}</td>
                     <td className="px-4 py-2 text-sm">{prestamo.prestadoA?.nombre || 'Desconocido'}</td>
                     <td className="px-4 py-2 text-sm">{new Date(prestamo.fechaPrestamo).toLocaleDateString()}</td>
@@ -92,9 +105,9 @@ const TablePrestamosDocente: React.FC = () => {
               </tbody>
             </table>
           ) : (
-            <table className="min-w-full table-auto border-collapse">
-              <thead>
+            <table className="min-w-full table-auto border-collapse">              <thead>
                 <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Activo</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Prestado Por</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Fecha de Préstamo</th>
@@ -104,6 +117,19 @@ const TablePrestamosDocente: React.FC = () => {
               <tbody>
                 {prestamos.map((prestamo) => (
                   <tr key={prestamo.id} className="border-b hover:bg-gray-100">
+                    <td className="px-4 py-2 text-sm">
+                      {prestamo.activo?.foto ? (
+                        <img
+                          src={prestamo.activo.foto}
+                          alt={prestamo.activo.nombre}
+                          className="w-12 h-12 object-cover rounded-md border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                          Sin imagen
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-sm">{prestamo.activo?.nombre || 'Sin nombre'}</td>
                     <td className="px-4 py-2 text-sm">{prestamo.prestadoPor?.nombre || 'Desconocido'}</td>
                     <td className="px-4 py-2 text-sm">{new Date(prestamo.fechaPrestamo).toLocaleDateString()}</td>

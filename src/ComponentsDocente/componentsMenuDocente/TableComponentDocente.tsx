@@ -171,6 +171,7 @@ const TableComponentDocente: React.FC<TableComponentDocenteProps> = ({ onDetailT
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-gray-600 font-semibold">Imagen</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">No. Identificador</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Nombre</th>
                   <th className="px-4 py-2 text-gray-600 font-semibold">Marca</th>
@@ -185,6 +186,19 @@ const TableComponentDocente: React.FC<TableComponentDocenteProps> = ({ onDetailT
                     className="border-b hover:bg-gray-100 cursor-pointer"
                     onClick={() => handleRowClick(row)}
                   >
+                    <td className="px-4 py-2 text-sm">
+                      {row.foto ? (
+                        <img
+                          src={row.foto}
+                          alt={row.nombre}
+                          className="w-12 h-12 object-cover rounded-md border"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                          Sin imagen
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-sm">{row.numPlaca}</td>
                     <td className="px-4 py-2 text-sm">{row.nombre}</td>
                     <td className="px-4 py-2 text-sm">{row.marca}</td>
