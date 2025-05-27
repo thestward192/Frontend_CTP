@@ -20,6 +20,12 @@ const MenuAdminComponent: React.FC = () => {
     }
   };
 
+  // Nueva función para manejar la visibilidad del sidebar cuando se abre/cierra el detalle
+  const handleAssetDetailVisibility = (isDetailOpen: boolean) => {
+    setIsAssetSelected(isDetailOpen);
+    setIsSidebarOpen(!isDetailOpen);
+  };
+
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
@@ -72,12 +78,10 @@ const MenuAdminComponent: React.FC = () => {
                 <SearchBarComponent onSearch={handleSearch} />
               </div>
             </>
-          )}
-
-          {/* Contenedor de la tabla */}
+          )}          {/* Contenedor de la tabla */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
             <TableComponent
-              onAssetSelect={setIsAssetSelected}
+              onAssetSelect={handleAssetDetailVisibility}
               onAddAsset={handleAddAsset}
               searchTerm={searchTerm}
             />

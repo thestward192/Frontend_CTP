@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://backendcontrolactivos-1.onrender.com/',
+        target: 'https://backendcontrolactivos-2.onrender.com',
         changeOrigin: true,
         rewrite: (path: string) => path.startsWith('/api') ? path.substring(4) : path,
       },

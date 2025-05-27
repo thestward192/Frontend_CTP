@@ -140,10 +140,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
     setIsSelectionMode(false);
     setIsSelecting(false);
     setSelectedItems([]);
-  };
-
-  const handleSelectAsset = (asset: Activo) => {
+  };  const handleSelectAsset = (asset: Activo) => {
     setSelectedAsset(asset);
+    // Indica que se está mostrando el detalle, lo que cerrará el sidebar
     onAssetSelect(true);
   };
 
@@ -414,16 +413,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
       ) : modoAdquisicion ? (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <FormularioAgregarActivo onClose={handleCloseForm} modoAdquisicion={modoAdquisicion} />
-        </div>
-      ) : selectedAsset ? (
+        </div>      ) : null}      {selectedAsset && (
         <DetalleComponent
           asset={selectedAsset}
           onBack={() => {
             setSelectedAsset(null);
+            // Indica que el detalle se cerró, lo que volverá a mostrar el sidebar
             onAssetSelect(false);
           }}
         />
-      ) : null}
+      )}
 
       {isModalOpen && (
         <SelectionModal
