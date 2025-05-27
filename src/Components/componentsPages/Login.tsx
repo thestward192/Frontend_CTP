@@ -29,7 +29,7 @@ const Login: React.FC = () => {
       }
 
       // Llamada al backend
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('https://backendcontrolactivos-2.onrender.com/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
