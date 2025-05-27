@@ -335,17 +335,8 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
               </div>
             </div>
           </form>
-        </div>
-
-        {/* Footer with buttons */}
+        </div>        {/* Footer with buttons */}
         <div className="border-t p-4 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors"
-          >
-            Cancelar
-          </button>
           <button
             type="submit"
             onClick={handleSubmit(onSubmitHandler)}
@@ -355,6 +346,13 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
             }`}
           >
             {loading || isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors"
+          >
+            Cancelar
           </button>
         </div>
       </div>
