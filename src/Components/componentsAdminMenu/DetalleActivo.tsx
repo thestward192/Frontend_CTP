@@ -145,12 +145,7 @@ const DetalleComponent: React.FC<DetalleComponentProps> = ({ asset, onBack }) =>
           >
             <FaFileExport className="mr-1" /> Exportar
           </button>
-          <button
-            onClick={() => setIsActaFormOpen(true)}
-            className="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-md flex items-center text-sm transition-all duration-300"
-          >
-            <FaFilePdf className="mr-1" /> Acta
-          </button>
+          
           <button
             onClick={() => setShowDeleteConfirmation(true)}
             className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-md flex items-center text-sm"

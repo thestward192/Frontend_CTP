@@ -1,3 +1,5 @@
+// src/pages/MenuDocente.tsx
+
 import React, { useState } from 'react';
 import Arriba from '../../assets/Arriba.png';
 import SearchBarDocente from '../componentsPagesDocente/SearchBarDocente';
@@ -8,6 +10,7 @@ import DashboardDocente from '../componentsPagesDocente/DashboardDocentes';
 
 const MenuDocente: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchTerm, setSearchTerm] = useState<string>('');  // ← Nuevo estado para el término de búsqueda
 
   // Función para actualizar el estado del sidebar según si se muestra el detalle
   const handleDetailToggle = (isDetailOpen: boolean) => {
@@ -28,7 +31,8 @@ const MenuDocente: React.FC = () => {
       {/* Sidebar */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-40 bg-white shadow-lg w-64 
+          transition-transform duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
@@ -40,7 +44,7 @@ const MenuDocente: React.FC = () => {
         <div
           className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
-        ></div>
+        />
       )}
 
       {/* Contenido principal */}
@@ -63,13 +67,18 @@ const MenuDocente: React.FC = () => {
 
           {/* Sección de búsqueda */}
           <div className="pt-[40px] px-10">
-            <SearchBarDocente />
+            <SearchBarDocente
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+            />
           </div>
 
           {/* Contenedor de TableComponentDocente */}
           <div className="relative z-20 -mt-6 ml-10 mr-10">
-            {/* Se pasa el callback onDetailToggle */}
-            <TableComponentDocente onDetailToggle={handleDetailToggle} />
+            <TableComponentDocente
+              searchTerm={searchTerm}
+              onDetailToggle={handleDetailToggle}
+            />
           </div>
         </div>
       </div>
