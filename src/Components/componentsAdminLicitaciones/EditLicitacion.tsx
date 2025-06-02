@@ -165,7 +165,7 @@ const EditLicitacion: React.FC<EditLicitacionFormProps> = ({ licitacion, onSave,
           {/* Ley Asociada */}
           <div className="form-group">
             <label className="block text-sm font-medium text-gray-700">
-              Ley Asociada <span className="text-red-500">*</span>
+              Fuente Financiera <span className="text-red-500">*</span>
             </label>
             <Controller
               control={control}
