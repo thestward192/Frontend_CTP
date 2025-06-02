@@ -1,5 +1,8 @@
+// src/hooks/useExportToExcel.ts
+
 import ExcelJS from 'exceljs';
 import { Activo } from '../types/activo';
+import { Moneda } from '../types/moneda';
 
 export const useExportToExcel = () => {
   const exportToExcel = async (selectedActivos: Activo[]) => {
@@ -62,9 +65,16 @@ export const useExportToExcel = () => {
       });
 
       // Agregar datos y aplicar bordes
-      activos.forEach((activo, index) => {
-        const registradoEn = `${tomo}, ${folioCounter}, ${index + 1}`;
+      activos.forEach((activo) => {
+        // Extraer últimos 4 dígitos de numPlaca y quitar ceros a la izquierda
+        const placa = activo.numPlaca || '';
+        const lastFour = placa.slice(-4);
+        const numeroActivo = parseInt(lastFour, 10) || 0;
+
+        const registradoEn = `${tomo}, ${folioCounter}, ${numeroActivo}`;
         const ubicacionNombre = activo.ubicacion?.nombre || 'Ubicación desconocida';
+
+        // Formatear modo de adquisición
         let modoAdquisicion = activo.modoAdquisicion;
         if (modoAdquisicion === 'Ley' && activo.licitacion?.ley) {
           modoAdquisicion = activo.licitacion.ley.numLey || 'Ley desconocida';
@@ -72,19 +82,33 @@ export const useExportToExcel = () => {
           modoAdquisicion = 'Donación';
         }
 
+        // Formatear precio con la moneda correspondiente
+        let precioConMoneda: string;
+        switch (activo.moneda) {
+          case Moneda.DOLAR:
+            precioConMoneda = `$${activo.precio}`;
+            break;
+          case Moneda.COLON:
+            precioConMoneda = `₡${activo.precio}`;
+            break;
+          default:
+            precioConMoneda = `${activo.precio}`;
+        }
+
         const row = worksheet.addRow([
           registradoEn,
           activo.numPlaca,
-          activo.descripcion,
+          activo.nombre,
           activo.marca,
           activo.modelo,
           activo.serie,
           activo.estado,
           ubicacionNombre,
           modoAdquisicion,
-          activo.precio,
+          precioConMoneda,
           activo.observacion,
         ]);
+
         row.eachCell({ includeEmpty: true }, (cell) => {
           cell.border = borderStyle;
         });
@@ -97,7 +121,6 @@ export const useExportToExcel = () => {
           const cellValue = cell.value ? cell.value.toString() : '';
           maxLength = Math.max(maxLength, cellValue.length);
         });
-        // Se establece un ancho mínimo de 10 y se agrega un poco de espacio extra
         column.width = maxLength < 10 ? 10 : maxLength + 2;
       });
 
