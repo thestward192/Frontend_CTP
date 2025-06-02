@@ -42,7 +42,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
       disponibilidad: asset.disponibilidad,
       modelo: asset.modelo,
       foto: asset.foto,
-      precio: asset.precio,
+      precio: asset.precio ?? undefined,
       observacion: asset.observacion,
       ubicacionId: asset.ubicacion ? asset.ubicacion.id.toString() : '',
       modoAdquisicion: asset.modoAdquisicion || 'Donación',
@@ -53,10 +53,18 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { ubicaciones, loading: ubicacionesLoading, error: ubicacionesError } = useUbicacion('En Servicio');
-  const { licitaciones, loading: licitacionesLoading, error: licitacionesError } = useLicitaciones('En Servicio');
+  const {
+    ubicaciones,
+    loading: ubicacionesLoading,
+    error: ubicacionesError,
+  } = useUbicacion('En Servicio');
+  const {
+    licitaciones,
+    loading: licitacionesLoading,
+    error: licitacionesError,
+  } = useLicitaciones('En Servicio');
 
-  // Si asset.licitacion existe, asignamos modo "Ley"; caso contrario "Donación"
+  // Determinar modoAdquisicion inicial según asset.licitacion
   useEffect(() => {
     if (asset.licitacion && asset.licitacion.id) {
       setValue('modoAdquisicion', 'Ley');
@@ -65,38 +73,60 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
     }
   }, [asset.licitacion, setValue]);
 
-  // Opciones para react‑select (usamos strings para value)
-  const ubicacionOptions: OptionType[] = (ubicaciones || []).map((ubicacion) => ({
-    value: ubicacion.id.toString(),
-    label: ubicacion.nombre,
-  }));
+  // Opciones para react-select (value como string)
+  const ubicacionOptions: OptionType[] = (ubicaciones || []).map(
+    (ubicacion) => ({
+      value: ubicacion.id.toString(),
+      label: ubicacion.nombre,
+    })
+  );
 
-  const licitacionOptions: OptionType[] = (licitaciones || []).map((licitacion) => ({
-    value: licitacion.id.toString(),
-    label: licitacion.nombre,
-  }));
+  const licitacionOptions: OptionType[] = (licitaciones || []).map(
+    (licitacion) => ({
+      value: licitacion.id.toString(),
+      label: licitacion.nombre,
+    })
+  );
 
-  // Para leer la moneda actual del formulario
+  // Leer la moneda actual del formulario
   const monedaValor = watch('moneda');
+
+  // Leer el modo de adquisición actual
+  const modoAdq = watch('modoAdquisicion');
 
   // Función para cambiar el símbolo de la moneda
   const handleMonedaSwitch = () => {
-    setValue('moneda', monedaValor === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON);
+    setValue(
+      'moneda',
+      monedaValor === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON
+    );
   };
 
-  const onSubmitHandler: SubmitHandler<Omit<Activo, 'id' | 'numPlaca'>> = async (data) => {
-    try {
-      onSave(data);
-      setSuccessMessage('Activo actualizado exitosamente');
-      setTimeout(() => {
-        setSuccessMessage(null);
-        onClose();
-        reset();
-      }, 1000);
-    } catch (error) {
-      console.error('Error al actualizar el activo:', error);
+  // Determinar texto dinámico para el encabezado
+  const obtenerTitulo = () => {
+    if (modoAdq === 'Ley') {
+      return 'Editar Activo Por Ley';
+    } else if (modoAdq === 'Donación') {
+      return 'Editar Activo Por Donación';
+    } else {
+      return 'Editar Activo';
     }
   };
+
+  const onSubmitHandler: SubmitHandler<Omit<Activo, 'id' | 'numPlaca'>> =
+    async (data) => {
+      try {
+        onSave(data);
+        setSuccessMessage('Activo actualizado exitosamente');
+        setTimeout(() => {
+          setSuccessMessage(null);
+          onClose();
+          reset(); // limpia el formulario
+        }, 1000);
+      } catch (error) {
+        console.error('Error al actualizar el activo:', error);
+      }
+    };
 
   if (ubicacionesLoading || licitacionesLoading) {
     return <p>Cargando ubicaciones y licitaciones...</p>;
@@ -108,13 +138,17 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl font-['DM Sans']">
+        {/* Mensaje de éxito */}
         {successMessage && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-6 flex items-center">
             <FaCheckCircle className="mr-2" />
             {successMessage}
           </div>
         )}
-        <h2 className="text-xl font-bold mb-4">Editar Activo</h2>
+
+        {/* Encabezado dinámico */}
+        <h2 className="text-xl font-bold mb-4">{obtenerTitulo()}</h2>
+
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -128,13 +162,19 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   placeholder="Ingrese nombre"
                   {...register('nombre', {
                     required: 'El campo Nombre es obligatorio',
-                    maxLength: { value: 100, message: 'El nombre no debe superar 100 caracteres' },
+                    maxLength: {
+                      value: 100,
+                      message: 'El nombre no debe superar 100 caracteres',
+                    },
                   })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.nombre ? 'border-red-500' : ''
-                    }`}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.nombre ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.nombre && (
-                  <span className="text-red-600 text-xs">{errors.nombre.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.nombre.message}
+                  </span>
                 )}
               </div>
 
@@ -148,61 +188,80 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   placeholder="Ingrese marca"
                   {...register('marca', {
                     required: 'El campo Marca es obligatorio',
-                    maxLength: { value: 50, message: 'La marca no debe superar 50 caracteres' },
+                    maxLength: {
+                      value: 50,
+                      message: 'La marca no debe superar 50 caracteres',
+                    },
                   })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.marca ? 'border-red-500' : ''
-                    }`}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.marca ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.marca && (
-                  <span className="text-red-600 text-xs">{errors.marca.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.marca.message}
+                  </span>
                 )}
               </div>
 
-              {/* Modelo */}
+              {/* Modelo (ahora opcional) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Modelo <span className="text-red-500">*</span>
+                  Modelo
+                  {/* Se quitó el asterisco rojo y la validación required */}
                 </label>
                 <input
                   type="text"
                   placeholder="Ingrese modelo"
                   {...register('modelo', {
-                    required: 'El campo Modelo es obligatorio',
-                    maxLength: { value: 50, message: 'El modelo no debe superar 50 caracteres' },
+                    maxLength: {
+                      value: 50,
+                      message: 'El modelo no debe superar 50 caracteres',
+                    },
                   })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.modelo ? 'border-red-500' : ''
-                    }`}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.modelo ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.modelo && (
-                  <span className="text-red-600 text-xs">{errors.modelo.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.modelo.message}
+                  </span>
                 )}
               </div>
 
-              {/* Serie */}
+              {/* Serie (ahora opcional) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Serie <span className="text-red-500">*</span>
+                  Serie
+                  {/* Se quitó el asterisco rojo y la validación required */}
                 </label>
                 <input
                   type="text"
                   placeholder="Ingrese serie"
                   {...register('serie', {
-                    required: 'El campo Serie es obligatorio',
-                    maxLength: { value: 50, message: 'La serie no debe superar 50 caracteres' },
+                    maxLength: {
+                      value: 50,
+                      message: 'La serie no debe superar 50 caracteres',
+                    },
                   })}
-                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${errors.serie ? 'border-red-500' : ''
-                    }`}
+                  className={`mt-2 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
+                    errors.serie ? 'border-red-500' : ''
+                  }`}
                 />
                 {errors.serie && (
-                  <span className="text-red-600 text-xs">{errors.serie.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.serie.message}
+                  </span>
                 )}
               </div>
 
               {/* Precio + Moneda (solo si modoAdquisicion no es "Donación") */}
-              {watch('modoAdquisicion') !== 'Donación' && (
+              {modoAdq !== 'Donación' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio ({watch('moneda') === Moneda.COLON ? '₡' : '$'})
+                    Precio ({monedaValor === Moneda.COLON ? '₡' : '$'})
+                    {/* Ahora precio no es obligatorio */}
                   </label>
                   <div className="flex items-center space-x-2">
                     <div className="flex-1">
@@ -211,16 +270,20 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                         step={0.01}
                         placeholder="Ingrese precio"
                         {...register('precio', {
-                          required: 'El campo Precio es obligatorio',
                           valueAsNumber: true,
                           validate: (value) =>
-                            value >= 0 || 'No se permiten números negativos',
+                            value == null ||
+                            value >= 0 ||
+                            'No se permiten números negativos',
                         })}
-                        className={`w-full border border-gray-300 p-2 rounded-lg ${errors.precio ? 'border-red-500' : ''
-                          }`}
+                        className={`w-full border border-gray-300 p-2 rounded-lg ${
+                          errors.precio ? 'border-red-500' : ''
+                        }`}
                       />
                       {errors.precio && (
-                        <span className="text-red-600 text-xs">{errors.precio.message}</span>
+                        <span className="text-red-600 text-xs">
+                          {errors.precio.message}
+                        </span>
                       )}
                     </div>
                     <button
@@ -228,7 +291,7 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                       onClick={handleMonedaSwitch}
                       className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 opacity-75 hover:opacity-100"
                     >
-                      {watch('moneda') === Moneda.COLON ? 'CRC' : 'USD'}
+                      {monedaValor === Moneda.COLON ? 'CRC' : 'USD'}
                     </button>
                   </div>
                 </div>
@@ -240,23 +303,28 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   Estado <span className="text-red-500">*</span>
                 </label>
                 <select
-                  {...register('estado')}
-                  className={`mt-2 block w-full border border-gray-300 p-2 rounded-md ${errors.estado ? 'border-red-500' : ''
-                    }`}
+                  {...register('estado', {
+                    required: 'El campo Estado es obligatorio',
+                  })}
+                  className={`mt-2 block w-full border border-gray-300 p-2 rounded-md ${
+                    errors.estado ? 'border-red-500' : ''
+                  }`}
                 >
                   <option value="Bueno">Bueno</option>
                   <option value="Regular">Regular</option>
                   <option value="Malo">Malo</option>
                 </select>
                 {errors.estado && (
-                  <span className="text-red-600 text-xs">{errors.estado.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.estado.message}
+                  </span>
                 )}
               </div>
 
               {/* Disponibilidad */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Disponibilidad <span className="text-red-500"></span>
+                  Disponibilidad
                 </label>
                 <select
                   {...register('disponibilidad')}
@@ -265,12 +333,9 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   <option value="En Servicio">En Servicio</option>
                   <option value="Dado de Baja">Dado de Baja</option>
                 </select>
-                {errors.disponibilidad && (
-                  <span className="text-red-600 text-xs">{errors.disponibilidad.message}</span>
-                )}
               </div>
 
-              {/* Descripción */}
+              {/* Descripción (col-span-2) */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Descripción
@@ -281,11 +346,13 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   className="mt-2 block w-full border border-gray-300 p-2 rounded-md shadow-sm"
                 />
                 {errors.descripcion && (
-                  <span className="text-red-600 text-xs">{errors.descripcion.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.descripcion.message}
+                  </span>
                 )}
               </div>
 
-              {/* Ubicación con react‑select */}
+              {/* Ubicación con react-select */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Ubicación <span className="text-red-500">*</span>
@@ -293,14 +360,20 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                 <Controller
                   control={control}
                   name="ubicacionId"
+                  rules={{ required: 'El campo Ubicación es obligatorio' }}
                   render={({ field }) => {
-                    const selectedOption = ubicacionOptions.find((option) => option.value === field.value) || null;
+                    const selectedOption =
+                      ubicacionOptions.find(
+                        (option) => option.value === field.value
+                      ) || null;
                     return (
                       <Select
                         {...field}
                         options={ubicacionOptions}
                         value={selectedOption}
-                        onChange={(option: SingleValue<OptionType>) => field.onChange(option ? option.value : '')}
+                        onChange={(option: SingleValue<OptionType>) =>
+                          field.onChange(option ? option.value : '')
+                        }
                         placeholder="Seleccione una Ubicación"
                         classNamePrefix="react-select"
                       />
@@ -308,12 +381,14 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   }}
                 />
                 {errors.ubicacionId && (
-                  <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>
+                  <span className="text-red-600 text-xs">
+                    {errors.ubicacionId.message}
+                  </span>
                 )}
               </div>
 
               {/* Licitación (solo si modoAdquisicion es "Ley") */}
-              {watch('modoAdquisicion') === 'Ley' && (
+              {modoAdq === 'Ley' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Licitación <span className="text-red-500">*</span>
@@ -323,13 +398,18 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                     name="licitacionId"
                     rules={{ required: 'El campo Licitación es obligatorio' }}
                     render={({ field }) => {
-                      const selectedOption = licitacionOptions.find((option) => option.value === field.value) || null;
+                      const selectedOption =
+                        licitacionOptions.find(
+                          (option) => option.value === field.value
+                        ) || null;
                       return (
                         <Select
                           {...field}
                           options={licitacionOptions}
                           value={selectedOption}
-                          onChange={(option: SingleValue<OptionType>) => field.onChange(option ? option.value : '')}
+                          onChange={(option: SingleValue<OptionType>) =>
+                            field.onChange(option ? option.value : '')
+                          }
                           placeholder="Seleccione una Licitación"
                           classNamePrefix="react-select"
                         />
@@ -337,12 +417,14 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                     }}
                   />
                   {errors.licitacionId && (
-                    <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>
+                    <span className="text-red-600 text-xs">
+                      {errors.licitacionId.message}
+                    </span>
                   )}
                 </div>
               )}
 
-              {/* Observaciones */}
+              {/* Observaciones (col-span-2) */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Observaciones
@@ -352,14 +434,13 @@ const FormularioEditarActivo: React.FC<FormularioEditarActivoProps> = ({
                   {...register('observacion')}
                   className="mt-2 block w-full border border-gray-300 p-2 rounded-md shadow-sm"
                 />
-                {errors.observacion && (
-                  <span className="text-red-600 text-xs">{errors.observacion.message}</span>
-                )}
               </div>
 
-              {/* Imagen */}
+              {/* Imagen (col-span-2) */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Imagen</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Imagen
+                </label>
                 {asset.foto ? (
                   <img
                     src={asset.foto}

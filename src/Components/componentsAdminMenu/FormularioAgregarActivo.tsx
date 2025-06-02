@@ -21,7 +21,10 @@ interface OptionType {
   label: string;
 }
 
-const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClose, modoAdquisicion }) => {
+const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({
+  onClose,
+  modoAdquisicion,
+}) => {
   const {
     register,
     handleSubmit,
@@ -73,6 +76,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
   }, []);
 
   useEffect(() => {
+    // Si es donación, forzamos precio = 0
     if (modoAdquisicion === 'Donación') {
       setValue('precio', 0);
     }
@@ -81,12 +85,15 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
   }, [modoAdquisicion, moneda, setValue]);
 
   const handleButtonMonedaSwitch = () => {
-    const nuevaMoneda = moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
+    const nuevaMoneda =
+      moneda === Moneda.COLON ? Moneda.DOLAR : Moneda.COLON;
     setMoneda(nuevaMoneda);
     setValue('moneda', nuevaMoneda);
   };
 
-  const onSubmitHandler: SubmitHandler<Omit<Activo, 'id' | 'numPlaca'>> = async (data) => {
+  const onSubmitHandler: SubmitHandler<
+    Omit<Activo, 'id' | 'numPlaca'>
+  > = async (data) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
@@ -114,6 +121,17 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
     label: licitacion.nombre,
   }));
 
+  // Función para elegir el texto del título según modoAdquisicion
+  const obtenerTitulo = () => {
+    if (modoAdquisicion === 'Ley') {
+      return 'Agregar Activo Por Ley';
+    } else if (modoAdquisicion === 'Donación') {
+      return 'Agregar Activo Por Donación';
+    } else {
+      return 'Agregar Activo';
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-[85vw] h-[80vh] flex flex-col font-['DM Sans']">
@@ -125,7 +143,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
               {successMessage}
             </div>
           )}
-          <h2 className="text-2xl font-bold">Agregar Activo</h2>
+          <h2 className="text-2xl font-bold">{obtenerTitulo()}</h2>
         </div>
 
         {/* Form Content */}
@@ -145,13 +163,20 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       placeholder="Ingrese nombre"
                       {...register('nombre', {
                         required: 'El campo Nombre es obligatorio',
-                        maxLength: { value: 100, message: 'El nombre no debe superar 100 caracteres' },
+                        maxLength: {
+                          value: 100,
+                          message: 'El nombre no debe superar 100 caracteres',
+                        },
                       })}
                       className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
                         errors.nombre ? 'border-red-500' : ''
                       }`}
                     />
-                    {errors.nombre && <span className="text-red-600 text-xs">{errors.nombre.message}</span>}
+                    {errors.nombre && (
+                      <span className="text-red-600 text-xs">
+                        {errors.nombre.message}
+                      </span>
+                    )}
                   </div>
 
                   {/* Marca y Modelo en la misma fila */}
@@ -164,50 +189,74 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       placeholder="Ingrese marca"
                       {...register('marca', {
                         required: 'El campo Marca es obligatorio',
-                        maxLength: { value: 50, message: 'La marca no debe superar 50 caracteres' },
+                        maxLength: {
+                          value: 50,
+                          message:
+                            'La marca no debe superar 50 caracteres',
+                        },
                       })}
                       className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
                         errors.marca ? 'border-red-500' : ''
                       }`}
                     />
-                    {errors.marca && <span className="text-red-600 text-xs">{errors.marca.message}</span>}
+                    {errors.marca && (
+                      <span className="text-red-600 text-xs">
+                        {errors.marca.message}
+                      </span>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Modelo <span className="text-red-500">*</span>
+                      Modelo
+                      {/* Se quitó el asterisco rojo y la validación "required" */}
                     </label>
                     <input
                       type="text"
                       placeholder="Ingrese modelo"
                       {...register('modelo', {
-                        required: 'El campo Modelo es obligatorio',
-                        maxLength: { value: 50, message: 'El modelo no debe superar 50 caracteres' },
+                        maxLength: {
+                          value: 50,
+                          message:
+                            'El modelo no debe superar 50 caracteres',
+                        },
                       })}
                       className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
                         errors.modelo ? 'border-red-500' : ''
                       }`}
                     />
-                    {errors.modelo && <span className="text-red-600 text-xs">{errors.modelo.message}</span>}
+                    {errors.modelo && (
+                      <span className="text-red-600 text-xs">
+                        {errors.modelo.message}
+                      </span>
+                    )}
                   </div>
 
                   {/* Serie y Ubicación en la misma fila */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Serie <span className="text-red-500">*</span>
+                      Serie
+                      {/* Se quitó el asterisco rojo y la validación "required" */}
                     </label>
                     <input
                       type="text"
                       placeholder="Ingrese serie"
                       {...register('serie', {
-                        required: 'El campo Serie es obligatorio',
-                        maxLength: { value: 50, message: 'La serie no debe superar 50 caracteres' },
+                        maxLength: {
+                          value: 50,
+                          message:
+                            'La serie no debe superar 50 caracteres',
+                        },
                       })}
                       className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
                         errors.serie ? 'border-red-500' : ''
                       }`}
                     />
-                    {errors.serie && <span className="text-red-600 text-xs">{errors.serie.message}</span>}
+                    {errors.serie && (
+                      <span className="text-red-600 text-xs">
+                        {errors.serie.message}
+                      </span>
+                    )}
                   </div>
 
                   <div>
@@ -218,17 +267,23 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       control={control}
                       name="ubicacionId"
                       defaultValue={undefined}
-                      rules={{ required: 'El campo Ubicación es obligatorio' }}
+                      rules={{
+                        required: 'El campo Ubicación es obligatorio',
+                      }}
                       render={({ field: { onChange, value, ...field } }) => {
                         const selectedOption = value
-                          ? ubicacionOptions.find((option) => option.value === Number(value))
+                          ? ubicacionOptions.find(
+                              (option) => option.value === Number(value)
+                            )
                           : null;
                         return (
                           <Select<OptionType>
                             {...field}
                             value={selectedOption}
                             options={ubicacionOptions}
-                            onChange={(option) => onChange(option?.value)}
+                            onChange={(option) =>
+                              onChange(option?.value)
+                            }
                             placeholder="Seleccione una Ubicación"
                             classNamePrefix="react-select"
                           />
@@ -236,7 +291,9 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       }}
                     />
                     {errors.ubicacionId && (
-                      <span className="text-red-600 text-xs">{errors.ubicacionId.message}</span>
+                      <span className="text-red-600 text-xs">
+                        {errors.ubicacionId.message}
+                      </span>
                     )}
                   </div>
 
@@ -245,6 +302,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Precio ({moneda === Moneda.COLON ? '₡' : '$'})
+                        {/* Antes había validación “El precio debe ser mayor que cero”; ahora es opcional */}
                       </label>
                       <div className="flex items-center space-x-2">
                         <input
@@ -253,10 +311,7 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                           min="0"
                           {...register('precio', {
                             valueAsNumber: true,
-                            validate: (value) => {
-                              const numberValue = Number(value);
-                              return (!isNaN(numberValue) && numberValue > 0) || 'El precio debe ser mayor que cero';
-                            },
+                            // Se eliminó la validación obligatoria
                           })}
                           className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 ${
                             errors.precio ? 'border-red-500' : ''
@@ -270,7 +325,11 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                           {moneda === Moneda.COLON ? 'CRC' : 'USD'}
                         </button>
                       </div>
-                      {errors.precio && <p className="text-red-600 text-xs mt-1">{errors.precio.message}</p>}
+                      {errors.precio && (
+                        <p className="text-red-600 text-xs mt-1">
+                          {errors.precio.message}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -283,17 +342,25 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                         control={control}
                         name="licitacionId"
                         defaultValue={undefined}
-                        rules={{ required: 'El campo Licitación es obligatorio' }}
+                        rules={{
+                          required:
+                            'El campo Licitación es obligatorio',
+                        }}
                         render={({ field: { onChange, value, ...field } }) => {
                           const selectedOption = value
-                            ? licitacionOptions.find((option) => option.value === Number(value))
+                            ? licitacionOptions.find(
+                                (option) =>
+                                  option.value === Number(value)
+                              )
                             : null;
                           return (
                             <Select<OptionType>
                               {...field}
                               value={selectedOption}
                               options={licitacionOptions}
-                              onChange={(option) => onChange(option?.value)}
+                              onChange={(option) =>
+                                onChange(option?.value)
+                              }
                               placeholder="Seleccione una Licitación"
                               classNamePrefix="react-select"
                             />
@@ -301,23 +368,35 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                         }}
                       />
                       {errors.licitacionId && (
-                        <span className="text-red-600 text-xs">{errors.licitacionId.message}</span>
+                        <span className="text-red-600 text-xs">
+                          {errors.licitacionId.message}
+                        </span>
                       )}
                     </div>
-                  )}                  {/* Descripción y Observaciones en la misma fila */}
+                  )}
+
+                  {/* Descripción y Observaciones en la misma fila */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Descripción
+                    </label>
                     <textarea
                       placeholder="Ingrese descripción"
                       {...register('descripcion')}
                       rows={2}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 resize-none"
                     />
-                    {errors.descripcion && <span className="text-red-600 text-xs">{errors.descripcion.message}</span>}
+                    {errors.descripcion && (
+                      <span className="text-red-600 text-xs">
+                        {errors.descripcion.message}
+                      </span>
+                    )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Observaciones
+                    </label>
                     <textarea
                       placeholder="Ingrese observaciones"
                       {...register('observacion')}
@@ -325,17 +404,25 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 resize-none"
                     />
                     {errors.observacion && (
-                      <span className="text-red-600 text-xs">{errors.observacion.message}</span>
+                      <span className="text-red-600 text-xs">
+                        {errors.observacion.message}
+                      </span>
                     )}
                   </div>
                 </div>
-              </div>              {/* Right side - Image uploader */}
+              </div>
+
+              {/* Right side - Image uploader */}
               <div className="w-96 flex-shrink-0 flex flex-col justify-start">
-                <ImageUploader onUpload={(url) => setValue('foto', url)} />
+                <ImageUploader
+                  onUpload={(url) => setValue('foto', url)}
+                />
               </div>
             </div>
           </form>
-        </div>        {/* Footer with buttons */}
+        </div>
+
+        {/* Footer with buttons */}
         <div className="border-t p-4 flex justify-end space-x-4">
           <button
             type="submit"
@@ -345,7 +432,9 @@ const FormularioAgregarActivo: React.FC<FormularioAgregarActivoProps> = ({ onClo
               isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
-            {loading || isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+            {loading || isSubmitting
+              ? 'Guardando...'
+              : 'Guardar Cambios'}
           </button>
           <button
             type="button"
