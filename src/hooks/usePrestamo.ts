@@ -28,7 +28,7 @@ export const usePrestamo = () => {
     }
   };
 
-  // useEffect para cargar los préstamos cuando se monta el componente
+  // useEffect para cargar los préstamos cuando se monta el componentee
   useEffect(() => {
     fetchAllPrestamos();
   }, []);
