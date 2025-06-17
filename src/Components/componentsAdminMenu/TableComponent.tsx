@@ -26,6 +26,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
   const [currentPage, setCurrentPage] = useState(1);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const [pageInput, setPageInput] = useState('');
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   // Nueva lógica para ordenamiento
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
