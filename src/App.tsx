@@ -101,16 +101,6 @@ const App: React.FC = () => {
             }
           />
 
-          {/*Importar Activos */}
-          <Route
-            path="/ImportarActivos"
-            element={
-              <ProtectedRoute roles={['Administrador']}>
-                <MenuImportAssets />
-              </ProtectedRoute>
-            }
-          />
-
           {/* Docente */}
           <Route
             path="/DocentesAdmin"

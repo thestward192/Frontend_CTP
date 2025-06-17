@@ -7,7 +7,6 @@ import { useActivos } from '../../hooks/useActivo';
 import { useExportToExcel } from '../../hooks/useExportToExcel';  // Hook para exportar
 import { Activo } from '../../types/activo';
 import FormularioAgregarActivo from './FormularioAgregarActivo';
-import ConfiguracionExportacionModal from '../../Components/ComponentsAdminConfig/ConfiguracionExportacionModal';
 import FilterDisponibilidad from '../componentsPages/FilterDisponibilidad';
 
 interface TableComponentProps {
@@ -422,18 +421,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ onAssetSelect, onAddAss
             onAssetSelect(false);
           }}
         />
-      )}
-
-      {isModalOpen && (
-        <SelectionModal
-          onSelectLey={handleSelectLey}
-          onSelectDonacion={handleSelectDonacion}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
-
-      {isConfigModalOpen && (
-        <ConfiguracionExportacionModal onClose={() => setIsConfigModalOpen(false)} />
       )}
     </div>
   );

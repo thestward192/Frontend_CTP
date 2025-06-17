@@ -4,7 +4,6 @@ import {
   FolderIcon,
   HomeIcon,
   LockClosedIcon,
-  UserIcon,
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/16/solid';
@@ -137,23 +136,6 @@ const Dashboard: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-              </li>
-              {/* Importar Activos */}
-              <li className="flex items-center group">
-                <FolderIcon className={`h-6 w-6 mr-4 ${getIconClass('/ImportarActivos')}`} />
-                <Link to="/ImportarActivos" className={getActiveClass('/ImportarActivos')}>
-                  Importar Activos
-                </Link>
-              </li>
-              {/* Perfil */}
-              <li className="flex items-center group">
-                <button
-                  onClick={() => setIsProfileModalOpen(true)}
-                  className="flex items-center focus:outline-none"
-                >
-                  <UserIcon className={`h-6 w-6 mr-4 ${getIconClass('/perfil')}`} />
-                  <span className={getActiveClass('/perfil')}>Perfil</span>
-                </button>
               </li>
             </ul>
           </nav>
